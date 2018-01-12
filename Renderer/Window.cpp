@@ -83,6 +83,7 @@ namespace renderer{
 			std::cout << "glewInit::glew init failed!";
 			exit(EXIT_FAILURE);
 		}
+		glEnable(GL_DEPTH_TEST);
 
 		//Check the OpenGL version
 		std::printf("OpenGL version : %s\n", glGetString(GL_VERSION));

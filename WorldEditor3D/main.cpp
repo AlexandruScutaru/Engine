@@ -1,15 +1,9 @@
-#include <cstdlib>
-#include <iostream>
-
-#include <Renderer/Renderer.h>
+#include "MainApp.h"
 
 
 int main(int argc, char** argv){
-	
-	renderer::Window* window = new renderer::Window();
-	window->create("test", 800, 600);
-	SDL_Delay(2000);
-	delete window;
+	MainApp app;
+	app.run();
 
 	exit(EXIT_SUCCESS);
 }
