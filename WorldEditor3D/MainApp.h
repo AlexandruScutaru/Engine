@@ -50,15 +50,13 @@ private:
 
 	ObjectData m_crate;
 	ObjectData m_lightSource;
-	std::vector<glm::vec3> m_cratePos;
+	glm::vec3 m_cratePos;
 
 	// lighting
-	glm::vec3 m_dirLightPos;
-	std::vector<glm::vec3> m_pointLightPos;
-	std::vector<glm::vec3> m_pointLightCol;
+	renderer::DirLight m_dirLight;
 
 	AppState m_appState;
-	bool m_movementFocus;
+	
 	//imgui variables and methods
 	void showEditorWindow();
 	bool m_collapseEditor;

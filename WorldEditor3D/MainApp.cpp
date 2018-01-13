@@ -10,8 +10,7 @@
 
 MainApp::MainApp():
 	m_appState(AppState::EDIT),
-	m_collapseEditor(false),
-	m_movementFocus(true)
+	m_collapseEditor(false)
 {
 	initSystems();
 }
@@ -95,31 +94,6 @@ void MainApp::initLevel(){
 		-0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
 		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f
 	};
-	// positions all containers
-
-	m_cratePos.push_back(glm::vec3(0.0f, 0.0f, 0.0f));
-	m_cratePos.push_back(glm::vec3(2.0f, 5.0f, -15.0f));
-	m_cratePos.push_back(glm::vec3(-1.5f, -2.2f, -2.5f));
-	m_cratePos.push_back(glm::vec3(-3.8f, -2.0f, -12.3f));
-	m_cratePos.push_back(glm::vec3(2.4f, -0.4f, -3.5f));
-	m_cratePos.push_back(glm::vec3(-1.7f, 3.0f, -7.5f));
-	m_cratePos.push_back(glm::vec3(1.3f, -2.0f, -2.5f));
-	m_cratePos.push_back(glm::vec3(1.5f, 2.0f, -2.5f));
-	m_cratePos.push_back(glm::vec3(1.5f, 0.2f, -1.5f));
-	m_cratePos.push_back(glm::vec3(-1.3f, 1.0f, -1.5f));
-
-	// positions of the point lights
-	m_pointLightPos.push_back(glm::vec3(0.7f, 0.2f, 2.0f));
-	m_pointLightPos.push_back(glm::vec3(2.3f, -3.3f, -4.0f));
-	m_pointLightPos.push_back(glm::vec3(-4.0f, 2.0f, -12.0f));
-	m_pointLightPos.push_back(glm::vec3(0.0f, 0.0f, -3.0f));
-
-	//colors of the point lights
-	m_pointLightCol.push_back(glm::vec3(0.1f, 0.1f, 0.1f));
-	m_pointLightCol.push_back(glm::vec3(0.1f, 0.1f, 0.1f));
-	m_pointLightCol.push_back(glm::vec3(0.1f, 0.1f, 0.1f));
-	m_pointLightCol.push_back(glm::vec3(0.3f, 0.1f, 0.1f));
-
 
 	// first, configure the cube's VAO (and VBO)
 	//unsigned int VBO, cubeVAO;
@@ -152,57 +126,29 @@ void MainApp::initLevel(){
 	m_crate_DIFF = renderer::TextureLoader::loadTexture("res/textures/crate_DIFF.png");
 	m_crate_SPEC = renderer::TextureLoader::loadTexture("res/textures/crate_SPEC.png");
 
+	m_cratePos = glm::vec3(0.0f);
+	m_dirLight = renderer::DirLight(glm::vec3(2.0f, 1.0f, 0.0f), 
+									glm::vec3(0.05f, 0.05f, 0.05f), 
+									glm::vec3(0.4f, 0.4f, 0.4f), 
+									glm::vec3(0.5f, 0.5f, 0.5f));
+	
 
 	// shader configuration
 	// --------------------
 	m_lightingShader.use();
 	m_lightingShader.loadInt("material.diffuse", 0);
 	m_lightingShader.loadInt("material.specular", 1);
-
-	//lights
 	m_lightingShader.loadFloat("material.shininess", 32.0f);
 
+	//lights
+	m_lightingShader.loadInt("pointLightsNum", 0);
 	// directional light
-	m_lightingShader.loadVec3("dirLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
-	m_lightingShader.loadVec3("dirLight.ambient", glm::vec3(0.0f, 0.0f, 0.0f));
-	m_lightingShader.loadVec3("dirLight.diffuse", glm::vec3(0.05f, 0.05f, 0.05f));
-	m_lightingShader.loadVec3("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
-	// point light 1
-	m_lightingShader.loadVec3("pointLights[0].position", m_pointLightPos[0]);
-	m_lightingShader.loadVec3("pointLights[0].ambient", m_pointLightCol[0] * 0.1f);
-	m_lightingShader.loadVec3("pointLights[0].diffuse", m_pointLightCol[0]);
-	m_lightingShader.loadVec3("pointLights[0].specular", m_pointLightCol[0]);
-	m_lightingShader.loadVec3("pointLights[0].att", glm::vec3(1.0f, 0.14f, 0.07f));
-	// point light 2
-	m_lightingShader.loadVec3("pointLights[1].position", m_pointLightPos[1]);
-	m_lightingShader.loadVec3("pointLights[1].ambient", m_pointLightCol[1] * 0.1f);
-	m_lightingShader.loadVec3("pointLights[1].diffuse", m_pointLightCol[1]);
-	m_lightingShader.loadVec3("pointLights[1].specular", m_pointLightCol[1]);
-	m_lightingShader.loadVec3("pointLights[1].att", glm::vec3(1.0f, 0.14f, 0.07f));
-
-	// point light 3
-	m_lightingShader.loadVec3("pointLights[2].position", m_pointLightPos[2]);
-	m_lightingShader.loadVec3("pointLights[2].ambient", m_pointLightCol[2] * 0.1f);
-	m_lightingShader.loadVec3("pointLights[2].diffuse", m_pointLightCol[2]);
-	m_lightingShader.loadVec3("pointLights[2].specular", m_pointLightCol[2]);
-	m_lightingShader.loadVec3("pointLights[2].att", glm::vec3(1.0f, 0.22f, 0.20f));
-
-	// point light 4
-	m_lightingShader.loadVec3("pointLights[3].position", m_pointLightPos[3]);
-	m_lightingShader.loadVec3("pointLights[3].ambient", m_pointLightCol[3] * 0.1f);
-	m_lightingShader.loadVec3("pointLights[3].diffuse", m_pointLightCol[3]);
-	m_lightingShader.loadVec3("pointLights[3].specular", m_pointLightCol[3]);
-	m_lightingShader.loadVec3("pointLights[3].att", glm::vec3(1.0f, 0.14f, 0.07f));
-
-	// spotLight
-	m_lightingShader.loadVec3("spotLight.ambient", glm::vec3(0.0f, 0.0f, 0.0f));
-	m_lightingShader.loadVec3("spotLight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
-	m_lightingShader.loadVec3("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-	m_lightingShader.loadVec3("spotLight.att", glm::vec3(1.0f, 0.09f, 0.032f));
-
-	//m_lightingShader.loadFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-	//m_lightingShader.loadFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
-	m_lightingShader.loadBool("flashlightOn", false);
+	//m_lightingShader.loadVec3("dirLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
+	m_lightingShader.loadVec3("dirLight.ambient", m_dirLight.ambient);
+	m_lightingShader.loadVec3("dirLight.diffuse", m_dirLight.diffuse);
+	m_lightingShader.loadVec3("dirLight.specular", m_dirLight.specular);
+	
+	//m_lightingShader.loadBool("flashlightOn", false);
 }
 
 void MainApp::loop(){
@@ -254,6 +200,11 @@ void MainApp::processInput(){
 void MainApp::update(float deltaTime){
 	if(!ImGui::GetIO().WantCaptureKeyboard)
 		m_camera.update(m_inputManager, deltaTime);
+
+	///object rotation
+	glm::mat4 rotationMat(1);
+	rotationMat = glm::rotate(rotationMat, 1.0f*deltaTime, glm::vec3(0.0, 1.0, 0.0));
+	m_dirLight.direction = glm::vec3(rotationMat * glm::vec4(m_dirLight.direction, 1.0));
 }
 
 void MainApp::updateImGuiWindows(){
@@ -271,9 +222,9 @@ void MainApp::drawGame(){
 	m_lightingShader.loadVec3("viewPos", m_camera.getPos());
 
 	//light data
-	// spotLight
-	m_lightingShader.loadVec3("spotLight.position", m_camera.getPos());
-	m_lightingShader.loadVec3("spotLight.direction", m_camera.getFront());
+	//m_lightingShader.loadVec3("dirLight.direction", m_dirLightPos);
+	m_lightingShader.loadVec3("dirLight.direction", -m_dirLight.direction);
+
 
 	// view/projection transformations
 	glm::mat4 projection = glm::perspective(glm::radians(m_camera.getZoom()), (float)renderer::Window::getW() / (float)renderer::Window::getH(), 0.1f, 100.0f);
@@ -290,35 +241,23 @@ void MainApp::drawGame(){
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, m_crate_SPEC.id);
 
-	// render containers
+	// render the crate
 	glBindVertexArray(m_crate.VAO);
-	for(unsigned int i = 0; i < 10; i++)
-	{
-		// calculate the model matrix for each object and pass it to shader before drawing
-		glm::mat4 model;
-		model = glm::translate(model, m_cratePos[i]);
-		float angle = 20.0f * i;
-		model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-		m_lightingShader.loadMat4("model", model);
-
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-	}
-
-	// also draw the lamp object(s)
+	model = glm::translate(model, m_cratePos);
+	m_lightingShader.loadMat4("model", model);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	
+	// also draw the lamp object
 	m_lightSourceShader.use();
 	m_lightSourceShader.loadMat4("projection", projection);
 	m_lightSourceShader.loadMat4("view", view);
 
-	// we now draw as many light bulbs as we have point lights.
 	glBindVertexArray(m_lightSource.VAO);
-	for(unsigned int i = 0; i < 4; i++)
-	{
-		model = glm::mat4();
-		model = glm::translate(model, m_pointLightPos[i]);
-		model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
-		m_lightSourceShader.loadMat4("model", model);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-	}
+	model = glm::mat4();
+	model = glm::translate(model, m_dirLight.direction);
+	model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
+	m_lightSourceShader.loadMat4("model", model);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 	
 	ImGui::Render();
 	//sdl: swap buffers
@@ -338,8 +277,6 @@ void MainApp::showEditorWindow(){
 	if(ImGui::InputText("testInput", a, 32)){
 
 	}
-	
-	
 	
 	ImGui::End();
 }

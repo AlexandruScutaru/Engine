@@ -150,6 +150,7 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="InputManager.h" />
+    <ClInclude Include="Lights.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="ShaderProgram.h" />
     <ClInclude Include="TextureLoader.h" />

@@ -7,6 +7,7 @@
 #include "TextureLoader.h"
 #include "Camera.h"
 #include "ShaderProgram.h"
+#include "Lights.h"
 
 #endif // !RENDERER_H
 
