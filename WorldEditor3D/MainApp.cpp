@@ -4,7 +4,7 @@
 
 #define SCREEN_WIDTH 1024
 #define SCREEN_HEIGHT 576
-
+#define MAX_FPS 120
 
 MainApp::MainApp():
 	m_appState(AppState::EDIT),
@@ -29,6 +29,8 @@ void MainApp::initSystems(){
 	//Setup ImGui
 	ImGui_ImplSdlGL3_Init(m_window.getWindow());
 	ImGui::StyleColorsDark();
+
+	m_fpsLimiter.setMaxFPS(MAX_FPS);
 }
 
 void MainApp::initLevel(){
@@ -37,13 +39,20 @@ void MainApp::initLevel(){
 
 void MainApp::loop(){
 	while(m_appState == AppState::EDIT){
+		float deltaTime = m_fpsLimiter.begin();
+		
 		processInput();
-		update(0.0f);
+		update(deltaTime);
+		updateImGuiWindows();
 		drawGame();
+
+		m_fpsLimiter.end();
 	}
 }
 
 void MainApp::processInput(){
+	m_inputManager.update();
+
 	SDL_Event e;
 	while(SDL_PollEvent(&e)) {
 		ImGui_ImplSdlGL3_ProcessEvent(&e);
@@ -52,12 +61,30 @@ void MainApp::processInput(){
 			// Exit the app here!
 			m_appState = AppState::EXIT;
 			break;
+		case SDL_MOUSEMOTION:
+			m_inputManager.setMouseCoords((float)e.motion.xrel, (float)e.motion.yrel);
+			break;
+		case SDL_MOUSEWHEEL:
+			m_inputManager.setMouseWheel(e.wheel.y);
+			break;
+		case SDL_KEYDOWN:
+			m_inputManager.pressKey(e.key.keysym.sym);
+			break;
+		case SDL_KEYUP:
+			m_inputManager.releaseKey(e.key.keysym.sym);
+			break;
+		case SDL_MOUSEBUTTONDOWN:
+			m_inputManager.pressKey(e.button.button);
+			break;
+		case SDL_MOUSEBUTTONUP:
+			m_inputManager.releaseKey(e.button.button);
+			break;
 		}
 	}
 }
 
 void MainApp::update(float deltaTime){
-	updateImGuiWindows();
+	
 }
 
 void MainApp::updateImGuiWindows(){

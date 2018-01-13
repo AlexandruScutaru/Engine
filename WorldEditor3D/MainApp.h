@@ -29,6 +29,8 @@ private:
 	void drawGame(); //draws on screen
 
 	renderer::Window m_window; //the app window
+	renderer::InputManager m_inputManager;
+	renderer::FpsLimiter m_fpsLimiter;
 
 	AppState m_appState;
 
