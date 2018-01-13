@@ -156,6 +156,12 @@
     <ClInclude Include="imgui_impl_sdl_gl3.h" />
     <ClInclude Include="MainApp.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\colors.fs" />
+    <None Include="shaders\colors.vs" />
+    <None Include="shaders\lightSource.fs" />
+    <None Include="shaders\lightSource.vs" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

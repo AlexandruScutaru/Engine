@@ -140,13 +140,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="InputManager.cpp" />
+    <ClCompile Include="ShaderProgram.cpp" />
+    <ClCompile Include="TextureLoader.cpp" />
     <ClCompile Include="Timing.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="ShaderProgram.h" />
+    <ClInclude Include="TextureLoader.h" />
     <ClInclude Include="Timing.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
