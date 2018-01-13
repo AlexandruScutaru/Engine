@@ -10,7 +10,8 @@
 
 MainApp::MainApp():
 	m_appState(AppState::EDIT),
-	m_collapseEditor(false)
+	m_collapseEditor(false),
+	m_movementFocus(true)
 {
 	initSystems();
 }
@@ -209,8 +210,8 @@ void MainApp::loop(){
 		float deltaTime = m_fpsLimiter.begin();
 		
 		processInput();
-		update(deltaTime);
 		updateImGuiWindows();
+		update(deltaTime);
 		drawGame();
 
 		m_fpsLimiter.end();
@@ -251,7 +252,8 @@ void MainApp::processInput(){
 }
 
 void MainApp::update(float deltaTime){
-	m_camera.update(m_inputManager, deltaTime);
+	if(!ImGui::GetIO().WantCaptureKeyboard)
+		m_camera.update(m_inputManager, deltaTime);
 }
 
 void MainApp::updateImGuiWindows(){
@@ -332,6 +334,12 @@ void MainApp::showEditorWindow(){
 	ImGui::Begin("editor", NULL);
 	
 	ImGui::Text("test");
+	static char a[32];
+	if(ImGui::InputText("testInput", a, 32)){
+
+	}
+	
+	
 	
 	ImGui::End();
 }

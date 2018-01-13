@@ -58,7 +58,7 @@ private:
 	std::vector<glm::vec3> m_pointLightCol;
 
 	AppState m_appState;
-
+	bool m_movementFocus;
 	//imgui variables and methods
 	void showEditorWindow();
 	bool m_collapseEditor;

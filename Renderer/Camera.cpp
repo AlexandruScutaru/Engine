@@ -47,6 +47,9 @@ namespace renderer{
 		else if(manager.isKeyDown(SDLK_e))
 			m_position += cameraSpeed * m_up;
 
+		//if(manager.isKeyPressed(SDL_BUTTON_RIGHT))
+		//	manager.setOldMouseCoords(manager.getMouseCoords().x, manager.getMouseCoords().y);
+
 		//camera fov
 		if(m_zoom >= 1.0f && m_zoom <= 75.0f)
 			m_zoom -= manager.getMouseWheel() * SCROLL_SENSITIVITY;
@@ -56,14 +59,16 @@ namespace renderer{
 			m_zoom = 75.0f;
 
 		//camera rotation
-		m_pitch -= manager.getMouseDY() * m_mouseSensitivity;
-		m_yaw += manager.getMouseDX() * m_mouseSensitivity;
+		//for now it is only in edit mode so Right Mouse Button needs to be pressed in order to rotate the camera
+		if(manager.isKeyDown(SDL_BUTTON_RIGHT)){
+			m_pitch += manager.getMouseDY() * m_mouseSensitivity;
+			m_yaw -= manager.getMouseDX() * m_mouseSensitivity;
 
-		if(m_pitch > 89.0f)
-			m_pitch = 89.0f;
-		if(m_pitch < -89.0f)
-			m_pitch = -89.0f;
-
+			if(m_pitch > 89.0f)
+				m_pitch = 89.0f;
+			if(m_pitch < -89.0f)
+				m_pitch = -89.0f;
+		}
 		updateCameraVectors();
 	}
 

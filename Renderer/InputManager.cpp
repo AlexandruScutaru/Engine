@@ -62,11 +62,11 @@ namespace renderer{
 	}
 
 	float InputManager::getMouseDY(){
-		return m_mouseCoords.y;// -m_prevMouseCoords.y;
+		return m_mouseCoords.y;
 	}
 
 	float InputManager::getMouseDX(){
-		return m_mouseCoords.x;// -m_prevMouseCoords.x;
+		return m_mouseCoords.x;
 	}
 
 	bool InputManager::wasKeyDown(unsigned int keyID){
