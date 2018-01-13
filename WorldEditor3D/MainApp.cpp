@@ -23,6 +23,8 @@ MainApp::~MainApp(){
 	glDeleteBuffers(1, &m_crate.VBO);
 	glDeleteTextures(1, &m_crate_DIFF.id);
 	glDeleteTextures(1, &m_crate_SPEC.id);
+
+	renderer::ResourceManager::ClearData();
 }
 
 
@@ -104,11 +106,14 @@ void MainApp::initLevel(){
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 	glBindVertexArray(m_crate.VAO);
+	//pos
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	//norm
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	//uv
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
 	// second, configure the light's VAO (VBO stays the same; the vertices are the same for the light object which is also a 3D cube)
@@ -127,6 +132,12 @@ void MainApp::initLevel(){
 	m_crate_SPEC = renderer::TextureLoader::loadTexture("res/textures/crate_SPEC.png");
 
 	m_cratePos = glm::vec3(0.0f);
+	
+	static renderer::Material mat = renderer::Material(renderer::ResourceManager::getTexture("res/textures/character_DIFF.png"),
+												renderer::ResourceManager::getTexture("res/textures/character_SPEC.png"));
+	m_model.setMaterial(&mat);
+	m_model.setMesh(renderer::ResourceManager::getMesh("res/models/character.obj"));
+	
 	m_dirLight = renderer::DirLight(glm::vec3(2.0f, 1.0f, 0.0f), 
 									glm::vec3(0.05f, 0.05f, 0.05f), 
 									glm::vec3(0.4f, 0.4f, 0.4f), 
@@ -236,16 +247,22 @@ void MainApp::drawGame(){
 	m_lightingShader.loadMat4("model", model);
 	// bind diffuse map
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, m_crate_DIFF.id);
+	//glBindTexture(GL_TEXTURE_2D, m_crate_DIFF.id);
+	glBindTexture(GL_TEXTURE_2D, m_model.getMaterial()->getDiffuseMap()->id);
+
 	// bind specular map
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, m_crate_SPEC.id);
+	//glBindTexture(GL_TEXTURE_2D, m_crate_SPEC.id);
+	glBindTexture(GL_TEXTURE_2D, m_model.getMaterial()->getSpecularMap()->id);
+
 
 	// render the crate
-	glBindVertexArray(m_crate.VAO);
+	//glBindVertexArray(m_crate.VAO);
+	glBindVertexArray(m_model.getMesh()->vertexArrayObject);
 	model = glm::translate(model, m_cratePos);
 	m_lightingShader.loadMat4("model", model);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+	//glDrawArrays(GL_TRIANGLES, 0, 36);
+	glDrawElements(GL_TRIANGLES, m_model.getMesh()->indexCount, GL_UNSIGNED_INT, 0);
 	
 	// also draw the lamp object
 	m_lightSourceShader.use();

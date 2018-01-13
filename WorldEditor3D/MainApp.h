@@ -44,6 +44,8 @@ private:
 	renderer::ShaderProgram m_lightingShader;
 	renderer::Camera m_camera;
 
+	renderer::TexturedModel m_model;
+
 	//some objects to draw
 	renderer::TextureData m_crate_DIFF;
 	renderer::TextureData m_crate_SPEC;

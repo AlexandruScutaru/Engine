@@ -4,14 +4,9 @@
 #include <string>
 #include <GL/glew.h>
 #include <vector>
+#include "ModelDataStructs.h"
 
 namespace renderer{
-
-	struct TextureData{
-		int w;
-		int h;
-		GLuint id;
-	};
 
 	class TextureLoader{
 	public:
@@ -19,9 +14,9 @@ namespace renderer{
 		static GLuint loadCubeMapTexture(std::vector<std::string>& fileNames);
 
 	private:
-		TextureLoader(){};
+		TextureLoader(){}
 	};
 
-	#endif // TEXTURE_LOADER_H
-
 }
+
+#endif // TEXTURE_LOADER_H
