@@ -157,10 +157,10 @@
     <ClInclude Include="MainApp.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\colors.fs" />
-    <None Include="shaders\colors.vs" />
-    <None Include="shaders\lightSource.fs" />
-    <None Include="shaders\lightSource.vs" />
+    <None Include="shaders\entity.fs" />
+    <None Include="shaders\entity.vs" />
+    <None Include="shaders\billboard.fs" />
+    <None Include="shaders\billboard.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

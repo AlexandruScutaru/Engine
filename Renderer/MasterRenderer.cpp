@@ -1,0 +1,154 @@
+#include "MasterRenderer.h"
+#include "Window.h"
+
+#include <glm/gtc/matrix_transform.hpp>
+
+
+namespace renderer{
+	
+	MasterRenderer::MasterRenderer(){
+	}
+
+	MasterRenderer::~MasterRenderer(){}
+
+	void MasterRenderer::init(){
+		// build and compile the shader programs
+		m_entityShader.init("shaders/entity.vs", "shaders/entity.fs");
+		m_billBoardShader.init("shaders/billboard.vs", "shaders/billboard.fs");
+
+		// shader configuration
+		m_entityShader.use();
+		m_entityShader.loadInt("material.diffuse", 0);
+		m_entityShader.loadInt("material.specular", 1);
+		m_entityShader.loadFloat("material.shininess", 32.0f);
+	
+		m_billBoardShader.use();
+		m_billBoardShader.loadInt("diffuse", 0);
+
+		//now the object are rendered the farthest to closest
+		glEnable(GL_DEPTH_TEST);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0);
+	}
+
+
+	void MasterRenderer::renderScene(std::vector<Entity*>& entities, std::vector<BillBoard*>& billboards, DirLight& dirLight, std::vector<PointLight>& pointLights, SpotLight& spotLight, Camera& camera){
+		for(auto entity : entities)
+			processObject(entity);
+		for(auto billboard : billboards)
+			processObject(billboard);
+		
+		setUniforms(dirLight, pointLights, spotLight, camera);
+		render();
+	}
+
+	void MasterRenderer::processObject(Entity* entity){
+		TexturedModel* model = entity->getTexturedModel();
+		std::vector<Entity*> batch = m_entityBatches[model];
+		if(!batch.empty()){
+			batch.push_back(entity);
+			m_entityBatches[model] = batch;
+		} else{
+			std::vector<Entity*> newBatch;
+			newBatch.push_back(entity);
+			m_entityBatches[model] = newBatch;
+		}
+	}
+
+	void MasterRenderer::processObject(BillBoard* billboard){
+		TexturedModel* model = billboard->getTexturedModel();
+		std::vector<BillBoard*> batch = m_billboardBatches[model];
+		if(!batch.empty()){
+			batch.push_back(billboard);
+			m_billboardBatches[model] = batch;
+		} else{
+			std::vector<BillBoard*> newBatch;
+			newBatch.push_back(billboard);
+			m_billboardBatches[model] = newBatch;
+		}
+	}
+
+	void MasterRenderer::render(){
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		renderEntities();
+		renderBillBoard();
+	}
+
+	void MasterRenderer::renderEntities(){
+		glm::mat4 modelMatrix;
+		m_entityShader.use();
+		for(auto const& model : m_entityBatches){
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, model.first->getMaterial().getDiffuseMap()->id);
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, model.first->getMaterial().getSpecularMap()->id);
+			glBindVertexArray(model.first->getMesh()->vertexArrayObject);
+
+			for(auto const& entity : model.second){
+				modelMatrix = glm::translate(modelMatrix, entity->getPosition());
+				m_entityShader.loadMat4("model", modelMatrix);
+				glDrawElements(GL_TRIANGLES, model.first->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
+			}
+		}
+		m_entityBatches.clear();
+	}
+
+	void MasterRenderer::renderBillBoard(){
+		glm::mat4 modelMatrix;
+		m_billBoardShader.use();
+		for(auto const& model : m_billboardBatches){
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, model.first->getMaterial().getDiffuseMap()->id);
+			glBindVertexArray(model.first->getMesh()->vertexArrayObject);
+
+			for(auto const& billboard : model.second){
+				modelMatrix = glm::translate(modelMatrix, billboard->getPosition());
+				m_billBoardShader.loadMat4("model", modelMatrix);
+				glDrawElements(GL_TRIANGLES, model.first->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
+			}
+		}
+		m_billboardBatches.clear();
+	}
+
+	void MasterRenderer::setUniforms(DirLight& dirLight, std::vector<PointLight>& pointLights, SpotLight& spotLight, Camera& camera){
+		///entity shader
+		m_entityShader.use();
+		// directional light
+		m_entityShader.loadVec3("dirLight.direction", -dirLight.direction);
+		m_entityShader.loadVec3("dirLight.ambient", dirLight.ambient);
+		m_entityShader.loadVec3("dirLight.diffuse", dirLight.diffuse);
+		m_entityShader.loadVec3("dirLight.specular", dirLight.specular);
+		//point lights
+		//int numLights = pointLights.size() > 4 ? 4 : pointLights.size();
+		m_entityShader.loadInt("pointLightsNum", 0);
+		//for(size_t i = 0; i < pointLights.size(); i++){
+		//	m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].position", pointLights[i].position);
+		//	m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].ambient",  pointLights[i].ambient);
+		//	m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].diffuse",  pointLights[i].diffuse);
+		//	m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].specular", pointLights[i].specular);
+		//	m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].att",      pointLights[i].attenuation);
+		//}
+		//spot light
+		m_entityShader.loadBool("flashlightOn", false);
+		m_entityShader.loadVec3("spotLight.ambient", spotLight.ambient);
+		m_entityShader.loadVec3("spotLight.diffuse", spotLight.diffuse);
+		m_entityShader.loadVec3("spotLight.specular", spotLight.specular);
+		m_entityShader.loadVec3("spotLight.att",	  spotLight.attenuation);
+		m_entityShader.loadVec3("spotLight.position", spotLight.position);
+		m_entityShader.loadVec3("spotLight.direction", spotLight.direction);
+		m_entityShader.loadFloat("spotLight.cutOff", spotLight.cutOff);
+		m_entityShader.loadFloat("spotLight.outerCutOff", spotLight.outerCutOff);
+
+		//positional info
+		m_entityShader.loadVec3("viewPos", camera.getPos());
+		// view/projection transformations
+		glm::mat4 projection = glm::perspective(glm::radians(camera.getZoom()), (float)Window::getW() / (float)Window::getH(), 0.1f, 100.0f);
+		glm::mat4 view = camera.getViewMatrix();
+		m_entityShader.loadMat4("projection", projection);
+		m_entityShader.loadMat4("view", view);
+
+		///billboard shader
+		m_billBoardShader.use();
+		m_billBoardShader.loadMat4("projection", projection);
+		m_billBoardShader.loadMat4("view", view);
+	}
+}

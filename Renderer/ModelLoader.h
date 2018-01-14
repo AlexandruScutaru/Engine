@@ -56,21 +56,12 @@ namespace renderer{
 	//static class used to load various 3d meshes into memory
 	class ObjectLoader{
 	public:
-		//parses a wavefront file(.obj) and reads data about the mesh
-		//positions, uv coords, normals, indices
+		//parses a wavefront file(.obj) and reads data about the mesh (positions, uv coords, normals, indices)
 		static MeshData loadObject(const std::string& fileName);
-		//loads a cube
-		static MeshData loadCube(std::vector<glm::vec3>& positions, int numVertices);
 		
 	private:
 		//methods for buffering 3d mesh data
 		static MeshData loadToVAO(const IndexedModel& model);
-		static MeshData loadToVAO(std::vector<glm::vec3>& positions,
-								  std::vector<glm::vec2>& texCoords,
-								  std::vector<glm::vec3>& normals,
-								  unsigned int numVertices,
-								  unsigned int* indices,
-								  unsigned int numIndices);
 
 		ObjectLoader(){};
 

@@ -10,6 +10,9 @@
 #include "Lights.h"
 #include "ResourceManager.h"
 #include "TexturedModel.h"
+#include "Entity.h"
+#include "BillBoard.h"
+#include "MasterRenderer.h"
 
 #endif // !RENDERER_H
 

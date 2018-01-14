@@ -14,8 +14,8 @@ namespace renderer{
 		static MeshData* getMesh(const std::string& path);
 		static TextureData* getTexture(const std::string& path);
 
-		//static unsigned int loadModel(const std::string& object_name = "default", const std::string& texture_name = "default");
-		//static TexturedModel* getModelAt(unsigned int index);
+		static unsigned int addTexturedModel(TexturedModel& model);
+		static TexturedModel* getTexturedModelAt(unsigned int index);
 
 		static void ClearData();
 
@@ -24,8 +24,7 @@ namespace renderer{
 
 		static std::map<std::string, TextureData> m_texturesMap;
 		static std::map<std::string, MeshData> m_meshesMap;
-
-		//static std::vector<TexturedModel> m_texturedModels;
+		static std::vector<TexturedModel> m_texturedModels;
 	};
 
 }

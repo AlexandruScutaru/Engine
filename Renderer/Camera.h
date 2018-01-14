@@ -23,9 +23,9 @@ namespace renderer{
 
 		glm::mat4 getViewMatrix();
 		float getZoom(){ return m_zoom; }
-		glm::vec3& getPos(){ return m_position; }
-		glm::vec3& getFront(){ return m_front; }
-		glm::vec3& getUp(){ return m_up; }
+		glm::vec3 getPos(){ return m_position; }
+		glm::vec3 getFront(){ return m_front; }
+		glm::vec3 getUp(){ return m_up; }
 
 		void update(InputManager& manager, float deltaTime);
 

@@ -34,16 +34,16 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\colors.fs">
+    <None Include="shaders\entity.fs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\colors.vs">
+    <None Include="shaders\entity.vs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\lightSource.fs">
+    <None Include="shaders\billboard.fs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\lightSource.vs">
+    <None Include="shaders\billboard.vs">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

@@ -9,18 +9,18 @@ namespace renderer{
 	class TexturedModel{
 		public:
 			TexturedModel();
-			TexturedModel(MeshData* mesh, Material* material);
+			TexturedModel(MeshData* mesh, Material& material);
 			~TexturedModel();
 
 			void setMesh(MeshData* mesh){ m_mesh = mesh; }
-			void setMaterial(Material* material){ m_material = material; }
+			void setMaterial(Material& material){ m_material = material; }
 
 			MeshData* getMesh() { return m_mesh; }
-			Material* getMaterial() { return m_material; }
+			Material& getMaterial() { return m_material; }
 
 		private:
 			MeshData* m_mesh;
-			Material* m_material;
+			Material m_material;
 	};
 
 }

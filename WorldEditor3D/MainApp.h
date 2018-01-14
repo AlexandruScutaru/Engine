@@ -7,6 +7,7 @@
 #include <GLM/glm.hpp>
 
 #include <vector>
+#include <map>
 
 
 typedef struct{
@@ -40,22 +41,17 @@ private:
 	renderer::Window m_window; //the app window
 	renderer::InputManager m_inputManager;
 	renderer::FpsLimiter m_fpsLimiter;
-	renderer::ShaderProgram m_lightSourceShader;
-	renderer::ShaderProgram m_lightingShader;
+	renderer::MasterRenderer m_masterRenderer;
 	renderer::Camera m_camera;
 
-	renderer::TexturedModel m_model;
-
 	//some objects to draw
-	renderer::TextureData m_crate_DIFF;
-	renderer::TextureData m_crate_SPEC;
-
-	ObjectData m_crate;
-	ObjectData m_lightSource;
-	glm::vec3 m_cratePos;
+	std::vector<renderer::Entity*> m_entities;
+	std::vector<renderer::BillBoard*> m_billboards;
 
 	// lighting
 	renderer::DirLight m_dirLight;
+	std::vector<renderer::PointLight> m_pointLights;
+	renderer::SpotLight m_spotLight;
 
 	AppState m_appState;
 	
