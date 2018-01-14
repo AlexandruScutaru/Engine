@@ -9,7 +9,7 @@
 namespace renderer{
 
 	Camera::Camera(glm::vec3& position, glm::vec3& up, float pitch, float yaw,
-				   float movementSpeed, float mouseSensitivity, float zoom) :
+				   float movementSpeed, float mouseSensitivity, float fov) :
 		m_front(glm::vec3(0.0f, 0.0f, -1.0f)),
 		m_position(position),
 		m_worldUp(up),
@@ -17,7 +17,7 @@ namespace renderer{
 		m_yaw(yaw),
 		m_movementSpeed(movementSpeed),
 		m_mouseSensitivity(mouseSensitivity),
-		m_zoom(zoom)
+		m_FOV(fov)
 	{
 		updateCameraVectors();
 	}
@@ -51,12 +51,12 @@ namespace renderer{
 		//	manager.setOldMouseCoords(manager.getMouseCoords().x, manager.getMouseCoords().y);
 
 		//camera fov
-		if(m_zoom >= 1.0f && m_zoom <= 75.0f)
-			m_zoom -= manager.getMouseWheel() * SCROLL_SENSITIVITY;
-		if(m_zoom <= 1.0f)
-			m_zoom = 1.0f;
-		if(m_zoom >= 75.0f)
-			m_zoom = 75.0f;
+		//if(m_FOV >= 1.0f && m_FOV <= 75.0f)
+		//	m_FOV -= manager.getMouseWheel() * SCROLL_SENSITIVITY;
+		//if(m_FOV <= 1.0f)
+		//	m_FOV = 1.0f;
+		//if(m_FOV >= 75.0f)
+		//	m_FOV = 75.0f;
 
 		//camera rotation
 		//for now it is only in edit mode so Right Mouse Button needs to be pressed in order to rotate the camera

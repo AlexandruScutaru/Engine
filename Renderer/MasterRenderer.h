@@ -24,6 +24,9 @@ namespace renderer{
 						 Camera& camera
 		);
 
+		void renderSingleEntity(TexturedModel* object, DirLight& sun, Camera& camera);
+		void renderBoundingBox(TexturedModel* object, glm::vec3& scale, glm::vec3& rot, Camera& camera);
+
 	private:
 		void MasterRenderer::processObject(Entity* entity);
 		void MasterRenderer::processObject(BillBoard* billboard);
@@ -37,6 +40,7 @@ namespace renderer{
 
 		ShaderProgram m_entityShader;
 		ShaderProgram m_billBoardShader;
+		ShaderProgram m_basicShader;
 
 	};
 

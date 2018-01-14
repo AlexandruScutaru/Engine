@@ -1,5 +1,6 @@
 #include "MasterRenderer.h"
 #include "Window.h"
+#include <iostream>
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -15,6 +16,7 @@ namespace renderer{
 		// build and compile the shader programs
 		m_entityShader.init("shaders/entity.vs", "shaders/entity.fs");
 		m_billBoardShader.init("shaders/billboard.vs", "shaders/billboard.fs");
+		m_basicShader.init("shaders/basic.vs", "shaders/basic.fs");
 
 		// shader configuration
 		m_entityShader.use();
@@ -39,6 +41,67 @@ namespace renderer{
 		
 		setUniforms(dirLight, pointLights, spotLight, camera);
 		render();
+	}
+
+	void MasterRenderer::renderSingleEntity(TexturedModel* object, DirLight& sun, Camera& camera){
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		if(!object)
+			return;
+		m_entityShader.use();
+		// directional light
+		m_entityShader.loadVec3("dirLight.direction", -sun.direction);
+		m_entityShader.loadVec3("dirLight.ambient", sun.ambient);
+		m_entityShader.loadVec3("dirLight.diffuse", sun.diffuse);
+		m_entityShader.loadVec3("dirLight.specular", sun.specular);
+		//point lights
+		m_entityShader.loadInt("pointLightsNum", 0);
+		//spot light
+		m_entityShader.loadBool("flashlightOn", false);
+
+		//positional info
+		m_entityShader.loadVec3("viewPos", camera.getPos());
+		// view/projection transformations
+		glm::mat4 projection = glm::perspective(glm::radians(camera.getFOV()), (float)Window::getW() / (float)Window::getH(), 0.1f, 100.0f);
+		glm::mat4 view = camera.getViewMatrix();
+		glm::mat4 model;
+		m_entityShader.loadMat4("projection", projection);
+		m_entityShader.loadMat4("view", view);
+		m_entityShader.loadMat4("model", model);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, object->getMaterial().getDiffuseMap()->id);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, object->getMaterial().getSpecularMap()->id);
+		glBindVertexArray(object->getMesh()->vertexArrayObject);
+		
+		glDrawElements(GL_TRIANGLES, object->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
+	}
+
+	void MasterRenderer::renderBoundingBox(TexturedModel* object, glm::vec3 & scale, glm::vec3 & rot, Camera & camera){
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		if(!object)
+			return;
+		// view/projection transformations
+		glm::mat4 projection = glm::perspective(glm::radians(camera.getFOV()), (float)Window::getW() / (float)Window::getH(), 0.1f, 100.0f);
+		glm::mat4 view = camera.getViewMatrix();
+		glm::mat4 model;
+		model = glm::translate(model, glm::vec3(0.0f));
+		
+		model = glm::rotate(model, rot.x, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, rot.y, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, rot.z, glm::vec3(0.0f, 0.0f, 1.0f));
+
+		model = glm::scale(model, scale);
+
+		m_basicShader.use();
+		m_basicShader.loadMat4("projection", projection);
+		m_basicShader.loadMat4("view", view);
+		m_basicShader.loadMat4("model", model);
+
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glBindVertexArray(object->getMesh()->vertexArrayObject);
+		glDrawElements(GL_TRIANGLES, object->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
 	void MasterRenderer::processObject(Entity* entity){
@@ -141,7 +204,7 @@ namespace renderer{
 		//positional info
 		m_entityShader.loadVec3("viewPos", camera.getPos());
 		// view/projection transformations
-		glm::mat4 projection = glm::perspective(glm::radians(camera.getZoom()), (float)Window::getW() / (float)Window::getH(), 0.1f, 100.0f);
+		glm::mat4 projection = glm::perspective(glm::radians(camera.getFOV()), (float)Window::getW() / (float)Window::getH(), 0.1f, 100.0f);
 		glm::mat4 view = camera.getViewMatrix();
 		m_entityShader.loadMat4("projection", projection);
 		m_entityShader.loadMat4("view", view);

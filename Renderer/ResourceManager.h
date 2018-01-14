@@ -17,6 +17,7 @@ namespace renderer{
 		static unsigned int addTexturedModel(TexturedModel& model);
 		static TexturedModel* getTexturedModelAt(unsigned int index);
 
+		static void Init();
 		static void ClearData();
 
 	private:

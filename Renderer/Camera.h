@@ -18,14 +18,22 @@ namespace renderer{
 	public:
 		Camera(glm::vec3& position = glm::vec3(0.0f), glm::vec3& up = glm::vec3(0.0f, 1.0f, 0.0f),
 			   float pitch = 0.0f, float yaw = -90.0f, 
-			   float movementSpeed = 3.5f, float mouseSensitivity = 0.1f, float zoom = 70.0f);
+			   float movementSpeed = 3.5f, float mouseSensitivity = 0.1f, float fov = 70.0f);
 		~Camera();
 
 		glm::mat4 getViewMatrix();
-		float getZoom(){ return m_zoom; }
+		float getFOV(){ return m_FOV; }
+		float getPitch(){ return m_pitch; }
+		float getYaw(){ return m_yaw; }
 		glm::vec3 getPos(){ return m_position; }
 		glm::vec3 getFront(){ return m_front; }
 		glm::vec3 getUp(){ return m_up; }
+		glm::vec3 backupCameraProperties(){ return glm::vec3(m_FOV, m_pitch, m_yaw); }
+		
+		void setPitch(float val){ m_pitch = val; }
+		void setYaw(float val){ m_yaw = val; }
+		void setPos(glm::vec3& pos){ m_position = pos; }
+		void restoreCameraProperties(glm::vec3& data){ m_FOV = data.x; m_pitch = data.y; m_yaw = data.z; }
 
 		void update(InputManager& manager, float deltaTime);
 
@@ -44,7 +52,7 @@ namespace renderer{
 		// Camera options
 		float m_movementSpeed;
 		float m_mouseSensitivity;
-		float m_zoom;
+		float m_FOV;
 
 	};
 

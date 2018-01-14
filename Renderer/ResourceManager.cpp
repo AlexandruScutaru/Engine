@@ -49,6 +49,22 @@ namespace renderer{
 		}
 	}
 
+	void ResourceManager::Init(){
+		renderer::TexturedModel model;
+		renderer::Material mat = renderer::Material(renderer::ResourceManager::getTexture("res/textures/default.png"),
+													renderer::ResourceManager::getTexture("res/textures/no_SPEC.png"));
+
+		model.setMaterial(mat);
+		model.setMesh(renderer::ResourceManager::getMesh("res/models/sphere.obj"));
+		addTexturedModel(model);
+
+		mat = renderer::Material(renderer::ResourceManager::getTexture("res/textures/default.png"),
+								 renderer::ResourceManager::getTexture("res/textures/no_SPEC.png"));
+		model.setMaterial(mat);
+		model.setMesh(renderer::ResourceManager::getMesh("res/models/cube.obj"));
+		addTexturedModel(model);
+	}
+
 	void ResourceManager::ClearData(){
 		for(auto mesh : m_meshesMap){
 			glDeleteVertexArrays(1, &(mesh.second.vertexArrayObject));
