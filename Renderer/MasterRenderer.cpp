@@ -32,7 +32,6 @@ namespace renderer{
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0);
 	}
 
-
 	void MasterRenderer::renderScene(std::vector<Entity*>& entities, std::vector<BillBoard*>& billboards, DirLight& dirLight, std::vector<PointLight>& pointLights, SpotLight& spotLight, Camera& camera){
 		for(auto entity : entities)
 			processObject(entity);
@@ -41,6 +40,10 @@ namespace renderer{
 		
 		setUniforms(dirLight, pointLights, spotLight, camera);
 		render();
+	}
+
+	void MasterRenderer::setProjectionMatrix(Camera& camera){
+		m_projection = glm::perspective(glm::radians(camera.getFOV()), (float)Window::getW() / (float)Window::getH(), 0.1f, 100.0f);
 	}
 
 	void MasterRenderer::renderSingleEntity(TexturedModel* object, DirLight& sun, Camera& camera){
@@ -56,15 +59,14 @@ namespace renderer{
 		//point lights
 		m_entityShader.loadInt("pointLightsNum", 0);
 		//spot light
-		m_entityShader.loadBool("flashlightOn", false);
+		m_entityShader.loadBool("flashlightOn", true);
 
 		//positional info
 		m_entityShader.loadVec3("viewPos", camera.getPos());
 		// view/projection transformations
-		glm::mat4 projection = glm::perspective(glm::radians(camera.getFOV()), (float)Window::getW() / (float)Window::getH(), 0.1f, 100.0f);
 		glm::mat4 view = camera.getViewMatrix();
 		glm::mat4 model;
-		m_entityShader.loadMat4("projection", projection);
+		m_entityShader.loadMat4("projection", m_projection);
 		m_entityShader.loadMat4("view", view);
 		m_entityShader.loadMat4("model", model);
 
@@ -78,11 +80,9 @@ namespace renderer{
 	}
 
 	void MasterRenderer::renderBoundingBox(TexturedModel* object, glm::vec3 & scale, glm::vec3 & rot, Camera & camera){
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		if(!object)
 			return;
 		// view/projection transformations
-		glm::mat4 projection = glm::perspective(glm::radians(camera.getFOV()), (float)Window::getW() / (float)Window::getH(), 0.1f, 100.0f);
 		glm::mat4 view = camera.getViewMatrix();
 		glm::mat4 model;
 		model = glm::translate(model, glm::vec3(0.0f));
@@ -94,7 +94,7 @@ namespace renderer{
 		model = glm::scale(model, scale);
 
 		m_basicShader.use();
-		m_basicShader.loadMat4("projection", projection);
+		m_basicShader.loadMat4("projection", m_projection);
 		m_basicShader.loadMat4("view", view);
 		m_basicShader.loadMat4("model", model);
 
@@ -181,17 +181,17 @@ namespace renderer{
 		m_entityShader.loadVec3("dirLight.diffuse", dirLight.diffuse);
 		m_entityShader.loadVec3("dirLight.specular", dirLight.specular);
 		//point lights
-		//int numLights = pointLights.size() > 4 ? 4 : pointLights.size();
-		m_entityShader.loadInt("pointLightsNum", 0);
-		//for(size_t i = 0; i < pointLights.size(); i++){
-		//	m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].position", pointLights[i].position);
-		//	m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].ambient",  pointLights[i].ambient);
-		//	m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].diffuse",  pointLights[i].diffuse);
-		//	m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].specular", pointLights[i].specular);
-		//	m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].att",      pointLights[i].attenuation);
-		//}
+		int numLights = pointLights.size() > 4 ? 4 : pointLights.size();
+		m_entityShader.loadInt("pointLightsNum", numLights);
+		for(size_t i = 0; i < pointLights.size(); i++){
+			m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].position", pointLights[i].position);
+			m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].ambient",  pointLights[i].ambient);
+			m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].diffuse",  pointLights[i].diffuse);
+			m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].specular", pointLights[i].specular);
+			m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].att",      pointLights[i].attenuation);
+		}
 		//spot light
-		m_entityShader.loadBool("flashlightOn", false);
+		m_entityShader.loadBool("flashlightOn", true);
 		m_entityShader.loadVec3("spotLight.ambient", spotLight.ambient);
 		m_entityShader.loadVec3("spotLight.diffuse", spotLight.diffuse);
 		m_entityShader.loadVec3("spotLight.specular", spotLight.specular);
@@ -204,14 +204,13 @@ namespace renderer{
 		//positional info
 		m_entityShader.loadVec3("viewPos", camera.getPos());
 		// view/projection transformations
-		glm::mat4 projection = glm::perspective(glm::radians(camera.getFOV()), (float)Window::getW() / (float)Window::getH(), 0.1f, 100.0f);
 		glm::mat4 view = camera.getViewMatrix();
-		m_entityShader.loadMat4("projection", projection);
+		m_entityShader.loadMat4("projection", m_projection);
 		m_entityShader.loadMat4("view", view);
 
 		///billboard shader
 		m_billBoardShader.use();
-		m_billBoardShader.loadMat4("projection", projection);
+		m_billBoardShader.loadMat4("projection", m_projection);
 		m_billBoardShader.loadMat4("view", view);
 	}
 }

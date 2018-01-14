@@ -44,6 +44,7 @@ void MainApp::initSystems(){
 	ImGui::StyleColorsDark();
 
 	m_masterRenderer.init();
+	m_masterRenderer.setProjectionMatrix(m_camera);
 
 	m_fpsLimiter.setMaxFPS(MAX_FPS);
 
@@ -54,12 +55,12 @@ void MainApp::initLevel(){
 	//game objects
 	//set default data for the creatingEntiy;
 	m_creatingModel = *(renderer::ResourceManager::getTexturedModelAt(0));
-	//m_creatingEntity->setPosition(glm::vec3(0.0f));
 	m_creatingLight = renderer::DirLight(glm::vec3(-2000.0f, 2000.0f, 2000.0f),
 										 glm::vec3(0.05f, 0.05f, 0.05f),
 										 glm::vec3(0.4f, 0.4f, 0.4f),
 										 glm::vec3(0.5f, 0.5f, 0.5f));
 
+	//some objects to draw
 	renderer::TexturedModel model;
 	renderer::Material mat = renderer::Material(renderer::ResourceManager::getTexture("res/textures/character_DIFF.png"),
 												renderer::ResourceManager::getTexture("res/textures/character_SPEC.png"));
@@ -94,8 +95,8 @@ void MainApp::initLevel(){
 									  glm::vec3(1.0f, 0.09f, 0.032f),
 									  m_camera.getPos(),
 									  m_camera.getFront(),
-									  12.5f,
-									  15.0f);	
+									  glm::cos(glm::radians(13.0f)),
+									  glm::cos(glm::radians(20.0f)));
 }
 
 void MainApp::loop(){
@@ -153,8 +154,8 @@ void MainApp::update(float deltaTime){
 	m_dirLight.direction = glm::vec3(rotationMat * glm::vec4(m_dirLight.direction, 1.0));
 	m_billboards.back()->setPosition(m_dirLight.direction);
 
-	//m_spotLight.position = m_camera.getPos();
-	//m_spotLight.direction = m_camera.getFront();
+	m_spotLight.position = m_camera.getPos();
+	m_spotLight.direction = m_camera.getFront();
 }
 
 void MainApp::updateImGuiWindows(){
@@ -401,6 +402,7 @@ void MainApp::showSaveFileDialog(){
 	}
 	ImGui::End();
 }
+
 
 bool VectorOfStringGetter(void* data, int n, const char** out_text){
 	std::vector<std::string>* v = (std::vector<std::string>*)data;
