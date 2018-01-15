@@ -29,6 +29,7 @@ namespace renderer{
 
 		//now the object are rendered the farthest to closest
 		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_CULL_FACE);
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0);
 	}
 
@@ -156,8 +157,12 @@ namespace renderer{
 	}
 
 	void MasterRenderer::renderBillBoard(){
-		glm::mat4 modelMatrix;
 		m_billBoardShader.use();
+		m_billBoardShader.loadMat4("projection", m_projection);
+		m_billBoardShader.loadMat4("view", m_view);
+
+		glm::mat4 modelMatrix;
+
 		for(auto const& model : m_billboardBatches){
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, model.first->getMaterial().getDiffuseMap()->id);
@@ -165,6 +170,16 @@ namespace renderer{
 
 			for(auto const& billboard : model.second){
 				modelMatrix = glm::translate(modelMatrix, billboard->getPosition());
+				modelMatrix[0][0] = m_view[0][0];
+				modelMatrix[0][1] = m_view[1][0];
+				modelMatrix[0][2] = m_view[2][0];
+				modelMatrix[1][0] = m_view[0][1];
+				modelMatrix[1][1] = m_view[1][1];
+				modelMatrix[1][2] = m_view[2][1];
+				modelMatrix[2][0] = m_view[0][2];
+				modelMatrix[2][1] = m_view[1][2];
+				modelMatrix[2][2] = m_view[2][2];
+				modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
 				m_billBoardShader.loadMat4("model", modelMatrix);
 				glDrawElements(GL_TRIANGLES, model.first->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
 			}
@@ -204,13 +219,8 @@ namespace renderer{
 		//positional info
 		m_entityShader.loadVec3("viewPos", camera.getPos());
 		// view/projection transformations
-		glm::mat4 view = camera.getViewMatrix();
+		m_view = camera.getViewMatrix();
 		m_entityShader.loadMat4("projection", m_projection);
-		m_entityShader.loadMat4("view", view);
-
-		///billboard shader
-		m_billBoardShader.use();
-		m_billBoardShader.loadMat4("projection", m_projection);
-		m_billBoardShader.loadMat4("view", view);
+		m_entityShader.loadMat4("view", m_view);
 	}
 }

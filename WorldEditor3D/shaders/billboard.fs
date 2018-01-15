@@ -9,5 +9,9 @@ out vec4 FragColor;
 uniform sampler2D diffuse;
 
 void main(){
-    FragColor = texture(diffuse, TexCoords);
+	vec4 color = texture(diffuse, TexCoords);
+	if(color.a < 0.5){
+		discard;
+	}
+    FragColor = color;
 }

@@ -77,10 +77,10 @@ void MainApp::initLevel(){
 	m_entities.push_back(new renderer::Entity(renderer::ResourceManager::addTexturedModel(model)));
 	m_entities.back()->setPosition(glm::vec3(2.0f, 0.0f, 0.0f));
 
-	mat.setDiffuseMap(renderer::ResourceManager::getTexture("res/textures/bulb_DIFF.png"));
+	mat.setDiffuseMap(renderer::ResourceManager::getTexture("res/textures/billboard_dirLight.png"));
 	mat.setSpecularMap(nullptr);
 	model.setMaterial(mat);
-	model.setMesh(renderer::ResourceManager::getMesh("res/models/light_source.obj"));
+	model.setMesh(renderer::ResourceManager::getMesh("res/models/quad.obj"));
 	m_billboards.push_back(new renderer::BillBoard(renderer::ResourceManager::addTexturedModel(model)));
 	m_billboards.back()->setPosition(m_dirLight.direction);
 

@@ -45,6 +45,7 @@ namespace renderer{
 		ShaderProgram m_basicShader;
 
 		glm::mat4 m_projection;
+		glm::mat4 m_view;
 
 	};
 
