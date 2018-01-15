@@ -16,8 +16,10 @@ enum class FD_Mode{
 	DIFF,
 	SPEC,
 	MESH,
-	OBJECT,
-	MAP
+	OBJECT_OPEN,
+	OBJECT_SAVE,
+	MAP_OPEN,
+	MAP_SAVE
 };
 
 struct CreatedObject{
@@ -70,9 +72,13 @@ private:
 	
 	AppState m_appState;
 
-	//some objects to draw
-	std::vector<renderer::Entity*> m_entities;
-	std::vector<renderer::BillBoard*> m_billboards;
+	//mapping all objects by a specific code to pixel select them in the editor
+	std::map<unsigned int, renderer::GameObject*> m_gameObjectsMap;
+	std::map<renderer::GameObject*, renderer::Light*> m_billboardLightsMap;
+
+	//this vector is to be filled with objects to draw 
+	//i hope a frustum culling will be implemented
+	std::vector<renderer::GameObject*> m_objects_ToDraw;
 
 	//creation state variables;
 	CreatedObject m_currentCreating;
@@ -82,9 +88,7 @@ private:
 	glm::vec3 m_cameraBck;
 
 	// lighting
-	renderer::DirLight m_dirLight;
-	std::vector<renderer::PointLight> m_pointLights;
-	renderer::SpotLight m_spotLight;
+	std::vector<renderer::Light*> m_lights;
 
 	
 	//imgui variables and methods

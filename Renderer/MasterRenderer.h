@@ -3,8 +3,7 @@
 
 #include "Camera.h"
 #include "Lights.h"
-#include "Entity.h"
-#include "BillBoard.h"
+#include "GameObject.h"
 #include "ShaderProgram.h"
 
 namespace renderer{
@@ -16,11 +15,12 @@ namespace renderer{
 
 		void init();
 
-		void renderScene(std::vector<Entity*>& entities,
-						 std::vector<BillBoard*>& billboards,
-						 DirLight& dirLight,
-						 std::vector<PointLight>& pointLights,
-						 SpotLight& spotLight,
+		//the lights vector is as follows
+		//at 0 = the directional light (only one - "sun")
+		//at 1 = the spotlight (only one - flashlight)
+		//-to_end point lights
+		void renderScene(std::vector<GameObject*>& gameObjects,
+						 std::vector<Light*>& lights,
 						 Camera& camera
 		);
 		
@@ -30,15 +30,16 @@ namespace renderer{
 		void renderBoundingBox(TexturedModel* object, glm::vec3& scale, glm::vec3& rot, Camera& camera);
 
 	private:
-		void MasterRenderer::processObject(Entity* entity);
-		void MasterRenderer::processObject(BillBoard* billboard);
-		void render();
-		void renderEntities();
-		void renderBillBoard();
-		void setUniforms(DirLight& dirLight, std::vector<PointLight>& pointLights, SpotLight& spotLight, Camera& camera);
+		void MasterRenderer::processObject(GameObject* gameObject);
+		void MasterRenderer::processBillboard(GameObject* billboard);
 
-		std::map<TexturedModel*, std::vector<Entity*>> m_entityBatches;
-		std::map<TexturedModel*, std::vector<BillBoard*>> m_billboardBatches;
+		void render();
+		void renderGameObjects();
+		void renderBillBoards();
+		void setUniforms(std::vector<Light*>& lights, Camera& camera);
+
+		std::map<TexturedModel*, std::vector<GameObject*>> m_gameObjectsBatches;
+		std::map<TexturedModel*, std::vector<GameObject*>> m_billboardBatches;
 
 		ShaderProgram m_entityShader;
 		ShaderProgram m_billBoardShader;

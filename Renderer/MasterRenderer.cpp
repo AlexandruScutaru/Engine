@@ -33,13 +33,11 @@ namespace renderer{
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0);
 	}
 
-	void MasterRenderer::renderScene(std::vector<Entity*>& entities, std::vector<BillBoard*>& billboards, DirLight& dirLight, std::vector<PointLight>& pointLights, SpotLight& spotLight, Camera& camera){
-		for(auto entity : entities)
-			processObject(entity);
-		for(auto billboard : billboards)
-			processObject(billboard);
-		
-		setUniforms(dirLight, pointLights, spotLight, camera);
+	void MasterRenderer::renderScene(std::vector<GameObject*>& gameObjects, std::vector<Light*>& lights, Camera& camera){
+		for(auto gameObject : gameObjects){
+			processObject(gameObject);
+		}
+		setUniforms(lights, camera);
 		render();
 	}
 
@@ -105,27 +103,31 @@ namespace renderer{
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
-	void MasterRenderer::processObject(Entity* entity){
-		TexturedModel* model = entity->getTexturedModel();
-		std::vector<Entity*> batch = m_entityBatches[model];
-		if(!batch.empty()){
-			batch.push_back(entity);
-			m_entityBatches[model] = batch;
-		} else{
-			std::vector<Entity*> newBatch;
-			newBatch.push_back(entity);
-			m_entityBatches[model] = newBatch;
+	void MasterRenderer::processObject(GameObject* gameObject){
+		if(gameObject->isBillboard())
+			processBillboard(gameObject);
+		else{
+			TexturedModel* model = gameObject->getTexturedModel();
+			std::vector<GameObject*> batch = m_gameObjectsBatches[model];
+			if(!batch.empty()){
+				batch.push_back(gameObject);
+				m_gameObjectsBatches[model] = batch;
+			} else{
+				std::vector<GameObject*> newBatch;
+				newBatch.push_back(gameObject);
+				m_gameObjectsBatches[model] = newBatch;
+			}
 		}
 	}
 
-	void MasterRenderer::processObject(BillBoard* billboard){
+	void MasterRenderer::processBillboard(GameObject* billboard){
 		TexturedModel* model = billboard->getTexturedModel();
-		std::vector<BillBoard*> batch = m_billboardBatches[model];
+		std::vector<GameObject*> batch = m_billboardBatches[model];
 		if(!batch.empty()){
 			batch.push_back(billboard);
 			m_billboardBatches[model] = batch;
 		} else{
-			std::vector<BillBoard*> newBatch;
+			std::vector<GameObject*> newBatch;
 			newBatch.push_back(billboard);
 			m_billboardBatches[model] = newBatch;
 		}
@@ -133,14 +135,14 @@ namespace renderer{
 
 	void MasterRenderer::render(){
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		renderEntities();
-		renderBillBoard();
+		renderGameObjects();
+		renderBillBoards();
 	}
 
-	void MasterRenderer::renderEntities(){
+	void MasterRenderer::renderGameObjects(){
 		glm::mat4 modelMatrix;
 		m_entityShader.use();
-		for(auto const& model : m_entityBatches){
+		for(auto const& model : m_gameObjectsBatches){
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, model.first->getMaterial().getDiffuseMap()->id);
 			glActiveTexture(GL_TEXTURE1);
@@ -153,10 +155,10 @@ namespace renderer{
 				glDrawElements(GL_TRIANGLES, model.first->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
 			}
 		}
-		m_entityBatches.clear();
+		m_gameObjectsBatches.clear();
 	}
 
-	void MasterRenderer::renderBillBoard(){
+	void MasterRenderer::renderBillBoards(){
 		m_billBoardShader.use();
 		m_billBoardShader.loadMat4("projection", m_projection);
 		m_billBoardShader.loadMat4("view", m_view);
@@ -187,34 +189,38 @@ namespace renderer{
 		m_billboardBatches.clear();
 	}
 
-	void MasterRenderer::setUniforms(DirLight& dirLight, std::vector<PointLight>& pointLights, SpotLight& spotLight, Camera& camera){
+	void MasterRenderer::setUniforms(std::vector<Light*>& lights, Camera& camera){
 		///entity shader
 		m_entityShader.use();
+		
 		// directional light
-		m_entityShader.loadVec3("dirLight.direction", -dirLight.direction);
-		m_entityShader.loadVec3("dirLight.ambient", dirLight.ambient);
-		m_entityShader.loadVec3("dirLight.diffuse", dirLight.diffuse);
-		m_entityShader.loadVec3("dirLight.specular", dirLight.specular);
-		//point lights
-		int numLights = pointLights.size() > 4 ? 4 : pointLights.size();
-		m_entityShader.loadInt("pointLightsNum", numLights);
-		for(size_t i = 0; i < pointLights.size(); i++){
-			m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].position", pointLights[i].position);
-			m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].ambient",  pointLights[i].ambient);
-			m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].diffuse",  pointLights[i].diffuse);
-			m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].specular", pointLights[i].specular);
-			m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].att",      pointLights[i].attenuation);
-		}
+		DirLight* dir = static_cast<DirLight*>(lights[0]);
+		m_entityShader.loadVec3("dirLight.direction", -dir->direction);
+		m_entityShader.loadVec3("dirLight.ambient", dir->ambient);
+		m_entityShader.loadVec3("dirLight.diffuse", dir->diffuse);
+		m_entityShader.loadVec3("dirLight.specular", dir->specular);
 		//spot light
+		SpotLight* spot = static_cast<SpotLight*>(lights[1]);
 		m_entityShader.loadBool("flashlightOn", true);
-		m_entityShader.loadVec3("spotLight.ambient", spotLight.ambient);
-		m_entityShader.loadVec3("spotLight.diffuse", spotLight.diffuse);
-		m_entityShader.loadVec3("spotLight.specular", spotLight.specular);
-		m_entityShader.loadVec3("spotLight.att",	  spotLight.attenuation);
-		m_entityShader.loadVec3("spotLight.position", spotLight.position);
-		m_entityShader.loadVec3("spotLight.direction", spotLight.direction);
-		m_entityShader.loadFloat("spotLight.cutOff", spotLight.cutOff);
-		m_entityShader.loadFloat("spotLight.outerCutOff", spotLight.outerCutOff);
+		m_entityShader.loadVec3("spotLight.ambient", spot->ambient);
+		m_entityShader.loadVec3("spotLight.diffuse", spot->diffuse);
+		m_entityShader.loadVec3("spotLight.specular", spot->specular);
+		m_entityShader.loadVec3("spotLight.att", spot->attenuation);
+		m_entityShader.loadVec3("spotLight.position", spot->position);
+		m_entityShader.loadVec3("spotLight.direction", spot->direction);
+		m_entityShader.loadFloat("spotLight.cutOff", spot->cutOff);
+		m_entityShader.loadFloat("spotLight.outerCutOff", spot->outerCutOff);
+		//point lights
+		int numLights = (lights.size()-2) > 4 ? 4 : lights.size()-2;
+		m_entityShader.loadInt("pointLightsNum", numLights);
+		for(size_t i = 0; i < numLights; i++){
+			PointLight* point = static_cast<PointLight*>(lights[i+2]);
+			m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].position", point->position);
+			m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].ambient",  point->ambient);
+			m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].diffuse",  point->diffuse);
+			m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].specular", point->specular);
+			m_entityShader.loadVec3("pointLights[" + std::to_string(i) + "].att",      point->attenuation);
+		}
 
 		//positional info
 		m_entityShader.loadVec3("viewPos", camera.getPos());

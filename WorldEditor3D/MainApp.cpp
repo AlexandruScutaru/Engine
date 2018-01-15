@@ -52,7 +52,7 @@ void MainApp::initSystems(){
 }
 
 void MainApp::initLevel(){
-	//game objects
+	///game objects
 	//set default data for the creatingEntiy;
 	m_creatingModel = *(renderer::ResourceManager::getTexturedModelAt(0));
 	m_creatingLight = renderer::DirLight(glm::vec3(-2000.0f, 2000.0f, 2000.0f),
@@ -62,41 +62,68 @@ void MainApp::initLevel(){
 
 	//some objects to draw
 	renderer::TexturedModel model;
-	renderer::Material mat = renderer::Material(renderer::ResourceManager::getTexture("res/textures/character_DIFF.png"),
-												renderer::ResourceManager::getTexture("res/textures/character_SPEC.png"));
+	renderer::Material mat;
+	renderer::GameObject* object;
+	
+	//character
+	mat = renderer::Material(renderer::ResourceManager::getTexture("res/textures/character_DIFF.png"),
+							 renderer::ResourceManager::getTexture("res/textures/character_SPEC.png"));
 	
 	model.setMaterial(mat);
 	model.setMesh(renderer::ResourceManager::getMesh("res/models/character.obj"));
-	m_entities.push_back(new renderer::Entity(renderer::ResourceManager::addTexturedModel(model)));
-	m_entities.back()->setPosition(glm::vec3(0.0f));
+	object = new renderer::GameObject(renderer::ResourceManager::addTexturedModel(model));
+	m_objects_ToDraw.push_back(object);
+	m_gameObjectsMap[object->getCode()] = object;
 
+	//plane
 	mat.setDiffuseMap(renderer::ResourceManager::getTexture("res/textures/crate_DIFF.png"));
 	mat.setSpecularMap(renderer::ResourceManager::getTexture("res/textures/crate_SPEC.png"));
 	model.setMaterial(mat);
 	model.setMesh(renderer::ResourceManager::getMesh("res/models/quad.obj"));
-	m_entities.push_back(new renderer::Entity(renderer::ResourceManager::addTexturedModel(model)));
-	m_entities.back()->setPosition(glm::vec3(2.0f, 0.0f, 0.0f));
+	object = new renderer::GameObject(renderer::ResourceManager::addTexturedModel(model));
+	m_objects_ToDraw.push_back(object);
+	m_gameObjectsMap[object->getCode()] = object;
 
+
+	//directional light billboard
 	mat.setDiffuseMap(renderer::ResourceManager::getTexture("res/textures/billboard_dirLight.png"));
 	mat.setSpecularMap(nullptr);
 	model.setMaterial(mat);
 	model.setMesh(renderer::ResourceManager::getMesh("res/models/quad.obj"));
-	m_billboards.push_back(new renderer::BillBoard(renderer::ResourceManager::addTexturedModel(model)));
-	m_billboards.back()->setPosition(m_dirLight.direction);
+	object = new renderer::GameObject(renderer::ResourceManager::addTexturedModel(model), true);
+	m_objects_ToDraw.push_back(object);
+	m_gameObjectsMap[object->getCode()] = object;
+	m_lights.push_back(new renderer::DirLight(glm::vec3(0.05f, 0.05f, 0.05f),
+											  glm::vec3(0.4f, 0.4f, 0.4f),
+											  glm::vec3(0.5f, 0.5f, 0.5f),
+											  glm::vec3(2.0f, 1.0f, 0.0f))
+	);
+	m_billboardLightsMap[object] = m_lights[0];
+	/*
+	//point light billboard
+	mat.setDiffuseMap(renderer::ResourceManager::getTexture("res/textures/billboard_pointLight.png"));
+	mat.setSpecularMap(nullptr);
+	model.setMaterial(mat);
+	model.setMesh(renderer::ResourceManager::getMesh("res/models/quad.obj"));
+	m_billboard_PointLight = new renderer::GameObject(renderer::ResourceManager::addTexturedModel(model), true);
 
-	//lights
-	m_dirLight = renderer::DirLight(glm::vec3(2.0f, 1.0f, 0.0f), 
-									glm::vec3(0.05f, 0.05f, 0.05f), 
+	///lights
+	m_dirLight = renderer::DirLight(glm::vec3(0.05f, 0.05f, 0.05f), 
 									glm::vec3(0.4f, 0.4f, 0.4f), 
-									glm::vec3(0.5f, 0.5f, 0.5f));
-	m_spotLight = renderer::SpotLight(glm::vec3(0.0f, 0.0f, 0.0f),
+									glm::vec3(0.5f, 0.5f, 0.5f),
+									glm::vec3(2.0f, 1.0f, 0.0f));
+	m_objects_ToDraw.push_back(m_billboard_DirectionalLight);
+	*/
+	m_lights.push_back(new renderer::SpotLight(glm::vec3(0.0f, 0.0f, 0.0f),
 									  glm::vec3(1.0f, 1.0f, 1.0f),
 									  glm::vec3(1.0f, 1.0f, 1.0f),
-									  glm::vec3(1.0f, 0.09f, 0.032f),
-									  m_camera.getPos(),
 									  m_camera.getFront(),
+									  m_camera.getPos(),
+									  glm::vec3(1.0f, 0.09f, 0.032f),
 									  glm::cos(glm::radians(13.0f)),
-									  glm::cos(glm::radians(20.0f)));
+									  glm::cos(glm::radians(20.0f)))
+	);
+									  
 }
 
 void MainApp::loop(){
@@ -142,6 +169,11 @@ void MainApp::processInput(){
 			break;
 		}
 	}
+
+	if(m_inputManager.isKeyPressed(SDL_BUTTON_LEFT) && !ImGui::IsMouseHoveringAnyWindow()){
+		std::cout << "selection" << std::endl;
+	}
+	//std::cout << ImGui::IsMouseHoveringAnyWindow() << std::endl;
 }
 
 void MainApp::update(float deltaTime){
@@ -151,11 +183,11 @@ void MainApp::update(float deltaTime){
 	///object rotation
 	glm::mat4 rotationMat(1);
 	rotationMat = glm::rotate(rotationMat, 1.0f*deltaTime, glm::vec3(0.0, 1.0, 0.0));
-	m_dirLight.direction = glm::vec3(rotationMat * glm::vec4(m_dirLight.direction, 1.0));
-	m_billboards.back()->setPosition(m_dirLight.direction);
+	//m_dirLight.direction = glm::vec3(rotationMat * glm::vec4(m_dirLight.direction, 1.0));
+	//m_billboards.back()->setPosition(m_dirLight.direction);
 
-	m_spotLight.position = m_camera.getPos();
-	m_spotLight.direction = m_camera.getFront();
+	static_cast<renderer::SpotLight*>(m_lights[1])->position = m_camera.getPos();
+	static_cast<renderer::SpotLight*>(m_lights[1])->direction = m_camera.getFront();
 }
 
 void MainApp::updateImGuiWindows(){
@@ -175,7 +207,7 @@ void MainApp::drawGame(){
 		m_masterRenderer.renderBoundingBox(renderer::ResourceManager::getTexturedModelAt(1), m_currentCreating.boxScale, m_currentCreating.boxRot, m_camera);
 	}
 	else if(m_placementHeader){
-		m_masterRenderer.renderScene(m_entities, m_billboards, m_dirLight, m_pointLights, m_spotLight, m_camera);
+		m_masterRenderer.renderScene(m_objects_ToDraw, m_lights, m_camera);
 	}
 
 	ImGui::Render();
@@ -213,7 +245,7 @@ void MainApp::openButtonPressed(){
 		m_currentCreating.mesh = m_dirContents[m_fdEntryItem];
 		m_creatingModel.setMesh(renderer::ResourceManager::getMesh("res/models/" + m_dirContents[m_fdEntryItem]));
 		break;
-	case FD_Mode::MAP:
+	case FD_Mode::MAP_OPEN:
 		break;
 	default:
 		break;
@@ -299,9 +331,9 @@ void MainApp::showEditorWindow(){
 
 			ImGui::Text("Object bounding box");
 			
-			ImGui::SliderFloat("Size x", &m_currentCreating.boxScale.x, 0.2f, 4.0f);
-			ImGui::SliderFloat("Size y", &m_currentCreating.boxScale.y, 0.2f, 4.0f);
-			ImGui::SliderFloat("Size z", &m_currentCreating.boxScale.z, 0.2f, 4.0f);
+			ImGui::SliderFloat("Size x", &m_currentCreating.boxScale.x, 0.1f, 4.0f);
+			ImGui::SliderFloat("Size y", &m_currentCreating.boxScale.y, 0.1f, 4.0f);
+			ImGui::SliderFloat("Size z", &m_currentCreating.boxScale.z, 0.1f, 4.0f);
 
 			ImGui::SliderAngle("Rot x", &m_currentCreating.boxRot.x, 0.0f, 359.0f);
 			ImGui::SliderAngle("Rot Y", &m_currentCreating.boxRot.y, 0.0f, 359.0f);
@@ -310,7 +342,7 @@ void MainApp::showEditorWindow(){
 			if(ImGui::Button("Save object")){
 				m_showSaveFileDialog = true;
 				m_currentPath = "res/gameobjects/";
-				m_fdMode = FD_Mode::OBJECT;
+				m_fdMode = FD_Mode::OBJECT_SAVE;
 				updateDirContents();
 			}
 			if(ImGui::Button("Reset")){
@@ -393,7 +425,8 @@ void MainApp::showSaveFileDialog(){
 		if(!exists){
 			memset(buf, '\0', 32);
 			m_showSaveFileDialog = false;
-			saveCreatedObject(buf);
+			if(m_fdMode == FD_Mode::OBJECT_SAVE)
+				saveCreatedObject(buf);
 		}
 	}
 	ImGui::SameLine();

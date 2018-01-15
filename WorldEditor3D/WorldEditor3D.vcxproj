@@ -163,6 +163,8 @@
     <None Include="shaders\entity.vs" />
     <None Include="shaders\billboard.fs" />
     <None Include="shaders\billboard.vs" />
+    <None Include="shaders\selection.fs" />
+    <None Include="shaders\selection.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

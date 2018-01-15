@@ -52,5 +52,11 @@
     <None Include="shaders\basic.vs">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="shaders\selection.fs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\selection.vs">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
