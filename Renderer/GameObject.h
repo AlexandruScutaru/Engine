@@ -30,17 +30,17 @@ namespace renderer{
 		const glm::vec3 getPosition(){ return m_pos; }
 		const glm::vec3 getRotation(){ return m_rot; }
 		const glm::vec3 getScale(){ return m_scale; }
-		unsigned int getCode(){ return code; }
+		int getCode(){ return code; }
 		bool isBillboard(){ return m_isBillboard; }
 
 		virtual void update(float deltaTime){}
 
-		static unsigned int objectCount;
+		static int objectCount;
 
 	protected:
 		bool m_isBillboard;
-		unsigned int m_model;
-		unsigned int code;
+		int m_model;
+		int code;
 		
 		glm::vec3 m_pos;
 		glm::vec3 m_rot;

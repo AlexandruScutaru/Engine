@@ -17,6 +17,8 @@ namespace renderer{
 		m_entityShader.init("shaders/entity.vs", "shaders/entity.fs");
 		m_billBoardShader.init("shaders/billboard.vs", "shaders/billboard.fs");
 		m_basicShader.init("shaders/basic.vs", "shaders/basic.fs");
+		m_selectShader.init("shaders/selection.vs", "shaders/selection.fs");
+
 
 		// shader configuration
 		m_entityShader.use();
@@ -30,7 +32,9 @@ namespace renderer{
 		//now the object are rendered the farthest to closest
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_CULL_FACE);
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+		//glClearColor(0.1f, 0.1f, 0.1f, 1.0);
 	}
 
 	void MasterRenderer::renderScene(std::vector<GameObject*>& gameObjects, std::vector<Light*>& lights, Camera& camera){
@@ -58,7 +62,7 @@ namespace renderer{
 		//point lights
 		m_entityShader.loadInt("pointLightsNum", 0);
 		//spot light
-		m_entityShader.loadBool("flashlightOn", true);
+		m_entityShader.loadBool("flashlightOn", false);
 
 		//positional info
 		m_entityShader.loadVec3("viewPos", camera.getPos());
@@ -101,6 +105,57 @@ namespace renderer{
 		glBindVertexArray(object->getMesh()->vertexArrayObject);
 		glDrawElements(GL_TRIANGLES, object->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
+
+	int MasterRenderer::pixelPick(std::vector<GameObject*> objects, Camera & camera, glm::vec2& coords){
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
+		glm::vec3 colorCode;
+		m_view = camera.getViewMatrix();
+		glm::mat4 model;
+		m_selectShader.use();
+		m_selectShader.loadMat4("projection", m_projection);
+		m_selectShader.loadMat4("view", m_view);
+		for(auto object : objects){
+			if(object->isBillboard()){
+				model = glm::translate(model, object->getPosition());
+				model[0][0] = m_view[0][0];
+				model[0][1] = m_view[1][0];
+				model[0][2] = m_view[2][0];
+				model[1][0] = m_view[0][1];
+				model[1][1] = m_view[1][1];
+				model[1][2] = m_view[2][1];
+				model[2][0] = m_view[0][2];
+				model[2][1] = m_view[1][2];
+				model[2][2] = m_view[2][2];
+				model = glm::scale(model, glm::vec3(0.2f));
+			} else{
+				model = glm::translate(model, object->getPosition());
+			}
+			m_selectShader.loadMat4("model", model);
+			int code = object->getCode();
+			colorCode = glm::vec3(
+				((code & 0x000000FF) >> 0) / 255.0f,
+				((code & 0x0000FF00) >> 8) / 255.0f, 
+				((code & 0x00FF0000) >> 16) / 255.0f
+			);
+			m_selectShader.loadVec3("colorCode", colorCode);
+			glBindVertexArray(object->getTexturedModel()->getMesh()->vertexArrayObject);
+			glDrawElements(GL_TRIANGLES, object->getTexturedModel()->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
+		}
+
+		
+		unsigned char color[4];
+		GLint viewport[4];
+		glGetIntegerv(GL_VIEWPORT, viewport);
+		glReadPixels(coords.x, viewport[3] - coords.y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &color);
+
+
+		int index = color[0] +
+					color[1] * 256 +
+					color[2] * 256 * 256;
+
+		return index;
 	}
 
 	void MasterRenderer::processObject(GameObject* gameObject){

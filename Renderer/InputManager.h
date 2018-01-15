@@ -24,8 +24,11 @@ namespace renderer{
 		//returns true if the key was just pressed
 		bool isKeyPressed(unsigned int keyID);
 
-		void setMouseCoords(float x, float y);
-		glm::vec2 getMouseCoords() const;
+		void setRelMouseCoords(float x, float y);
+		glm::vec2 getRelMouseCoords() const;
+		void setActualMouseCoords(float x, float y);
+		glm::vec2 getActualMouseCoords() const;
+
 		float getMouseDY();
 		float getMouseDX();
 
@@ -38,7 +41,8 @@ namespace renderer{
 		std::unordered_map<unsigned int, bool> m_keyMap;
 		std::unordered_map<unsigned int, bool> m_previousKeyMap;
 
-		glm::vec2 m_mouseCoords;
+		glm::vec2 m_relMouseCoords;
+		glm::vec2 m_actualMouseCoords;
 		int m_wheel;
 
 	};

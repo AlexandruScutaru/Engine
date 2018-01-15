@@ -4,7 +4,7 @@
 
 namespace renderer{
 
-	unsigned int GameObject::objectCount = 0;
+	int GameObject::objectCount = 0;
 
 	GameObject::GameObject():
 		m_isBillboard(false),

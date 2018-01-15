@@ -63,6 +63,7 @@ private:
 	void updateDirContents();
 	void openButtonPressed();
 	void saveCreatedObject(char* buf);
+	void renderToSelect(glm::vec2& coords);
 
 	renderer::Window m_window; //the app window
 	renderer::InputManager m_inputManager;

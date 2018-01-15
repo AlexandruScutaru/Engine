@@ -28,6 +28,7 @@ namespace renderer{
 
 		void renderSingleEntity(TexturedModel* object, DirLight& sun, Camera& camera);
 		void renderBoundingBox(TexturedModel* object, glm::vec3& scale, glm::vec3& rot, Camera& camera);
+		int pixelPick(std::vector<GameObject*> objects, Camera& camera, glm::vec2& coords);
 
 	private:
 		void MasterRenderer::processObject(GameObject* gameObject);
@@ -44,6 +45,7 @@ namespace renderer{
 		ShaderProgram m_entityShader;
 		ShaderProgram m_billBoardShader;
 		ShaderProgram m_basicShader;
+		ShaderProgram m_selectShader;
 
 		glm::mat4 m_projection;
 		glm::mat4 m_view;

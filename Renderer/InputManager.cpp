@@ -5,7 +5,8 @@
 namespace renderer{
 
 	InputManager::InputManager() :
-		m_mouseCoords(0.0f, 0.0f),
+		m_relMouseCoords(0.0f, 0.0f),
+		m_actualMouseCoords(0.0f, 0.0f),
 		m_wheel(0)
 	{}
 
@@ -18,8 +19,7 @@ namespace renderer{
 			//_previousKeyMap[it.first] = _keyMap[it.second];
 			m_previousKeyMap[it.first] = it.second;
 		}
-		m_mouseCoords = glm::vec2(0.0f);
-		//m_prevMouseCoords = m_mouseCoords;
+		m_relMouseCoords = glm::vec2(0.0f);
 		m_wheel = 0;
 	}
 
@@ -52,21 +52,30 @@ namespace renderer{
 		return false;
 	}
 
-	void InputManager::setMouseCoords(float x, float y){
-		m_mouseCoords.x = x;
-		m_mouseCoords.y = y;
+	void InputManager::setRelMouseCoords(float x, float y){
+		m_relMouseCoords.x = x;
+		m_relMouseCoords.y = y;
 	}
 
-	glm::vec2 InputManager::getMouseCoords() const{
-		return m_mouseCoords;
+	glm::vec2 InputManager::getRelMouseCoords() const{
+		return m_relMouseCoords;
+	}
+
+	void InputManager::setActualMouseCoords(float x, float y){
+		m_actualMouseCoords.x = x;
+		m_actualMouseCoords.y = y;
+	}
+
+	glm::vec2 InputManager::getActualMouseCoords() const{
+		return m_actualMouseCoords;
 	}
 
 	float InputManager::getMouseDY(){
-		return m_mouseCoords.y;
+		return m_relMouseCoords.y;
 	}
 
 	float InputManager::getMouseDX(){
-		return m_mouseCoords.x;
+		return m_relMouseCoords.x;
 	}
 
 	bool InputManager::wasKeyDown(unsigned int keyID){

@@ -55,10 +55,10 @@ void MainApp::initLevel(){
 	///game objects
 	//set default data for the creatingEntiy;
 	m_creatingModel = *(renderer::ResourceManager::getTexturedModelAt(0));
-	m_creatingLight = renderer::DirLight(glm::vec3(-2000.0f, 2000.0f, 2000.0f),
-										 glm::vec3(0.05f, 0.05f, 0.05f),
+	m_creatingLight = renderer::DirLight(glm::vec3(0.05f, 0.05f, 0.05f),
 										 glm::vec3(0.4f, 0.4f, 0.4f),
-										 glm::vec3(0.5f, 0.5f, 0.5f));
+										 glm::vec3(0.5f, 0.5f, 0.5f),
+										 glm::vec3(-2000.0f, 2000.0f, 2000.0f));
 
 	//some objects to draw
 	renderer::TexturedModel model;
@@ -150,7 +150,8 @@ void MainApp::processInput(){
 			m_appState = AppState::EXIT;
 			break;
 		case SDL_MOUSEMOTION:
-			m_inputManager.setMouseCoords((float)e.motion.xrel, (float)e.motion.yrel);
+			m_inputManager.setRelMouseCoords((float)e.motion.xrel, (float)e.motion.yrel);
+			m_inputManager.setActualMouseCoords((float)e.motion.x, (float)e.motion.y);
 			break;
 		case SDL_MOUSEWHEEL:
 			m_inputManager.setMouseWheel(e.wheel.y);
@@ -170,10 +171,11 @@ void MainApp::processInput(){
 		}
 	}
 
-	if(m_inputManager.isKeyPressed(SDL_BUTTON_LEFT) && !ImGui::IsMouseHoveringAnyWindow()){
-		std::cout << "selection" << std::endl;
+	if(m_inputManager.isKeyPressed(SDL_BUTTON_LEFT) &&
+	   m_placementHeader &&
+	   !ImGui::IsMouseHoveringAnyWindow()){
+		renderToSelect(m_inputManager.getActualMouseCoords());
 	}
-	//std::cout << ImGui::IsMouseHoveringAnyWindow() << std::endl;
 }
 
 void MainApp::update(float deltaTime){
@@ -264,6 +266,12 @@ void MainApp::saveCreatedObject(char* buf){
 	std::string path = "res/gameobjects/" + std::string(buf);
 	std::ofstream out(path);
 	out << std::setw(4) << entry << std::endl;
+}
+
+void MainApp::renderToSelect(glm::vec2& coords){
+	int val = m_masterRenderer.pixelPick(m_objects_ToDraw, m_camera, m_inputManager.getActualMouseCoords());
+	std::cout << val << std::endl;
+
 }
 
 /// ImGui
