@@ -72,6 +72,7 @@ void MainApp::initLevel(){
 	model.setMaterial(mat);
 	model.setMesh(renderer::ResourceManager::getMesh("res/models/character.obj"));
 	object = new renderer::GameObject(renderer::ResourceManager::addTexturedModel(model));
+	//object->setScale(glm::vec3(10.0f));
 	m_objects_ToDraw.push_back(object);
 	m_gameObjectsMap[object->getCode()] = object;
 
@@ -96,7 +97,7 @@ void MainApp::initLevel(){
 	m_lights.push_back(new renderer::DirLight(glm::vec3(0.05f, 0.05f, 0.05f),
 											  glm::vec3(0.4f, 0.4f, 0.4f),
 											  glm::vec3(0.5f, 0.5f, 0.5f),
-											  glm::vec3(2.0f, 1.0f, 0.0f))
+											  glm::vec3(2000.0f, 1100.0f, 500.0f))
 	);
 	m_billboardLightsMap[object] = m_lights[0];
 	/*

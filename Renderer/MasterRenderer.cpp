@@ -206,6 +206,11 @@ namespace renderer{
 
 			for(auto const& entity : model.second){
 				modelMatrix = glm::translate(modelMatrix, entity->getPosition());
+				modelMatrix = glm::translate(modelMatrix, entity->getPosition());
+				modelMatrix = glm::rotate(modelMatrix, entity->getRotation().x, glm::vec3(1.0f, 0.0f, 0.0f));
+				modelMatrix = glm::rotate(modelMatrix, entity->getRotation().y, glm::vec3(0.0f, 1.0f, 0.0f));
+				modelMatrix = glm::rotate(modelMatrix, entity->getRotation().z, glm::vec3(0.0f, 0.0f, 1.0f));
+				modelMatrix = glm::scale(modelMatrix, entity->getScale());
 				m_entityShader.loadMat4("model", modelMatrix);
 				glDrawElements(GL_TRIANGLES, model.first->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
 			}
