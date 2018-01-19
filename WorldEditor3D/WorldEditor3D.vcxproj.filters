@@ -24,7 +24,7 @@
     <ClCompile Include="imgui_impl_sdl_gl3.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ImGui_Related.cpp">
+    <ClCompile Include="GUI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -35,7 +35,7 @@
     <ClInclude Include="imgui_impl_sdl_gl3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ImGui_Related.h">
+    <ClInclude Include="GUI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

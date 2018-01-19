@@ -1,8 +1,7 @@
 #ifndef MAINAPP_H
 #define MAINAPP_H
 
-#include <ImGUI/imgui.h>
-#include "imgui_impl_sdl_gl3.h"
+#include "GUI.h"
 #include <Renderer/Renderer.h>
 #include <GLM/glm.hpp>
 
@@ -12,32 +11,7 @@
 #include <JSON/json.hpp>
 using json = nlohmann::json;
 
-enum class FD_Mode{
-	DIFF,
-	SPEC,
-	MESH,
-	OBJECT_OPEN,
-	OBJECT_SAVE,
-	MAP_OPEN,
-	MAP_SAVE
-};
-
-struct CreatedObject{
-	CreatedObject(){
-		memset(name, '\0', 32);
-		diff = "default.png";
-		spec = "no_SPEC.png";
-		mesh = "sphere.obj";
-		boxRot = glm::vec3(0.0f);
-		boxScale = glm::vec3(1.0f);
-	}
-	char name[32];
-	std::string diff;
-	std::string spec;
-	std::string mesh;
-	glm::vec3 boxRot;
-	glm::vec3 boxScale;
-};
+class GUI;
 
 enum class AppState{
 	EDIT,
@@ -49,6 +23,7 @@ class MainApp
 public:
 	MainApp();
 	~MainApp();
+	friend class GUI;
 
 	void run(); // runs the app
 
@@ -58,10 +33,8 @@ private:
 	void loop(); //main app loop
 	void processInput(); //handles input processing
 	void update(float deltaTime); //updates based on deltatime
-	void updateImGuiWindows();
 	void drawGame(); //draws on screen
-	void updateDirContents();
-	void openButtonPressed();
+	
 	void saveCreatedObject(char* buf);
 	void renderToSelect(glm::vec2& coords);
 
@@ -91,21 +64,8 @@ private:
 	// lighting
 	std::vector<renderer::Light*> m_lights;
 
-	
-	//imgui variables and methods
-	void showEditorWindow();
-	bool m_creationHeader;
-	bool m_placementHeader;
-
-	void showOpenFileDialog();
-	void showSaveFileDialog();
-	bool m_showOpenFileDialog;
-	bool m_showSaveFileDialog;
-	int m_fdEntryItem;
-	FD_Mode m_fdMode;
-	std::string m_currentPath;
-	std::vector<std::string> m_dirContents;
-
+	//gui stuff
+	GUI m_gui;
 };
 
 #endif // !MAINAPP_H
