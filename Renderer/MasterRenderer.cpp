@@ -197,6 +197,8 @@ namespace renderer{
 	void MasterRenderer::renderGameObjects(){
 		glm::mat4 modelMatrix;
 		m_entityShader.use();
+		m_entityShader.loadBool("flashlightOn", false);
+
 		for(auto const& model : m_gameObjectsBatches){
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, model.first->getMaterial().getDiffuseMap()->id);

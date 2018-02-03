@@ -67,6 +67,7 @@ void MainApp::initLevel(){
 	model.setMaterial(mat);
 	model.setMesh(renderer::ResourceManager::getMesh("res/models/character.obj"));
 	object = new renderer::GameObject(renderer::ResourceManager::addTexturedModel(model));
+	//object->setPosition(glm::vec3(0.0f, 0.0f, 10.0f));
 	//object->setScale(glm::vec3(10.0f));
 	m_objects_ToDraw.push_back(object);
 	m_gameObjectsMap[object->getCode()] = object;
@@ -89,10 +90,12 @@ void MainApp::initLevel(){
 	object = new renderer::GameObject(renderer::ResourceManager::addTexturedModel(model), true);
 	m_objects_ToDraw.push_back(object);
 	m_gameObjectsMap[object->getCode()] = object;
-	m_lights.push_back(new renderer::DirLight(glm::vec3(0.05f, 0.05f, 0.05f),
+	m_lights.push_back(new renderer::DirLight(glm::vec3(0.5f, 0.5f, 0.5f),
 											  glm::vec3(0.4f, 0.4f, 0.4f),
 											  glm::vec3(0.5f, 0.5f, 0.5f),
-											  glm::vec3(2000.0f, 1100.0f, 500.0f))
+											  //glm::vec3(2000.0f, 1100.0f, 500.0f))
+											  glm::vec3(0.0f, 0.0f, 0.0f))
+
 	);
 	m_billboardLightsMap[object] = m_lights[0];
 	/*
@@ -168,7 +171,7 @@ void MainApp::processInput(){
 	}
 
 	if(m_inputManager.isKeyPressed(SDL_BUTTON_LEFT) &&
-	   m_gui.b_placementHeader &&
+	   m_gui.b_placementTab &&
 	   !ImGui::IsMouseHoveringAnyWindow()){
 		renderToSelect(m_inputManager.getActualMouseCoords());
 	}
@@ -191,11 +194,11 @@ void MainApp::update(float deltaTime){
 void MainApp::drawGame(){
 	glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
 
-	if(m_gui.b_creationHeader){
+	if(m_gui.b_creationTab){
 		m_masterRenderer.renderSingleEntity(&m_creatingModel, m_creatingLight, m_camera);
 		m_masterRenderer.renderBoundingBox(renderer::ResourceManager::getTexturedModelAt(1), m_currentCreating.boxScale, m_currentCreating.boxRot, m_camera);
 	}
-	else if(m_gui.b_placementHeader){
+	else if(m_gui.b_placementTab){
 		m_masterRenderer.renderScene(m_objects_ToDraw, m_lights, m_camera);
 	}
 
@@ -206,14 +209,15 @@ void MainApp::drawGame(){
 
 void MainApp::saveCreatedObject(char* buf){
 	json entry = {
-		{"name", m_currentCreating.name},
 		{"diff", m_currentCreating.diff},
 		{"spec", m_currentCreating.spec},
 		{"mesh", m_currentCreating.mesh},
+		{"type", m_currentCreating.object_type},
 		{"boxScale", {m_currentCreating.boxScale.x, m_currentCreating.boxScale.y, m_currentCreating.boxScale.z}},
 		{"boxRot",   {m_currentCreating.boxRot.x, m_currentCreating.boxRot.y, m_currentCreating.boxRot.z}}
 	};
-	std::string path = "res/gameobjects/" + std::string(buf);
+	std::string path = m_gui.currentPath + std::string(buf);
+	std::cout << path << std::endl;
 	std::ofstream out(path);
 	out << std::setw(4) << entry << std::endl;
 }

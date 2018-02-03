@@ -15,25 +15,26 @@ enum class FD_Mode{
 	DIFF,
 	SPEC,
 	MESH,
-	OBJECT_OPEN,
-	OBJECT_SAVE,
+	STATIC_OBJECT_OPEN,
+	STATIC_OBJECT_SAVE,
+	ENTITY_OBJECT_SAVE,
+	ENTITY_OBJECT_OPEN,
 	MAP_OPEN,
 	MAP_SAVE
 };
 
 struct CreatedObject{
 	CreatedObject(){
-		memset(name, '\0', 32);
 		diff = "default.png";
 		spec = "no_SPEC.png";
 		mesh = "sphere.obj";
 		boxRot = glm::vec3(0.0f);
 		boxScale = glm::vec3(1.0f);
 	}
-	char name[32];
 	std::string diff;
 	std::string spec;
 	std::string mesh;
+	int object_type;
 	glm::vec3 boxRot;
 	glm::vec3 boxScale;
 };
@@ -47,20 +48,30 @@ public:
 
 	void updateImGuiWindows();
 	void showEditorWindow();
+	void showCreationTab();
+	void showPlacementTab();
 	void showOpenFileDialog();
 	void showSaveFileDialog();
 	void openButtonPressed();
-	void updateDirContents();
+	void updateDirContents(std::vector<std::string>& dir);
+
+	void showAddObjectTab();
 
 	//imgui variables and methods
-	bool b_creationHeader;
-	bool b_placementHeader;
+	bool b_creationTab;
+	bool b_placementTab;
 	bool b_showOpenFileDialog;
 	bool b_showSaveFileDialog;
+
+	int creation_object_type;
+	const char* m_combo_objectType;
 	int fdEntryItem;
+	int gameobjectEntryItem;
 	FD_Mode fdMode;
 	std::string currentPath;
 	std::vector<std::string> dirContents;
+	std::vector<std::string> availableEntities;
+
 
 private:
 	MainApp* app;

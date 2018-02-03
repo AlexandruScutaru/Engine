@@ -13,10 +13,13 @@ GUI::GUI():
 
 GUI::GUI(MainApp* app):
 	app(app),
-	b_creationHeader(false),
-	b_placementHeader(true),
+	b_creationTab(false),
+	b_placementTab(true),
 	b_showOpenFileDialog(false),
-	b_showSaveFileDialog(false)
+	b_showSaveFileDialog(false),
+	creation_object_type(0),
+	m_combo_objectType("Static"),
+	gameobjectEntryItem(-1)
 {}
 
 GUI::~GUI(){}
@@ -39,9 +42,9 @@ void GUI::showEditorWindow(){
 
 	///main tabs for the editor
 	//gameobject creation
-	if(ImGui::Button("Object Creation") && !b_creationHeader){
-		b_creationHeader = true;
-		b_placementHeader = false;
+	if(ImGui::Button("Object Creation") && !b_creationTab){
+		b_creationTab = true;
+		b_placementTab = false;
 
 		//backup and set new camera transforms
 		app->m_cameraPos = app->m_camera.getPos();
@@ -52,80 +55,107 @@ void GUI::showEditorWindow(){
 	}
 	ImGui::SameLine();
 	//gameobject placement
-	if(ImGui::Button("Object Placement") && !b_placementHeader){
-		b_placementHeader = true;
-		b_creationHeader = false;
+	if(ImGui::Button("Object Placement") && !b_placementTab){
+		b_placementTab = true;
+		b_creationTab = false;
 
 		//restore camera 
 		app->m_camera.setPos(app->m_cameraPos);
 		app->m_camera.restoreCameraProperties(app->m_cameraBck);
 	}
 
-	if(b_creationHeader){
-		ImGui::BeginChild("creation", ImVec2(-1.0f, -1.0f), true, ImGuiWindowFlags_NoScrollWithMouse);
-		{
-			ImGui::Text("Object info");
-			static float radius;
-			ImGui::InputText("Name", app->m_currentCreating.name, 32);
-			if(ImGui::Button("Set diffuse")){
-				b_showOpenFileDialog = true;
-				currentPath = "res/textures/";
-				fdMode = FD_Mode::DIFF;
-				updateDirContents();
-			}
-			ImGui::SameLine();
-			ImGui::Text(app->m_currentCreating.diff.c_str());
-			if(ImGui::Button("Set specular")){
-				b_showOpenFileDialog = true;
-				currentPath = "res/textures/";
-				fdMode = FD_Mode::SPEC;
-				updateDirContents();
-			}
-			ImGui::SameLine();
-			ImGui::Text(app->m_currentCreating.spec.c_str());
-			if(ImGui::Button("Set mesh")){
-				b_showOpenFileDialog = true;
-				currentPath = "res/models/";
-				fdMode = FD_Mode::MESH;
-				updateDirContents();
-			}
-			ImGui::SameLine();
-			ImGui::Text(app->m_currentCreating.mesh.c_str());
-
-			ImGui::Text("Object bounding box");
-
-			ImGui::SliderFloat("Size x", &app->m_currentCreating.boxScale.x, 0.1f, 4.0f);
-			ImGui::SliderFloat("Size y", &app->m_currentCreating.boxScale.y, 0.1f, 4.0f);
-			ImGui::SliderFloat("Size z", &app->m_currentCreating.boxScale.z, 0.1f, 4.0f);
-
-			ImGui::SliderAngle("Rot x", &app->m_currentCreating.boxRot.x, 0.0f, 359.0f);
-			ImGui::SliderAngle("Rot Y", &app->m_currentCreating.boxRot.y, 0.0f, 359.0f);
-			ImGui::SliderAngle("Rot Z", &app->m_currentCreating.boxRot.z, 0.0f, 359.0f);
-
-			if(ImGui::Button("Save object")){
-				b_showSaveFileDialog = true;
-				currentPath = "res/gameobjects/";
-				fdMode = FD_Mode::OBJECT_SAVE;
-				updateDirContents();
-			}
-			if(ImGui::Button("Reset")){
-				app->m_creatingModel = *(renderer::ResourceManager::getTexturedModelAt(0));
-				app->m_currentCreating = CreatedObject();
-			}
-		}
-		ImGui::EndChild();
-	}
-
-
-	if(b_placementHeader){
-		ImGui::BeginChild("placement", ImVec2(), true);
-		{
-			ImGui::Text("place");
-		}
-		ImGui::EndChild();
-	}
+	if(b_creationTab) showCreationTab();
+	if(b_placementTab) showPlacementTab();
 
 	ImGui::End();
+}
+
+void GUI::showCreationTab(){
+	ImGui::BeginChild("creation", ImVec2(-1.0f, -1.0f), true, ImGuiWindowFlags_NoScrollWithMouse);
+	{
+		ImGui::Text("Object info");
+		static float radius;
+		if(ImGui::Button("Set diffuse")){
+			b_showOpenFileDialog = true;
+			currentPath = "res/textures/";
+			fdMode = FD_Mode::DIFF;
+			updateDirContents(dirContents);
+		}
+		ImGui::SameLine();
+		ImGui::Text(app->m_currentCreating.diff.c_str());
+		if(ImGui::Button("Set specular")){
+			b_showOpenFileDialog = true;
+			currentPath = "res/textures/";
+			fdMode = FD_Mode::SPEC;
+			updateDirContents(dirContents);
+		}
+		ImGui::SameLine();
+		ImGui::Text(app->m_currentCreating.spec.c_str());
+		if(ImGui::Button("Set mesh")){
+			b_showOpenFileDialog = true;
+			currentPath = "res/models/";
+			fdMode = FD_Mode::MESH;
+			updateDirContents(dirContents);
+		}
+		ImGui::SameLine();
+		ImGui::Text(app->m_currentCreating.mesh.c_str());
+		ImGui::Separator();
+		ImGui::Text("\nObject type");
+		ImGui::RadioButton("static", &creation_object_type, 0); ImGui::SameLine();
+		ImGui::RadioButton("entity", &creation_object_type, 1); ImGui::SameLine();
+		ImGui::RadioButton("billboard", &creation_object_type, 2);
+		
+		ImGui::Separator();
+		ImGui::Text("\nObject bounding box");
+		ImGui::SliderFloat("Size x", &app->m_currentCreating.boxScale.x, 0.1f, 4.0f);
+		ImGui::SliderFloat("Size y", &app->m_currentCreating.boxScale.y, 0.1f, 4.0f);
+		ImGui::SliderFloat("Size z", &app->m_currentCreating.boxScale.z, 0.1f, 4.0f);
+
+		ImGui::SliderAngle("Rot x", &app->m_currentCreating.boxRot.x, 0.0f, 359.0f);
+		ImGui::SliderAngle("Rot Y", &app->m_currentCreating.boxRot.y, 0.0f, 359.0f);
+		ImGui::SliderAngle("Rot Z", &app->m_currentCreating.boxRot.z, 0.0f, 359.0f);
+		
+		ImGui::Separator();
+		ImGui::Text("\n");
+		if(ImGui::Button("Save object")){
+			b_showSaveFileDialog = true;
+			if(creation_object_type == 0){
+				currentPath = "res/gameobjects/static/";
+				fdMode = FD_Mode::STATIC_OBJECT_SAVE;
+
+			} else if(creation_object_type == 1){
+				currentPath = "res/gameobjects/entities/";
+				fdMode = FD_Mode::ENTITY_OBJECT_SAVE;
+			}
+			updateDirContents(dirContents);
+		}
+		ImGui::SameLine();
+		if(ImGui::Button("Reset")){
+			app->m_creatingModel = *(renderer::ResourceManager::getTexturedModelAt(0));
+			app->m_currentCreating = CreatedObject();
+		}
+		ImGui::SameLine();
+		if(ImGui::Button("Edit")){
+
+		}
+	}
+	ImGui::EndChild();
+}
+
+void GUI::showPlacementTab(){
+	ImGui::BeginChild("placement", ImVec2(), true);
+	{
+		if(ImGui::CollapsingHeader("Add Object")){
+			showAddObjectTab();
+		}
+		if(ImGui::CollapsingHeader("Add light")){
+
+		}
+		if(ImGui::CollapsingHeader("Transforms")){
+
+		}
+	}
+	ImGui::EndChild();
 }
 
 void GUI::showOpenFileDialog(){
@@ -186,11 +216,14 @@ void GUI::showSaveFileDialog(){
 			}
 		}
 		if(!exists){
-			memset(buf, '\0', 32);
 			b_showSaveFileDialog = false;
-			if(fdMode == FD_Mode::OBJECT_SAVE)
+			if(fdMode == FD_Mode::STATIC_OBJECT_SAVE ||
+			   fdMode == FD_Mode::ENTITY_OBJECT_SAVE)
+			{
 				app->saveCreatedObject(buf);
+			}
 		}
+		memset(buf, '\0', 32);
 	}
 	ImGui::SameLine();
 	if(ImGui::Button("Cancel")){
@@ -215,25 +248,64 @@ void GUI::openButtonPressed(){
 		break;
 	case FD_Mode::MAP_OPEN:
 		break;
+	case FD_Mode::STATIC_OBJECT_OPEN:
+		break;
+	case FD_Mode::ENTITY_OBJECT_OPEN:
+		break;
 	default:
 		break;
 	}
 }
 
-void GUI::updateDirContents(){
-	dirContents.clear();
+void GUI::updateDirContents(std::vector<std::string>& directory){
+	//dirContents.clear();
+	directory.clear();
 	DIR *dir;
 	struct dirent *ent;
 	if((dir = opendir(currentPath.c_str())) != NULL){
 		while((ent = readdir(dir)) != NULL) {
 			if(strncmp(ent->d_name, ".", 1) != 0){
-				dirContents.push_back(ent->d_name);
+				directory.push_back(ent->d_name);
 			}
 		}
 		closedir(dir);
 	} else {
 		std::cout << "DIRENT::opendir '" << currentPath << "' error!" << std::endl;
 	}
+}
+
+void GUI::showAddObjectTab(){
+	const char* categories[] = {"Static", "Entity"};
+	static int currentEntry;
+	if(ImGui::BeginCombo("Type", m_combo_objectType)){
+		for(int i = 0; i < IM_ARRAYSIZE(categories); i++){
+			bool is_selected = (m_combo_objectType == categories[i]);
+			if(ImGui::Selectable(categories[i], is_selected)){
+				m_combo_objectType = categories[i];
+				currentEntry = i;
+			}
+			if(is_selected){
+				ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
+			}
+		}
+		ImGui::EndCombo();
+	}
+	ImGui::Text("Available files:");
+	ImGui::SameLine();
+	if(ImGui::Button("Update")){
+		if(currentEntry == 0)
+			currentPath = "res/gameobjects/entities/";
+		else
+			currentPath = "res/gameobjects/static/";
+		updateDirContents(availableEntities);
+	}
+
+	ImGui::ListBox("##2", &gameobjectEntryItem, VectorOfStringGetter, (void*)(&availableEntities), (int)(availableEntities.size()), 10);
+
+	if(ImGui::Button("Add")){
+		std::cout << gameobjectEntryItem << std::endl;
+	}
+
 }
 
 
