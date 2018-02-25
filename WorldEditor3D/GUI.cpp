@@ -1,25 +1,27 @@
 #include "GUI.h"
 #include "MainApp.h"
-
+#include <climits>
 #include <dirent/dirent.h>
 
 
 bool VectorOfStringGetter(void* data, int n, const char** out_text);
+bool VectorOfObjectsGetter(void* data, int n, const char** out_text);
+
+bool MapOfGameObjectsGetter(void* data, int n, const char** out_text);
 
 
 GUI::GUI():
 	app(nullptr)
 {}
 
-GUI::GUI(MainApp* app):
+GUI::GUI(MainApp* app) :
 	app(app),
 	b_creationTab(false),
 	b_placementTab(true),
 	b_showOpenFileDialog(false),
 	b_showSaveFileDialog(false),
-	creation_object_type(0),
-	m_combo_objectType("Static"),
-	gameobjectEntryItem(-1)
+	addGameobjectEntryItem(-1),
+	placeGameobjectEntryItem(-1)
 {}
 
 GUI::~GUI(){}
@@ -99,39 +101,50 @@ void GUI::showCreationTab(){
 		}
 		ImGui::SameLine();
 		ImGui::Text(app->m_currentCreating.mesh.c_str());
+		
 		ImGui::Separator();
 		ImGui::Text("\nObject type");
-		ImGui::RadioButton("static", &creation_object_type, 0); ImGui::SameLine();
-		ImGui::RadioButton("entity", &creation_object_type, 1); ImGui::SameLine();
-		ImGui::RadioButton("billboard", &creation_object_type, 2);
+		ImGui::Checkbox("Billboard", &app->m_currentCreating.isBillboard);
 		
 		ImGui::Separator();
 		ImGui::Text("\nObject bounding box");
-		ImGui::SliderFloat("Size x", &app->m_currentCreating.boxScale.x, 0.1f, 4.0f);
-		ImGui::SliderFloat("Size y", &app->m_currentCreating.boxScale.y, 0.1f, 4.0f);
-		ImGui::SliderFloat("Size z", &app->m_currentCreating.boxScale.z, 0.1f, 4.0f);
-
+		ImGui::Separator();
+		
+	/*	if(ImGui::Button("<##posxdec")) app->m_currentCreating.boxPos.x -= 0.05; ImGui::SameLine();
+		ImGui::DragFloat("##Pos x", &app->m_currentCreating.boxPos.x, 1.0f, -300000.0f, 300000.0f); ImGui::SameLine();
+		if(ImGui::Button(">##posxinc")) app->m_currentCreating.boxPos.x += 0.05;
+		if(ImGui::Button("<##posydec")) app->m_currentCreating.boxPos.y -= 0.05; ImGui::SameLine();
+		ImGui::DragFloat("##Pos Y", &app->m_currentCreating.boxPos.y, 1.0f, -300000.0f, 300000.0f); ImGui::SameLine();
+		if(ImGui::Button(">##posyinc")) app->m_currentCreating.boxPos.y -= 0.05;
+		if(ImGui::Button("<##poszdec")) app->m_currentCreating.boxPos.z -= 0.05; ImGui::SameLine();
+		ImGui::DragFloat("##Pos Z", &app->m_currentCreating.boxPos.z, 1.0f, -300000.0f, 300000.0f); ImGui::SameLine();
+		if(ImGui::Button(">##poszinc")) app->m_currentCreating.boxPos.z -= 0.05;*/
+		
+		ImGui::DragFloat("Pos x", &app->m_currentCreating.boxPos.x, 0.01f, -300000.0f, 300000.0f);
+		ImGui::DragFloat("Pos Y", &app->m_currentCreating.boxPos.y, 0.01f, -300000.0f, 300000.0f);
+		ImGui::DragFloat("Pos Z", &app->m_currentCreating.boxPos.z, 0.01f, -300000.0f, 300000.0f);
+		ImGui::Separator();
+		
 		ImGui::SliderAngle("Rot x", &app->m_currentCreating.boxRot.x, 0.0f, 359.0f);
 		ImGui::SliderAngle("Rot Y", &app->m_currentCreating.boxRot.y, 0.0f, 359.0f);
 		ImGui::SliderAngle("Rot Z", &app->m_currentCreating.boxRot.z, 0.0f, 359.0f);
-		
 		ImGui::Separator();
+		
+		ImGui::DragFloat("Scale x", &app->m_currentCreating.boxScale.x, 0.01f, 0.01f, 10.0f);
+		ImGui::DragFloat("Scale Y", &app->m_currentCreating.boxScale.y, 0.01f, 0.01f, 10.0f);
+		ImGui::DragFloat("Scale Z", &app->m_currentCreating.boxScale.z, 0.01f, 0.01f, 10.0f);
+		ImGui::Separator();
+
 		ImGui::Text("\n");
 		if(ImGui::Button("Save object")){
 			b_showSaveFileDialog = true;
-			if(creation_object_type == 0){
-				currentPath = "res/gameobjects/static/";
-				fdMode = FD_Mode::STATIC_OBJECT_SAVE;
-
-			} else if(creation_object_type == 1){
-				currentPath = "res/gameobjects/entities/";
-				fdMode = FD_Mode::ENTITY_OBJECT_SAVE;
-			}
+			currentPath = "res/gameobjects/";
+			fdMode = FD_Mode::OBJECT_SAVE;
 			updateDirContents(dirContents);
 		}
 		ImGui::SameLine();
 		if(ImGui::Button("Reset")){
-			app->m_creatingModel = *(renderer::ResourceManager::getTexturedModelAt(0));
+			app->m_creatingModel = *(renderer::ResourceManager::loadModel("default"));
 			app->m_currentCreating = CreatedObject();
 		}
 		ImGui::SameLine();
@@ -145,13 +158,13 @@ void GUI::showCreationTab(){
 void GUI::showPlacementTab(){
 	ImGui::BeginChild("placement", ImVec2(), true);
 	{
+		if(ImGui::CollapsingHeader("Scene")){
+			showSceneTab();
+		}
 		if(ImGui::CollapsingHeader("Add Object")){
 			showAddObjectTab();
 		}
 		if(ImGui::CollapsingHeader("Add light")){
-
-		}
-		if(ImGui::CollapsingHeader("Transforms")){
 
 		}
 	}
@@ -217,9 +230,7 @@ void GUI::showSaveFileDialog(){
 		}
 		if(!exists){
 			b_showSaveFileDialog = false;
-			if(fdMode == FD_Mode::STATIC_OBJECT_SAVE ||
-			   fdMode == FD_Mode::ENTITY_OBJECT_SAVE)
-			{
+			if(fdMode == FD_Mode::OBJECT_SAVE){
 				app->saveCreatedObject(buf);
 			}
 		}
@@ -248,9 +259,7 @@ void GUI::openButtonPressed(){
 		break;
 	case FD_Mode::MAP_OPEN:
 		break;
-	case FD_Mode::STATIC_OBJECT_OPEN:
-		break;
-	case FD_Mode::ENTITY_OBJECT_OPEN:
+	case FD_Mode::OBJECT_OPEN:
 		break;
 	default:
 		break;
@@ -258,7 +267,6 @@ void GUI::openButtonPressed(){
 }
 
 void GUI::updateDirContents(std::vector<std::string>& directory){
-	//dirContents.clear();
 	directory.clear();
 	DIR *dir;
 	struct dirent *ent;
@@ -275,42 +283,83 @@ void GUI::updateDirContents(std::vector<std::string>& directory){
 }
 
 void GUI::showAddObjectTab(){
-	const char* categories[] = {"Static", "Entity"};
-	static int currentEntry;
-	if(ImGui::BeginCombo("Type", m_combo_objectType)){
-		for(int i = 0; i < IM_ARRAYSIZE(categories); i++){
-			bool is_selected = (m_combo_objectType == categories[i]);
-			if(ImGui::Selectable(categories[i], is_selected)){
-				m_combo_objectType = categories[i];
-				currentEntry = i;
-			}
-			if(is_selected){
-				ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
-			}
-		}
-		ImGui::EndCombo();
-	}
 	ImGui::Text("Available files:");
 	ImGui::SameLine();
 	if(ImGui::Button("Update")){
-		if(currentEntry == 0)
-			currentPath = "res/gameobjects/entities/";
-		else
-			currentPath = "res/gameobjects/static/";
-		updateDirContents(availableEntities);
+		currentPath = "res/gameobjects/";
+		updateDirContents(dir_gameobjects);
+	}
+	
+	ImGui::ListBox("##2", &addGameobjectEntryItem, VectorOfStringGetter, (void*)(&dir_gameobjects), (int)(dir_gameobjects.size()), 10);
+
+	if(ImGui::Button("Add") && addGameobjectEntryItem >= 0){
+		app->addNewObject(dir_gameobjects[addGameobjectEntryItem]);
 	}
 
-	ImGui::ListBox("##2", &gameobjectEntryItem, VectorOfStringGetter, (void*)(&availableEntities), (int)(availableEntities.size()), 10);
+}
 
-	if(ImGui::Button("Add")){
-		std::cout << gameobjectEntryItem << std::endl;
+void GUI::showSceneTab(){
+reiterate:
+	//objects in scene list
+	ImGui::Text("Objects list:");
+	ImGui::ListBox("##3", &placeGameobjectEntryItem, VectorOfObjectsGetter, (void*)(&app->m_objectsInScene), (int)(app->m_objectsInScene.size()), 10);
+
+	//placement settings
+	if(placeGameobjectEntryItem >= 0){
+		//object info
+		memset(m_name, '\0', OBJECT_NAME);
+		strncat_s(m_name, app->m_objectsInScene[placeGameobjectEntryItem]->getName().c_str(), OBJECT_NAME);
+		ImGui::InputText("Name", m_name, OBJECT_NAME);
+		app->m_objectsInScene[placeGameobjectEntryItem]->setName(m_name);
+		
+		//object modifier
+		if(ImGui::Button("Duplicate")){
+
+		}
+		ImGui::SameLine();
+		if(ImGui::Button("Remove")){
+			app->m_objectsInScene.erase(app->m_objectsInScene.begin() + placeGameobjectEntryItem);
+			placeGameobjectEntryItem--;
+			goto reiterate;
+		}
+		//positional modifiers
+		ImGui::Separator();
+		renderer::GameObject* obj = app->m_objectsInScene[placeGameobjectEntryItem];	
+		ImGui::DragFloat("Pos x", &obj->getPosition().x, 0.01f, -300000.0f, 300000.0f);
+		ImGui::DragFloat("Pos Y", &obj->getPosition().y, 0.01f, -300000.0f, 300000.0f);
+		ImGui::DragFloat("Pos Z", &obj->getPosition().z, 0.01f, -300000.0f, 300000.0f);
+		ImGui::Text("\n");
+		ImGui::SliderAngle("Rot x", &obj->getRotation().x, 0.0f, 359.0f);
+		ImGui::SliderAngle("Rot Y", &obj->getRotation().y, 0.0f, 359.0f);
+		ImGui::SliderAngle("Rot Z", &obj->getRotation().z, 0.0f, 359.0f);
+		ImGui::Text("\n");
+		ImGui::DragFloat("Scale x", &obj->getScale().x, 0.01f, 0.01f, 10.0f);
+		ImGui::DragFloat("Scale Y", &obj->getScale().y, 0.01f, 0.01f, 10.0f);
+		ImGui::DragFloat("Scale Z", &obj->getScale().z, 0.01f, 0.01f, 10.0f);
+		ImGui::Text("\n");
 	}
-
 }
 
 
 bool VectorOfStringGetter(void* data, int n, const char** out_text){
 	std::vector<std::string>* v = (std::vector<std::string>*)data;
 	*out_text = (*v)[n].c_str();
+	return true;
+}
+
+bool VectorOfObjectsGetter(void * data, int n, const char ** out_text){
+	std::vector<renderer::GameObject*>* v = (std::vector<renderer::GameObject*>*)data;
+	*out_text = (*v)[n]->getName().c_str();
+	return true;
+}
+
+bool MapOfGameObjectsGetter(void * data, int n, const char ** out_text){
+	std::map<unsigned int, renderer::GameObject*>* m = (std::map<unsigned int, renderer::GameObject*>*)data;
+	std::map<unsigned int, renderer::GameObject*>::iterator it;
+	int i = 0;
+	for(it = m->begin(); i <= n; it++){
+		i++;
+		*out_text = it->second->getName().c_str();
+	}
 	return true;
 }

@@ -14,18 +14,25 @@ namespace renderer{
 		static MeshData* getMesh(const std::string& path);
 		static TextureData* getTexture(const std::string& path);
 
-		static unsigned int addTexturedModel(TexturedModel& model);
-		static TexturedModel* getTexturedModelAt(unsigned int index);
+		//static unsigned int addTexturedModel(TexturedModel& model);
+		//static TexturedModel* getTexturedModelAt(unsigned int index);
+
+		static TexturedModel* loadModel(const std::string& file);
 
 		static void Init();
 		static void ClearData();
+
+		enum{
+			SPHERE,
+			CUBE
+		};
 
 	private:
 		ResourceManager(){}
 
 		static std::map<std::string, TextureData> m_texturesMap;
 		static std::map<std::string, MeshData> m_meshesMap;
-		static std::vector<TexturedModel> m_texturedModels;
+		static std::map<std::string, TexturedModel> m_modelsMap;
 	};
 
 }

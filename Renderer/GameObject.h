@@ -9,38 +9,42 @@ namespace renderer{
 	class GameObject{
 	public:
 		GameObject();
-		GameObject(unsigned int model,
-				   bool billboard
+		GameObject(TexturedModel* model,
+				   bool static_obj
 		);
-		GameObject(unsigned int model, 
-				   glm::vec3& pos = glm::vec3(0.0f), 
-				   glm::vec3& rot = glm::vec3(0.0f), 
-				   glm::vec3& scale = glm::vec3(1.0f), 
-				   bool billboard = false
+		GameObject(TexturedModel* model,
+				   glm::vec3& pos = glm::vec3(0.0f),
+				   glm::vec3& rot = glm::vec3(0.0f),
+				   glm::vec3& scale = glm::vec3(1.0f),
+				   bool static_obj = false
 		);
 		
 		virtual ~GameObject();
 
-		void setTexturedModel(unsigned int id){ m_model = id; }
+		void setTexturedModel(TexturedModel* model){ m_model = model; }
 		void setPosition(glm::vec3& pos){ m_pos = pos; }
 		void setRotation(glm::vec3& rot){ m_rot = rot; }
 		void setScale(glm::vec3& scale){ m_scale = scale; }
+		void setName(const std::string& name){ m_name = name; }
 
-		TexturedModel* getTexturedModel(){ return ResourceManager::getTexturedModelAt(m_model); }
-		const glm::vec3 getPosition(){ return m_pos; }
-		const glm::vec3 getRotation(){ return m_rot; }
-		const glm::vec3 getScale(){ return m_scale; }
+		TexturedModel* getTexturedModel(){ return m_model; }
+		glm::vec3& getPosition(){ return m_pos; }
+		glm::vec3& getRotation(){ return m_rot; }
+		glm::vec3& getScale(){ return m_scale; }
 		int getCode(){ return code; }
-		bool isBillboard(){ return m_isBillboard; }
+		bool isBillboard(){ return m_model->isBillboard(); }
+		bool isStatic(){ return m_isStatic; }
+		const std::string& getName(){ return m_name; }
 
 		virtual void update(float deltaTime){}
 
 		static int objectCount;
 
 	protected:
-		bool m_isBillboard;
-		int m_model;
+		bool m_isStatic;
 		int code;
+		TexturedModel* m_model;
+		std::string m_name;
 		
 		glm::vec3 m_pos;
 		glm::vec3 m_rot;

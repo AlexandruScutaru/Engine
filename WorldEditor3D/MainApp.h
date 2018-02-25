@@ -37,6 +37,7 @@ private:
 	
 	void saveCreatedObject(char* buf);
 	void renderToSelect(glm::vec2& coords);
+	void addNewObject(const std::string& file);
 
 	renderer::Window m_window; //the app window
 	renderer::InputManager m_inputManager;
@@ -52,6 +53,7 @@ private:
 
 	//this vector is to be filled with objects to draw 
 	//i hope a frustum culling will be implemented
+	std::vector<renderer::GameObject*> m_objectsInScene;
 	std::vector<renderer::GameObject*> m_objects_ToDraw;
 
 	//creation state variables;

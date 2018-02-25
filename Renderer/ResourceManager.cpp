@@ -1,10 +1,15 @@
 #include "ResourceManager.h"
+#include <fstream>
+
+#include <JSON/json.hpp>
+using json = nlohmann::json;
 
 namespace renderer{
 
 	std::map<std::string, TextureData> ResourceManager::m_texturesMap;
 	std::map<std::string, MeshData> ResourceManager::m_meshesMap;
-	std::vector<TexturedModel> ResourceManager::m_texturedModels;
+	std::map<std::string, TexturedModel> ResourceManager::m_modelsMap;
+
 
 	MeshData* ResourceManager::getMesh(const std::string& path){
 		auto it = m_meshesMap.find(path); //auto looks for the return type and automatically assigns it
@@ -36,33 +41,38 @@ namespace renderer{
 		return &(it->second);
 	}
 
-	unsigned int ResourceManager::addTexturedModel(TexturedModel& model){
-		m_texturedModels.push_back(model);
-		return m_texturedModels.size() - 1;
-	}
+	TexturedModel* ResourceManager::loadModel(const std::string& file){
+		std::string path = "res/gameobjects/" + file;
+		auto it = m_modelsMap.find(path);
+		if(it == m_modelsMap.end()){
+			std::ifstream in(path);
+			json obj;
+			in >> obj;
+			in.close();
 
-	TexturedModel * ResourceManager::getTexturedModelAt(unsigned int index){
-		if(index < 0 || index >= m_texturedModels.size()){
-			return nullptr;
-		} else{
-			return &(m_texturedModels[index]);
+			Material mat(getTexture("res/textures/" + obj["diff"].get<std::string>()),
+						 getTexture("res/textures/" + obj["spec"].get<std::string>()));
+			MeshData* mesh = getMesh("res/models/" + obj["mesh"].get<std::string>());
+			std::vector<float> vec;
+			vec = obj["boxPos"].get<std::vector<float>>();
+			glm::vec3 pos = glm::vec3(vec[0], vec[1], vec[2]);
+			vec = obj["boxRot"].get<std::vector<float>>();
+			glm::vec3 rot = glm::vec3(vec[0], vec[1], vec[2]); 
+			vec = obj["boxScale"].get<std::vector<float>>();
+			glm::vec3 scale = glm::vec3(vec[0], vec[1], vec[2]);
+			bool billboard = obj["billboard"].get<bool>();
+
+			TexturedModel model = TexturedModel(mesh, mat, billboard, pos, rot, scale);
+
+			auto ret = m_modelsMap.insert(make_pair(path, model));
+			return &(ret.first->second);
 		}
+
+		return &(it->second);
 	}
 
 	void ResourceManager::Init(){
-		renderer::TexturedModel model;
-		renderer::Material mat = renderer::Material(renderer::ResourceManager::getTexture("res/textures/default.png"),
-													renderer::ResourceManager::getTexture("res/textures/no_SPEC.png"));
-
-		model.setMaterial(mat);
-		model.setMesh(renderer::ResourceManager::getMesh("res/models/sphere.obj"));
-		addTexturedModel(model);
-
-		mat = renderer::Material(renderer::ResourceManager::getTexture("res/textures/default.png"),
-								 renderer::ResourceManager::getTexture("res/textures/no_SPEC.png"));
-		model.setMaterial(mat);
-		model.setMesh(renderer::ResourceManager::getMesh("res/models/cube.obj"));
-		addTexturedModel(model);
+		
 	}
 
 	void ResourceManager::ClearData(){
@@ -78,7 +88,8 @@ namespace renderer{
 			glDeleteTextures(1, &(textureData.second.id));
 		}
 		m_texturesMap.clear();
+
+		m_modelsMap.clear();
 		
-		m_texturedModels.clear();
 	}
 }

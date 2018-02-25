@@ -131,7 +131,12 @@ namespace renderer{
 				model = glm::scale(model, glm::vec3(0.2f));
 			} else{
 				model = glm::translate(model, object->getPosition());
+				model = glm::rotate(model, object->getRotation().x, glm::vec3(1.0f, 0.0f, 0.0f));
+				model = glm::rotate(model, object->getRotation().y, glm::vec3(0.0f, 1.0f, 0.0f));
+				model = glm::rotate(model, object->getRotation().z, glm::vec3(0.0f, 0.0f, 1.0f));
+				model = glm::scale( model, object->getScale());
 			}
+
 			m_selectShader.loadMat4("model", model);
 			int code = object->getCode();
 			colorCode = glm::vec3(
@@ -197,7 +202,7 @@ namespace renderer{
 	void MasterRenderer::renderGameObjects(){
 		glm::mat4 modelMatrix;
 		m_entityShader.use();
-		m_entityShader.loadBool("flashlightOn", false);
+		m_entityShader.loadBool("flashlightOn", true);
 
 		for(auto const& model : m_gameObjectsBatches){
 			glActiveTexture(GL_TEXTURE0);
@@ -207,7 +212,7 @@ namespace renderer{
 			glBindVertexArray(model.first->getMesh()->vertexArrayObject);
 
 			for(auto const& entity : model.second){
-				modelMatrix = glm::translate(modelMatrix, entity->getPosition());
+				//modelMatrix = glm::translate(modelMatrix, entity->getPosition());
 				modelMatrix = glm::translate(modelMatrix, entity->getPosition());
 				modelMatrix = glm::rotate(modelMatrix, entity->getRotation().x, glm::vec3(1.0f, 0.0f, 0.0f));
 				modelMatrix = glm::rotate(modelMatrix, entity->getRotation().y, glm::vec3(0.0f, 1.0f, 0.0f));
