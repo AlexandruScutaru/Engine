@@ -15,7 +15,8 @@
 
 MainApp::MainApp():
 	m_appState(AppState::EDIT),
-	m_gui(this)
+	m_gui(this),
+	m_currentlySelectedObject(nullptr)
 {
 	m_cameraPos = m_camera.getPos();
 	m_cameraBck = m_camera.backupCameraProperties();
@@ -248,11 +249,20 @@ void MainApp::saveCreatedObject(char* buf){
 
 void MainApp::renderToSelect(glm::vec2& coords){
 	int val = m_masterRenderer.pixelPick(m_objectsInScene, m_camera, m_inputManager.getActualMouseCoords());
-	renderer::GameObject* obj = m_gameObjectsMap[val];
-	for(size_t i = 0; i < m_objectsInScene.size(); ++i){
-		if(m_objectsInScene[i] == obj){
-			m_gui.placeGameobjectEntryItem = i;
+	if(m_currentlySelectedObject)
+		m_currentlySelectedObject->setSelected(false);
+	if(val){
+		renderer::GameObject* obj = m_gameObjectsMap[val];
+		m_currentlySelectedObject = obj;
+		m_currentlySelectedObject->setSelected(true);
+		for(size_t i = 0; i < m_objectsInScene.size(); ++i){
+			if(m_objectsInScene[i] == obj){
+				m_gui.placeGameobjectEntryItem = i;
+			}
 		}
+	} else{
+		m_currentlySelectedObject = nullptr;
+		m_gui.placeGameobjectEntryItem = -1;
 	}
 }
 
@@ -264,11 +274,17 @@ void MainApp::addNewObject(const std::string & file){
 	object->setPosition(pos);
 	m_objectsInScene.push_back(object);
 	m_gameObjectsMap[object->getCode()] = object;
+	
+	if(m_currentlySelectedObject)
+		m_currentlySelectedObject->setSelected(false);
+	m_currentlySelectedObject = object;
+	m_currentlySelectedObject->setSelected(true);
 	object = nullptr;
 }
 
 void MainApp::removeSelectedObject(int index){
 	m_objectsInScene.erase(m_objectsInScene.begin() + index);
+	m_currentlySelectedObject = nullptr;
 }
 
 void MainApp::duplicateSelectedObject(int index){
@@ -276,5 +292,9 @@ void MainApp::duplicateSelectedObject(int index){
 	object = new renderer::GameObject(*m_objectsInScene[index]);
 	m_objectsInScene.push_back(object);
 	m_gameObjectsMap[object->getCode()] = object;
+	if(m_currentlySelectedObject)
+		m_currentlySelectedObject->setSelected(false);
+	m_currentlySelectedObject = object;
+	m_currentlySelectedObject->setSelected(true);
 	object = nullptr;
 }

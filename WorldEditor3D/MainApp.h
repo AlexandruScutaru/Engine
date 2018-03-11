@@ -46,6 +46,8 @@ private:
 	renderer::FpsLimiter m_fpsLimiter;
 	renderer::MasterRenderer m_masterRenderer;
 	renderer::Camera m_camera;
+
+	renderer::GameObject* m_currentlySelectedObject;
 	
 	AppState m_appState;
 

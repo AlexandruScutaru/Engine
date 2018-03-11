@@ -73,10 +73,9 @@ void main(){
 	if(flashlightOn)
 		result += CalcSpotLight(spotLight, norm, FragPos, viewDir);    
     
+	FragColor = vec4(result, 1.0);
 	if(selected)
-		FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-    else
-		FragColor = vec4(result, 1.0);
+		FragColor = FragColor + vec4(0.2, 0.35, 0.35, 1.0);
 }
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir){
