@@ -112,11 +112,11 @@ namespace renderer{
 		
 		glm::vec3 colorCode;
 		m_view = camera.getViewMatrix();
-		glm::mat4 model;
 		m_selectShader.use();
 		m_selectShader.loadMat4("projection", m_projection);
 		m_selectShader.loadMat4("view", m_view);
 		for(auto object : objects){
+			glm::mat4 model;
 			if(object->isBillboard()){
 				model = glm::translate(model, object->getPosition());
 				model[0][0] = m_view[0][0];
@@ -200,7 +200,6 @@ namespace renderer{
 	}
 
 	void MasterRenderer::renderGameObjects(){
-		glm::mat4 modelMatrix;
 		m_entityShader.use();
 		m_entityShader.loadBool("flashlightOn", true);
 
@@ -212,7 +211,8 @@ namespace renderer{
 			glBindVertexArray(model.first->getMesh()->vertexArrayObject);
 
 			for(auto const& entity : model.second){
-				//modelMatrix = glm::translate(modelMatrix, entity->getPosition());
+				m_entityShader.loadBool("selected", entity->isSelected());
+				glm::mat4 modelMatrix;
 				modelMatrix = glm::translate(modelMatrix, entity->getPosition());
 				modelMatrix = glm::rotate(modelMatrix, entity->getRotation().x, glm::vec3(1.0f, 0.0f, 0.0f));
 				modelMatrix = glm::rotate(modelMatrix, entity->getRotation().y, glm::vec3(0.0f, 1.0f, 0.0f));

@@ -38,6 +38,8 @@ private:
 	void saveCreatedObject(char* buf);
 	void renderToSelect(glm::vec2& coords);
 	void addNewObject(const std::string& file);
+	void removeSelectedObject(int index);
+	void duplicateSelectedObject(int index);
 
 	renderer::Window m_window; //the app window
 	renderer::InputManager m_inputManager;

@@ -7,8 +7,8 @@
 
 //#define SCREEN_WIDTH 1366
 //#define SCREEN_HEIGHT 768
-#define SCREEN_WIDTH 900
-#define SCREEN_HEIGHT 540
+#define SCREEN_WIDTH 1024
+#define SCREEN_HEIGHT 576
 
 #define MAX_FPS 120
 
@@ -127,18 +127,33 @@ void MainApp::initLevel(){
 									  glm::cos(glm::radians(15.0f)),
 									  glm::cos(glm::radians(22.0f)))
 	);
+
+	/*for(int x = -3; x < 3; x++){
+		for(int y = -3; y < 3; y++){
+			for(int z = -3; z < 3; z++){
+				renderer::GameObject* object;
+				object = new renderer::GameObject(renderer::ResourceManager::loadModel("default"));
+				object->setName("def");
+				object->setPosition(glm::vec3(x,y,z));
+				object->setScale(glm::vec3(0.25f));
+				m_objectsInScene.push_back(object);
+				m_gameObjectsMap[object->getCode()] = object;
+				object = nullptr;
+			}
+		}
+	}*/
 									  
 }
 
 void MainApp::loop(){
 	while(m_appState == AppState::EDIT){
 		float deltaTime = m_fpsLimiter.begin();
-		
+	
 		processInput();
-		m_gui.updateImGuiWindows();
 		update(deltaTime);
+		m_gui.updateImGuiWindows();
 		drawGame();
-
+		glm::vec3 pos = m_camera.getPos();
 		m_fpsLimiter.end();
 	}
 }
@@ -185,6 +200,9 @@ void MainApp::processInput(){
 void MainApp::update(float deltaTime){
 	if(!ImGui::GetIO().WantCaptureKeyboard)
 		m_camera.update(m_inputManager, deltaTime);
+
+	//glm::vec3 pos = m_camera.getPos();// +m_camera.getFront() * 4.0f;
+	//printf("%.5f %.5f %.5f\n", pos.x, pos.y, pos.z);
 
 	///object rotation
 	glm::mat4 rotationMat(1);
@@ -242,6 +260,20 @@ void MainApp::addNewObject(const std::string & file){
 	renderer::GameObject* object;
 	object = new renderer::GameObject(renderer::ResourceManager::loadModel(file));
 	object->setName(file);
+	glm::vec3 pos = m_camera.getPos() + m_camera.getFront() * 4.0f;
+	object->setPosition(pos);
+	m_objectsInScene.push_back(object);
+	m_gameObjectsMap[object->getCode()] = object;
+	object = nullptr;
+}
+
+void MainApp::removeSelectedObject(int index){
+	m_objectsInScene.erase(m_objectsInScene.begin() + index);
+}
+
+void MainApp::duplicateSelectedObject(int index){
+	renderer::GameObject* object;
+	object = new renderer::GameObject(*m_objectsInScene[index]);
 	m_objectsInScene.push_back(object);
 	m_gameObjectsMap[object->getCode()] = object;
 	object = nullptr;

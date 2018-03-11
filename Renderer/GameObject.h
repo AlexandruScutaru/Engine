@@ -18,6 +18,7 @@ namespace renderer{
 				   glm::vec3& scale = glm::vec3(1.0f),
 				   bool static_obj = false
 		);
+		GameObject(const GameObject& other);
 		
 		virtual ~GameObject();
 
@@ -26,6 +27,7 @@ namespace renderer{
 		void setRotation(glm::vec3& rot){ m_rot = rot; }
 		void setScale(glm::vec3& scale){ m_scale = scale; }
 		void setName(const std::string& name){ m_name = name; }
+		void setSelected(bool selected){ m_selected = selected; }
 
 		TexturedModel* getTexturedModel(){ return m_model; }
 		glm::vec3& getPosition(){ return m_pos; }
@@ -34,6 +36,7 @@ namespace renderer{
 		int getCode(){ return code; }
 		bool isBillboard(){ return m_model->isBillboard(); }
 		bool isStatic(){ return m_isStatic; }
+		bool isSelected(){ return m_selected; }
 		const std::string& getName(){ return m_name; }
 
 		virtual void update(float deltaTime){}
@@ -42,6 +45,7 @@ namespace renderer{
 
 	protected:
 		bool m_isStatic;
+		bool m_selected;
 		int code;
 		TexturedModel* m_model;
 		std::string m_name;

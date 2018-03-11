@@ -294,6 +294,7 @@ void GUI::showAddObjectTab(){
 
 	if(ImGui::Button("Add") && addGameobjectEntryItem >= 0){
 		app->addNewObject(dir_gameobjects[addGameobjectEntryItem]);
+		glm::vec3 pos = app->m_camera.getPos();
 	}
 
 }
@@ -303,7 +304,6 @@ reiterate:
 	//objects in scene list
 	ImGui::Text("Objects list:");
 	ImGui::ListBox("##3", &placeGameobjectEntryItem, VectorOfObjectsGetter, (void*)(&app->m_objectsInScene), (int)(app->m_objectsInScene.size()), 10);
-
 	//placement settings
 	if(placeGameobjectEntryItem >= 0){
 		//object info
@@ -314,11 +314,13 @@ reiterate:
 		
 		//object modifier
 		if(ImGui::Button("Duplicate")){
-
+			app->duplicateSelectedObject(placeGameobjectEntryItem);
+			placeGameobjectEntryItem++;
+			goto reiterate;
 		}
 		ImGui::SameLine();
 		if(ImGui::Button("Remove")){
-			app->m_objectsInScene.erase(app->m_objectsInScene.begin() + placeGameobjectEntryItem);
+			app->removeSelectedObject(placeGameobjectEntryItem);
 			placeGameobjectEntryItem--;
 			goto reiterate;
 		}

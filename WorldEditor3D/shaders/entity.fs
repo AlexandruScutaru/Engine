@@ -51,6 +51,7 @@ uniform PointLight pointLights[NR_POINT_LIGHTS];
 uniform SpotLight spotLight;
 uniform bool flashlightOn;
 uniform int pointLightsNum;
+uniform bool selected;
 
 // function prototypes
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
@@ -72,7 +73,10 @@ void main(){
 	if(flashlightOn)
 		result += CalcSpotLight(spotLight, norm, FragPos, viewDir);    
     
-    FragColor = vec4(result, 1.0);
+	if(selected)
+		FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    else
+		FragColor = vec4(result, 1.0);
 }
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir){
