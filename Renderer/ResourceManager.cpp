@@ -71,9 +71,11 @@ namespace renderer{
 		return &(it->second);
 	}
 
-	void ResourceManager::Init(){
-		
+	TexturedModel * ResourceManager::loadModel(int shape){
+		return loadModel(IndexToShape(shape));
 	}
+
+	void ResourceManager::Init(){}
 
 	void ResourceManager::ClearData(){
 		for(auto mesh : m_meshesMap){
@@ -91,5 +93,30 @@ namespace renderer{
 
 		m_modelsMap.clear();
 		
+	}
+
+	char* ResourceManager::IndexToShape(int index){
+		char* shape;
+		switch(index){
+		case CollisionShapes::SHAPE_CUBE:
+			shape = "cube";
+			break;
+		case CollisionShapes::SHAPE_SPHERE:
+			shape = "sphere";
+			break;
+		case CollisionShapes::SHAPE_CILINDER:
+			shape = "cilinder";
+			break;
+		case CollisionShapes::SHAPE_CONE:
+			shape = "cone";
+			break;
+		case CollisionShapes::SHAPE_CAPSULE:
+			shape = "capsule";
+			break;
+		default:
+			shape = "";
+			break;
+		}
+		return shape;
 	}
 }

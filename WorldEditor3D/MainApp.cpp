@@ -7,8 +7,8 @@
 
 //#define SCREEN_WIDTH 1366
 //#define SCREEN_HEIGHT 768
-#define SCREEN_WIDTH 1024
-#define SCREEN_HEIGHT 576
+#define SCREEN_WIDTH 1280
+#define SCREEN_HEIGHT 720
 
 #define MAX_FPS 120
 
@@ -220,8 +220,7 @@ void MainApp::drawGame(){
 
 	if(m_gui.b_creationTab){
 		m_masterRenderer.renderSingleEntity(&m_creatingModel, m_creatingLight, m_camera);
-		m_masterRenderer.renderBoundingBox(renderer::ResourceManager::loadModel("cube"), 
-										   m_currentCreating.boxScale, m_currentCreating.boxRot, m_camera);
+		m_masterRenderer.renderCollisionBodies(m_currentCreating.colBodies, m_camera);
 	}
 	else if(m_gui.b_placementTab){
 		m_masterRenderer.renderScene(m_objectsInScene, m_lights, m_camera);
@@ -237,14 +236,56 @@ void MainApp::saveCreatedObject(char* buf){
 		{"diff", m_currentCreating.diff},
 		{"spec", m_currentCreating.spec},
 		{"mesh", m_currentCreating.mesh},
-		{"billboard", m_currentCreating.isBillboard},
-		{"boxScale", {m_currentCreating.boxScale.x, m_currentCreating.boxScale.y, m_currentCreating.boxScale.z}},
-		{"boxRot",   {m_currentCreating.boxRot.x, m_currentCreating.boxRot.y, m_currentCreating.boxRot.z}},
-		{"boxPos", {m_currentCreating.boxRot.x, m_currentCreating.boxRot.y, m_currentCreating.boxRot.z}},
+		{"billboard", m_currentCreating.isBillboard}
 	};
+	for(renderer::CollisionBody body : m_currentCreating.colBodies){
+		json col = {
+			{"shape", body.shape},
+			{"pos", {body.colRelativePos.x, body.colRelativePos.y, body.colRelativePos.z}},
+			{"rot", {body.colRot.x, body.colRot.y, body.colRot.z}},
+			{"scale", {body.colScale.x, body.colScale.y, body.colScale.z}}
+		};
+		entry["collision"].push_back(col);
+	}
+
 	std::string path = m_gui.currentPath + std::string(buf);
 	std::ofstream out(path);
 	out << std::setw(4) << entry << std::endl;
+	out.close();
+}
+
+void MainApp::openCreatedObject(const std::string& object){
+	std::string path = m_gui.currentPath + object;
+	std::ifstream in(path);
+	json obj;
+	in >> obj;
+	m_currentCreating = CreatedObject();
+	m_currentCreating.diff = obj["diff"].get<std::string>();
+	m_currentCreating.spec = obj["spec"].get<std::string>();
+	m_currentCreating.mesh = obj["mesh"].get<std::string>();
+	m_currentCreating.isBillboard = obj["billboard"].get<bool>();
+	for(auto it = obj["collision"].begin(); it != obj["collision"].end(); it++){
+		json col = it.value();
+		renderer::CollisionBody body;
+		body.shape = col["shape"].get<int>();
+		std::vector<float> p = col["pos"].get<std::vector<float>>();
+		glm::vec3 pos = glm::vec3(p[0], p[1], p[2]);
+		std::vector<float> r = col["rot"].get<std::vector<float>>();
+		glm::vec3 rot = glm::vec3(r[0], r[1], r[2]);
+		std::vector<float> s = col["scale"].get<std::vector<float>>();
+		glm::vec3 scale = glm::vec3(s[0], s[1], s[2]);
+		body.colRelativePos = pos;
+		body.colRot = rot;
+		body.colScale = scale;
+		body.colModel = renderer::ResourceManager::loadModel(body.shape);
+		m_currentCreating.colBodies.push_back(body);
+		m_gui.collisionBodies.push_back(body.shape);
+	}
+	in.close();
+
+	m_creatingModel.setMesh(renderer::ResourceManager::getMesh("res/models/" + m_currentCreating.mesh));
+	m_creatingModel.getMaterial().setDiffuseMap(renderer::ResourceManager::getTexture("res/textures/" + m_currentCreating.diff));
+	m_creatingModel.getMaterial().setSpecularMap(renderer::ResourceManager::getTexture("res/textures/" + m_currentCreating.spec));
 }
 
 void MainApp::renderToSelect(glm::vec2& coords){

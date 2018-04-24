@@ -36,6 +36,7 @@ private:
 	void drawGame(); //draws on screen
 	
 	void saveCreatedObject(char* buf);
+	void openCreatedObject(const std::string& object);
 	void renderToSelect(glm::vec2& coords);
 	void addNewObject(const std::string& file);
 	void removeSelectedObject(int index);

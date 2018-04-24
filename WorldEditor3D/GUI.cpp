@@ -6,6 +6,7 @@
 
 bool VectorOfStringGetter(void* data, int n, const char** out_text);
 bool VectorOfObjectsGetter(void* data, int n, const char** out_text);
+bool VectorOfShapesGetter(void* data, int n, const char** out_text);
 
 bool MapOfGameObjectsGetter(void* data, int n, const char** out_text);
 
@@ -21,7 +22,8 @@ GUI::GUI(MainApp* app) :
 	b_showOpenFileDialog(false),
 	b_showSaveFileDialog(false),
 	addGameobjectEntryItem(-1),
-	placeGameobjectEntryItem(-1)
+	placeGameobjectEntryItem(-1),
+	collisionBodyEntryItem(-1)
 {}
 
 GUI::~GUI(){}
@@ -107,33 +109,48 @@ void GUI::showCreationTab(){
 		ImGui::Checkbox("Billboard", &app->m_currentCreating.isBillboard);
 		
 		ImGui::Separator();
-		ImGui::Text("\nObject bounding box");
-		ImGui::Separator();
+		ImGui::Text("\nObject collision");
 		
-	/*	if(ImGui::Button("<##posxdec")) app->m_currentCreating.boxPos.x -= 0.05; ImGui::SameLine();
-		ImGui::DragFloat("##Pos x", &app->m_currentCreating.boxPos.x, 1.0f, -300000.0f, 300000.0f); ImGui::SameLine();
-		if(ImGui::Button(">##posxinc")) app->m_currentCreating.boxPos.x += 0.05;
-		if(ImGui::Button("<##posydec")) app->m_currentCreating.boxPos.y -= 0.05; ImGui::SameLine();
-		ImGui::DragFloat("##Pos Y", &app->m_currentCreating.boxPos.y, 1.0f, -300000.0f, 300000.0f); ImGui::SameLine();
-		if(ImGui::Button(">##posyinc")) app->m_currentCreating.boxPos.y -= 0.05;
-		if(ImGui::Button("<##poszdec")) app->m_currentCreating.boxPos.z -= 0.05; ImGui::SameLine();
-		ImGui::DragFloat("##Pos Z", &app->m_currentCreating.boxPos.z, 1.0f, -300000.0f, 300000.0f); ImGui::SameLine();
-		if(ImGui::Button(">##poszinc")) app->m_currentCreating.boxPos.z -= 0.05;*/
+		ImGui::ListBox("##3", &collisionBodyEntryItem, VectorOfShapesGetter, (void*)(&collisionBodies), (int)(collisionBodies.size()), 5);
 		
-		ImGui::DragFloat("Pos x", &app->m_currentCreating.boxPos.x, 0.01f, -300000.0f, 300000.0f);
-		ImGui::DragFloat("Pos Y", &app->m_currentCreating.boxPos.y, 0.01f, -300000.0f, 300000.0f);
-		ImGui::DragFloat("Pos Z", &app->m_currentCreating.boxPos.z, 0.01f, -300000.0f, 300000.0f);
-		ImGui::Separator();
-		
-		ImGui::SliderAngle("Rot x", &app->m_currentCreating.boxRot.x, 0.0f, 359.0f);
-		ImGui::SliderAngle("Rot Y", &app->m_currentCreating.boxRot.y, 0.0f, 359.0f);
-		ImGui::SliderAngle("Rot Z", &app->m_currentCreating.boxRot.z, 0.0f, 359.0f);
-		ImGui::Separator();
-		
-		ImGui::DragFloat("Scale x", &app->m_currentCreating.boxScale.x, 0.01f, 0.01f, 10.0f);
-		ImGui::DragFloat("Scale Y", &app->m_currentCreating.boxScale.y, 0.01f, 0.01f, 10.0f);
-		ImGui::DragFloat("Scale Z", &app->m_currentCreating.boxScale.z, 0.01f, 0.01f, 10.0f);
-		ImGui::Separator();
+		static int collisionBodyIndex = renderer::ResourceManager::CollisionShapes::SHAPE_CUBE;
+		ImGui::Combo("Shape", &collisionBodyIndex, "Cube\0Sphere\0Cilinder\0Cone\0Capsule\0\0");
+		if(ImGui::Button("Add##shape")){
+			std::string shape = std::string(renderer::ResourceManager::IndexToShape(collisionBodyIndex));
+			//collisionBodies.push_back(shape);
+			collisionBodies.push_back(collisionBodyIndex);
+			renderer::CollisionBody body;
+			body.colModel = renderer::ResourceManager::loadModel(collisionBodyIndex);
+			body.shape = collisionBodyIndex;
+			//body.shape = shape;
+			app->m_currentCreating.colBodies.push_back(body);
+		}
+		ImGui::SameLine();
+		if(ImGui::Button("Remove##shape") && collisionBodyEntryItem != -1){
+			collisionBodies.erase(collisionBodies.begin() + collisionBodyEntryItem);
+			app->m_currentCreating.colBodies.erase(app->m_currentCreating.colBodies.begin() + collisionBodyEntryItem);
+			collisionBodyEntryItem--;
+		}
+
+//		ImGui::Separator();
+		if(collisionBodyEntryItem != -1){
+			renderer::CollisionBody& body = app->m_currentCreating.colBodies[collisionBodyEntryItem];
+
+			ImGui::DragFloat("Pos x", &body.colRelativePos.x, 0.01f, -300000.0f, 300000.0f);
+			ImGui::DragFloat("Pos Y", &body.colRelativePos.y, 0.01f, -300000.0f, 300000.0f);
+			ImGui::DragFloat("Pos Z", &body.colRelativePos.z, 0.01f, -300000.0f, 300000.0f);
+			ImGui::Separator();
+
+			ImGui::SliderAngle("Rot x", &body.colRot.x, 0.0f, 359.0f);
+			ImGui::SliderAngle("Rot Y", &body.colRot.y, 0.0f, 359.0f);
+			ImGui::SliderAngle("Rot Z", &body.colRot.z, 0.0f, 359.0f);
+			ImGui::Separator();	
+
+			ImGui::DragFloat("Scale x", &body.colScale.x, 0.01f, 0.01f, 10.0f);
+			ImGui::DragFloat("Scale Y", &body.colScale.y, 0.01f, 0.01f, 10.0f);
+			ImGui::DragFloat("Scale Z", &body.colScale.z, 0.01f, 0.01f, 10.0f);
+			ImGui::Separator();
+		}
 
 		ImGui::Text("\n");
 		if(ImGui::Button("Save object")){
@@ -146,10 +163,15 @@ void GUI::showCreationTab(){
 		if(ImGui::Button("Reset")){
 			app->m_creatingModel = *(renderer::ResourceManager::loadModel("default"));
 			app->m_currentCreating = CreatedObject();
+			collisionBodyEntryItem = -1;
+			collisionBodies.clear();
 		}
 		ImGui::SameLine();
 		if(ImGui::Button("Edit")){
-
+			b_showOpenFileDialog = true;
+			currentPath = "res/gameobjects/";
+			fdMode = FD_Mode::OBJECT_OPEN;
+			updateDirContents(dirContents);
 		}
 	}
 	ImGui::EndChild();
@@ -224,7 +246,7 @@ void GUI::showSaveFileDialog(){
 		bool exists = false;
 		for(auto dir : dirContents){
 			if(dir.compare(std::string(buf)) == 0){
-				exists = true;
+				//exists = true;
 				break;
 			}
 		}
@@ -260,6 +282,7 @@ void GUI::openButtonPressed(){
 	case FD_Mode::MAP_OPEN:
 		break;
 	case FD_Mode::OBJECT_OPEN:
+		app->openCreatedObject(dirContents[fdEntryItem]);
 		break;
 	default:
 		break;
@@ -357,6 +380,13 @@ bool VectorOfStringGetter(void* data, int n, const char** out_text){
 bool VectorOfObjectsGetter(void * data, int n, const char ** out_text){
 	std::vector<renderer::GameObject*>* v = (std::vector<renderer::GameObject*>*)data;
 	*out_text = (*v)[n]->getName().c_str();
+	return true;
+}
+
+bool VectorOfShapesGetter(void * data, int n, const char ** out_text){
+	std::vector<int>* v = (std::vector<int>*)data;
+	*out_text = renderer::ResourceManager::IndexToShape((*v)[n]);
+		
 	return true;
 }
 

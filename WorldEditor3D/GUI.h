@@ -12,6 +12,9 @@
 #define OBJECT_NAME 32
 
 class MainApp;
+namespace renderer{
+	struct CollisionBody;
+}
 
 enum class FD_Mode{
 	DIFF,
@@ -28,21 +31,14 @@ struct CreatedObject{
 		diff = "default.png";
 		spec = "no_SPEC.png";
 		mesh = "sphere.obj";
-		boxRot = glm::vec3(0.0f);
-		boxPos = glm::vec3(0.0f);
-		boxScale = glm::vec3(1.0f);
 		isBillboard = false;
 	}
 	std::string diff;
 	std::string spec;
 	std::string mesh;
 	bool isBillboard;
-	glm::vec3 boxRot;
-	glm::vec3 boxPos;
-	glm::vec3 boxScale;
-
+	std::vector<renderer::CollisionBody> colBodies;
 };
-
 
 class GUI{
 public:
@@ -71,10 +67,12 @@ public:
 	int fdEntryItem;
 	int addGameobjectEntryItem;
 	int placeGameobjectEntryItem;
+	int collisionBodyEntryItem;
 	FD_Mode fdMode;
 	std::string currentPath;
 	std::vector<std::string> dirContents;
 	std::vector<std::string> dir_gameobjects;
+	std::vector<int> collisionBodies;
 
 private:
 	MainApp* app;

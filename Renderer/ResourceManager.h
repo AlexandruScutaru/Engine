@@ -18,13 +18,18 @@ namespace renderer{
 		//static TexturedModel* getTexturedModelAt(unsigned int index);
 
 		static TexturedModel* loadModel(const std::string& file);
+		static TexturedModel* loadModel(int shape);
+		static char* IndexToShape(int index);
 
 		static void Init();
 		static void ClearData();
 
-		enum{
-			SPHERE,
-			CUBE
+		enum CollisionShapes{
+			SHAPE_CUBE = 0,
+			SHAPE_SPHERE,
+			SHAPE_CILINDER,
+			SHAPE_CONE,
+			SHAPE_CAPSULE
 		};
 
 	private:

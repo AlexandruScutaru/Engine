@@ -6,6 +6,19 @@
 
 namespace renderer{
 
+	struct CollisionBody{
+		CollisionBody(){
+			colRelativePos = glm::vec3(0.0f);
+			colRot = glm::vec3(0.0f);
+			colScale = glm::vec3(1.0f);
+		}
+		int shape;
+		renderer::TexturedModel* colModel;
+		glm::vec3 colRelativePos;
+		glm::vec3 colRot;
+		glm::vec3 colScale;
+	};
+
 	class GameObject{
 	public:
 		GameObject();

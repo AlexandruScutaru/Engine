@@ -63,6 +63,7 @@ namespace renderer{
 		m_entityShader.loadInt("pointLightsNum", 0);
 		//spot light
 		m_entityShader.loadBool("flashlightOn", false);
+		m_entityShader.loadBool("selected", false);
 
 		//positional info
 		m_entityShader.loadVec3("viewPos", camera.getPos());
@@ -82,13 +83,13 @@ namespace renderer{
 		glDrawElements(GL_TRIANGLES, object->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
 	}
 
-	void MasterRenderer::renderBoundingBox(TexturedModel* object, glm::vec3 & scale, glm::vec3 & rot, Camera & camera){
+	void MasterRenderer::renderBoundingBox(TexturedModel* object, glm::vec3& pos, glm::vec3& rot, glm::vec3& scale, Camera & camera){
 		if(!object)
 			return;
 		// view/projection transformations
 		glm::mat4 view = camera.getViewMatrix();
 		glm::mat4 model;
-		model = glm::translate(model, glm::vec3(0.0f));
+		model = glm::translate(model, pos);
 		
 		model = glm::rotate(model, rot.x, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, rot.y, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -105,6 +106,34 @@ namespace renderer{
 		glBindVertexArray(object->getMesh()->vertexArrayObject);
 		glDrawElements(GL_TRIANGLES, object->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
+
+	void MasterRenderer::renderCollisionBodies(std::vector<CollisionBody>& bodies, Camera& camera){
+		if(!bodies.size())
+			return;
+		
+		// view/projection transformations
+		glm::mat4 view = camera.getViewMatrix();
+		m_basicShader.use();
+		m_basicShader.loadMat4("projection", m_projection);
+		m_basicShader.loadMat4("view", view);
+		for(auto body : bodies){
+			glm::mat4 model;
+			model = glm::translate(model, body.colRelativePos);
+
+			model = glm::rotate(model, body.colRot.x, glm::vec3(1.0f, 0.0f, 0.0f));
+			model = glm::rotate(model, body.colRot.y, glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::rotate(model, body.colRot.z, glm::vec3(0.0f, 0.0f, 1.0f));
+
+			model = glm::scale(model, body.colScale);
+
+			m_basicShader.loadMat4("model", model);
+
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			glBindVertexArray(body.colModel->getMesh()->vertexArrayObject);
+			glDrawElements(GL_TRIANGLES, body.colModel->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
 	}
 
 	int MasterRenderer::pixelPick(std::vector<GameObject*> objects, Camera & camera, glm::vec2& coords){
