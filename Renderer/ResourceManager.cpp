@@ -53,16 +53,16 @@ namespace renderer{
 			Material mat(getTexture("res/textures/" + obj["diff"].get<std::string>()),
 						 getTexture("res/textures/" + obj["spec"].get<std::string>()));
 			MeshData* mesh = getMesh("res/models/" + obj["mesh"].get<std::string>());
-			std::vector<float> vec;
-			vec = obj["boxPos"].get<std::vector<float>>();
-			glm::vec3 pos = glm::vec3(vec[0], vec[1], vec[2]);
-			vec = obj["boxRot"].get<std::vector<float>>();
-			glm::vec3 rot = glm::vec3(vec[0], vec[1], vec[2]); 
-			vec = obj["boxScale"].get<std::vector<float>>();
-			glm::vec3 scale = glm::vec3(vec[0], vec[1], vec[2]);
+			//std::vector<float> vec;
+			//vec = obj["boxPos"].get<std::vector<float>>();
+			//glm::vec3 pos = glm::vec3(vec[0], vec[1], vec[2]);
+			//vec = obj["boxRot"].get<std::vector<float>>();
+			//glm::vec3 rot = glm::vec3(vec[0], vec[1], vec[2]); 
+			//vec = obj["boxScale"].get<std::vector<float>>();
+			//glm::vec3 scale = glm::vec3(vec[0], vec[1], vec[2]);
 			bool billboard = obj["billboard"].get<bool>();
 
-			TexturedModel model = TexturedModel(mesh, mat, billboard, pos, rot, scale);
+			TexturedModel model = TexturedModel(mesh, mat, billboard);
 
 			auto ret = m_modelsMap.insert(make_pair(path, model));
 			return &(ret.first->second);

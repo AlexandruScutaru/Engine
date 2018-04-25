@@ -10,10 +10,7 @@ namespace renderer{
 	class TexturedModel{
 		public:
 			TexturedModel();
-			TexturedModel(MeshData* mesh, Material& material, bool billboard = false, 
-						  glm::vec3& pos = glm::vec3(0.0f), 
-						  glm::vec3& rot = glm::vec3(0.0f),
-						  glm::vec3& scale = glm::vec3(1.0f));
+			TexturedModel(MeshData* mesh, Material& material, bool billboard = false);
 			~TexturedModel();
 
 			void setMesh(MeshData* mesh){ m_mesh = mesh; }
@@ -29,9 +26,6 @@ namespace renderer{
 			Material m_material;
 			bool m_isBillboard;
 
-			glm::vec3 m_bbPosition;
-			glm::vec3 m_bbRotation;
-			glm::vec3 m_bbScale;
 	};
 
 }

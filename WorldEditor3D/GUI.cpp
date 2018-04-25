@@ -117,12 +117,9 @@ void GUI::showCreationTab(){
 		ImGui::Combo("Shape", &collisionBodyIndex, "Cube\0Sphere\0Cilinder\0Cone\0Capsule\0\0");
 		if(ImGui::Button("Add##shape")){
 			std::string shape = std::string(renderer::ResourceManager::IndexToShape(collisionBodyIndex));
-			//collisionBodies.push_back(shape);
 			collisionBodies.push_back(collisionBodyIndex);
 			renderer::CollisionBody body;
-			body.colModel = renderer::ResourceManager::loadModel(collisionBodyIndex);
 			body.shape = collisionBodyIndex;
-			//body.shape = shape;
 			app->m_currentCreating.colBodies.push_back(body);
 		}
 		ImGui::SameLine();

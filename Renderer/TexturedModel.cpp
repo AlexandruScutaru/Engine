@@ -7,14 +7,10 @@ namespace renderer{
 		m_isBillboard(false)
 	{}
 
-	TexturedModel::TexturedModel(MeshData* mesh, Material& material, bool billboard,
-								 glm::vec3& pos, glm::vec3& rot, glm::vec3& scale):
+	TexturedModel::TexturedModel(MeshData* mesh, Material& material, bool billboard) :
 		m_mesh(mesh),
 		m_material(material),
-		m_isBillboard(billboard),
-		m_bbPosition(pos),
-		m_bbRotation(rot),
-		m_bbScale(scale)
+		m_isBillboard(billboard)
 	{}
 
 	TexturedModel::~TexturedModel(){

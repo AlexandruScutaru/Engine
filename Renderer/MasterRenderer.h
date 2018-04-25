@@ -27,7 +27,6 @@ namespace renderer{
 		void setProjectionMatrix(Camera& camera);
 
 		void renderSingleEntity(TexturedModel* object, DirLight& sun, Camera& camera);
-		void renderBoundingBox(TexturedModel* object, glm::vec3& pos, glm::vec3& rot, glm::vec3& scale, Camera& camera);
 		void renderCollisionBodies(std::vector<CollisionBody>& bodies, Camera& camera);
 		int pixelPick(std::vector<GameObject*> objects, Camera& camera, glm::vec2& coords);
 

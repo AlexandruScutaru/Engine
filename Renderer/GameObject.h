@@ -13,7 +13,6 @@ namespace renderer{
 			colScale = glm::vec3(1.0f);
 		}
 		int shape;
-		renderer::TexturedModel* colModel;
 		glm::vec3 colRelativePos;
 		glm::vec3 colRot;
 		glm::vec3 colScale;
@@ -41,6 +40,7 @@ namespace renderer{
 		void setScale(glm::vec3& scale){ m_scale = scale; }
 		void setName(const std::string& name){ m_name = name; }
 		void setSelected(bool selected){ m_selected = selected; }
+		void addCollisionBody(CollisionBody& body){ m_colBodies.push_back(body); }
 
 		TexturedModel* getTexturedModel(){ return m_model; }
 		glm::vec3& getPosition(){ return m_pos; }
@@ -66,6 +66,8 @@ namespace renderer{
 		glm::vec3 m_pos;
 		glm::vec3 m_rot;
 		glm::vec3 m_scale;
+
+		std::vector<CollisionBody> m_colBodies;
 
 	};
 

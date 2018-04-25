@@ -202,15 +202,10 @@ void MainApp::update(float deltaTime){
 	if(!ImGui::GetIO().WantCaptureKeyboard)
 		m_camera.update(m_inputManager, deltaTime);
 
-	//glm::vec3 pos = m_camera.getPos();// +m_camera.getFront() * 4.0f;
-	//printf("%.5f %.5f %.5f\n", pos.x, pos.y, pos.z);
-
 	///object rotation
 	glm::mat4 rotationMat(1);
 	rotationMat = glm::rotate(rotationMat, 1.0f*deltaTime, glm::vec3(0.0, 1.0, 0.0));
-	//m_dirLight.direction = glm::vec3(rotationMat * glm::vec4(m_dirLight.direction, 1.0));
-	//m_billboards.back()->setPosition(m_dirLight.direction);
-
+	
 	static_cast<renderer::SpotLight*>(m_lights[1])->position = m_camera.getPos();
 	static_cast<renderer::SpotLight*>(m_lights[1])->direction = m_camera.getFront();
 }
@@ -277,7 +272,6 @@ void MainApp::openCreatedObject(const std::string& object){
 		body.colRelativePos = pos;
 		body.colRot = rot;
 		body.colScale = scale;
-		body.colModel = renderer::ResourceManager::loadModel(body.shape);
 		m_currentCreating.colBodies.push_back(body);
 		m_gui.collisionBodies.push_back(body.shape);
 	}

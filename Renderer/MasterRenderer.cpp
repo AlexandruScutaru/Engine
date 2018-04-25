@@ -83,31 +83,6 @@ namespace renderer{
 		glDrawElements(GL_TRIANGLES, object->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
 	}
 
-	void MasterRenderer::renderBoundingBox(TexturedModel* object, glm::vec3& pos, glm::vec3& rot, glm::vec3& scale, Camera & camera){
-		if(!object)
-			return;
-		// view/projection transformations
-		glm::mat4 view = camera.getViewMatrix();
-		glm::mat4 model;
-		model = glm::translate(model, pos);
-		
-		model = glm::rotate(model, rot.x, glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, rot.y, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, rot.z, glm::vec3(0.0f, 0.0f, 1.0f));
-
-		model = glm::scale(model, scale);
-
-		m_basicShader.use();
-		m_basicShader.loadMat4("projection", m_projection);
-		m_basicShader.loadMat4("view", view);
-		m_basicShader.loadMat4("model", model);
-
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glBindVertexArray(object->getMesh()->vertexArrayObject);
-		glDrawElements(GL_TRIANGLES, object->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	}
-
 	void MasterRenderer::renderCollisionBodies(std::vector<CollisionBody>& bodies, Camera& camera){
 		if(!bodies.size())
 			return;
@@ -117,6 +92,7 @@ namespace renderer{
 		m_basicShader.use();
 		m_basicShader.loadMat4("projection", m_projection);
 		m_basicShader.loadMat4("view", view);
+		TexturedModel* td;
 		for(auto body : bodies){
 			glm::mat4 model;
 			model = glm::translate(model, body.colRelativePos);
@@ -129,9 +105,10 @@ namespace renderer{
 
 			m_basicShader.loadMat4("model", model);
 
+			td = ResourceManager::loadModel(body.shape);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			glBindVertexArray(body.colModel->getMesh()->vertexArrayObject);
-			glDrawElements(GL_TRIANGLES, body.colModel->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
+			glBindVertexArray(td->getMesh()->vertexArrayObject);
+			glDrawElements(GL_TRIANGLES, td->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
 	}

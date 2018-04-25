@@ -13,10 +13,6 @@ namespace renderer{
 	public:
 		static MeshData* getMesh(const std::string& path);
 		static TextureData* getTexture(const std::string& path);
-
-		//static unsigned int addTexturedModel(TexturedModel& model);
-		//static TexturedModel* getTexturedModelAt(unsigned int index);
-
 		static TexturedModel* loadModel(const std::string& file);
 		static TexturedModel* loadModel(int shape);
 		static char* IndexToShape(int index);
