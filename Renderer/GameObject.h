@@ -38,7 +38,9 @@ namespace renderer{
 		void setPosition(glm::vec3& pos){ m_pos = pos; }
 		void setRotation(glm::vec3& rot){ m_rot = rot; }
 		void setScale(glm::vec3& scale){ m_scale = scale; }
+		void setIsStatic(bool isStatic){ m_isStatic = isStatic; }
 		void setName(const std::string& name){ m_name = name; }
+		void setInEditorName(const std::string& inEditorName){ m_inEditorName = inEditorName; }
 		void setSelected(bool selected){ m_selected = selected; }
 		void addCollisionBody(CollisionBody& body){ m_colBodies.push_back(body); }
 
@@ -51,6 +53,8 @@ namespace renderer{
 		bool isStatic(){ return m_isStatic; }
 		bool isSelected(){ return m_selected; }
 		const std::string& getName(){ return m_name; }
+		const std::string& getInEditorName(){ return m_inEditorName; }
+
 
 		virtual void update(float deltaTime){}
 
@@ -62,6 +66,7 @@ namespace renderer{
 		int code;
 		TexturedModel* m_model;
 		std::string m_name;
+		std::string m_inEditorName;
 		
 		glm::vec3 m_pos;
 		glm::vec3 m_rot;

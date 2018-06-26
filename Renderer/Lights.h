@@ -65,8 +65,8 @@ namespace renderer{
 		glm::vec3 direction;
 		glm::vec3 position;
 		glm::vec3 attenuation;
-		float outerCutOff;
 		float cutOff;
+		float outerCutOff;
 	};
 
 }

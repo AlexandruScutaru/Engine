@@ -51,6 +51,7 @@ namespace renderer{
 		m_rot = other.m_rot;
 		m_scale = other.m_scale;
 		m_name = other.m_name;
+		m_inEditorName = other.m_inEditorName;
 
 		objectCount++;
 		code = objectCount;

@@ -23,7 +23,8 @@ GUI::GUI(MainApp* app) :
 	b_showSaveFileDialog(false),
 	addGameobjectEntryItem(-1),
 	placeGameobjectEntryItem(-1),
-	collisionBodyEntryItem(-1)
+	collisionBodyEntryItem(-1),
+	m_moveInc(0.01f)
 {}
 
 GUI::~GUI(){}
@@ -186,6 +187,20 @@ void GUI::showPlacementTab(){
 		if(ImGui::CollapsingHeader("Add light")){
 
 		}
+		ImGui::Separator();
+		if(ImGui::Button("Save")){
+			b_showSaveFileDialog = true;
+			currentPath = "res/maps/";
+			fdMode = FD_Mode::MAP_SAVE;
+			updateDirContents(dirContents);
+		}
+		ImGui::SameLine();
+		if(ImGui::Button("Open")){
+			b_showOpenFileDialog = true;
+			currentPath = "res/maps/";
+			fdMode = FD_Mode::MAP_OPEN;
+			updateDirContents(dirContents);
+		}
 	}
 	ImGui::EndChild();
 }
@@ -251,6 +266,8 @@ void GUI::showSaveFileDialog(){
 			b_showSaveFileDialog = false;
 			if(fdMode == FD_Mode::OBJECT_SAVE){
 				app->saveCreatedObject(buf);
+			} else if(fdMode == FD_Mode::MAP_SAVE){
+				app->saveMap(buf);
 			}
 		}
 		memset(buf, '\0', 32);
@@ -277,6 +294,7 @@ void GUI::openButtonPressed(){
 		app->m_creatingModel.setMesh(renderer::ResourceManager::getMesh("res/models/" + dirContents[fdEntryItem]));
 		break;
 	case FD_Mode::MAP_OPEN:
+		app->openMap(dirContents[fdEntryItem]);
 		break;
 	case FD_Mode::OBJECT_OPEN:
 		app->openCreatedObject(dirContents[fdEntryItem]);
@@ -333,9 +351,9 @@ reiterate:
 		app->m_currentlySelectedObject->setSelected(true);
 		//object info
 		memset(m_name, '\0', OBJECT_NAME);
-		strncat_s(m_name, app->m_objectsInScene[placeGameobjectEntryItem]->getName().c_str(), OBJECT_NAME);
+		strncat_s(m_name, app->m_objectsInScene[placeGameobjectEntryItem]->getInEditorName().c_str(), OBJECT_NAME);
 		ImGui::InputText("Name", m_name, OBJECT_NAME);
-		app->m_objectsInScene[placeGameobjectEntryItem]->setName(m_name);
+		app->m_objectsInScene[placeGameobjectEntryItem]->setInEditorName(m_name);
 		
 		//object modifier
 		if(ImGui::Button("Duplicate")){
@@ -351,10 +369,12 @@ reiterate:
 		}
 		//positional modifiers
 		ImGui::Separator();
-		renderer::GameObject* obj = app->m_objectsInScene[placeGameobjectEntryItem];	
-		ImGui::DragFloat("Pos x", &obj->getPosition().x, 0.01f, -300000.0f, 300000.0f);
-		ImGui::DragFloat("Pos Y", &obj->getPosition().y, 0.01f, -300000.0f, 300000.0f);
-		ImGui::DragFloat("Pos Z", &obj->getPosition().z, 0.01f, -300000.0f, 300000.0f);
+		ImGui::DragFloat("Inc", &m_moveInc, 0.01f, 0.01f, 5.0f);
+		renderer::GameObject* obj = app->m_objectsInScene[placeGameobjectEntryItem];
+
+		ImGui::DragFloat("Pos x", &obj->getPosition().x, m_moveInc, -300.0f, 300.0f);
+		ImGui::DragFloat("Pos Y", &obj->getPosition().y, m_moveInc, -300.0f, 300.0f);
+		ImGui::DragFloat("Pos Z", &obj->getPosition().z, m_moveInc, -300.0f, 300.0f);
 		ImGui::Text("\n");
 		ImGui::SliderAngle("Rot x", &obj->getRotation().x, 0.0f, 359.0f);
 		ImGui::SliderAngle("Rot Y", &obj->getRotation().y, 0.0f, 359.0f);
@@ -376,7 +396,7 @@ bool VectorOfStringGetter(void* data, int n, const char** out_text){
 
 bool VectorOfObjectsGetter(void * data, int n, const char ** out_text){
 	std::vector<renderer::GameObject*>* v = (std::vector<renderer::GameObject*>*)data;
-	*out_text = (*v)[n]->getName().c_str();
+	*out_text = (*v)[n]->getInEditorName().c_str();
 	return true;
 }
 
@@ -393,7 +413,7 @@ bool MapOfGameObjectsGetter(void * data, int n, const char ** out_text){
 	int i = 0;
 	for(it = m->begin(); i <= n; it++){
 		i++;
-		*out_text = it->second->getName().c_str();
+		*out_text = it->second->getInEditorName().c_str();
 	}
 	return true;
 }

@@ -25,6 +25,7 @@ namespace renderer{
 		float getFOV(){ return m_FOV; }
 		float getPitch(){ return m_pitch; }
 		float getYaw(){ return m_yaw; }
+		bool getFlashlight(){ return m_flashlight; }
 		glm::vec3 getPos(){ return m_position; }
 		glm::vec3 getFront(){ return m_front; }
 		glm::vec3 getUp(){ return m_up; }
@@ -39,6 +40,8 @@ namespace renderer{
 
 	private:
 		void updateCameraVectors();
+		void incCamSpeed();
+		void decCamSpeed();
 
 		// Camera Attributes
 		glm::vec3 m_position;
@@ -53,6 +56,7 @@ namespace renderer{
 		float m_movementSpeed;
 		float m_mouseSensitivity;
 		float m_FOV;
+		bool m_flashlight;
 
 	};
 

@@ -75,6 +75,7 @@ public:
 	std::vector<int> collisionBodies;
 
 private:
+	float m_moveInc;
 	MainApp* app;
 
 };

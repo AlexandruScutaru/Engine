@@ -34,10 +34,12 @@ namespace renderer{
 		glEnable(GL_CULL_FACE);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
+		m_flashlight = false;
 		//glClearColor(0.1f, 0.1f, 0.1f, 1.0);
 	}
 
 	void MasterRenderer::renderScene(std::vector<GameObject*>& gameObjects, std::vector<Light*>& lights, Camera& camera){
+		m_flashlight = camera.getFlashlight();
 		for(auto gameObject : gameObjects){
 			processObject(gameObject);
 		}
@@ -207,7 +209,7 @@ namespace renderer{
 
 	void MasterRenderer::renderGameObjects(){
 		m_entityShader.use();
-		m_entityShader.loadBool("flashlightOn", true);
+		m_entityShader.loadBool("flashlightOn", m_flashlight);
 
 		for(auto const& model : m_gameObjectsBatches){
 			glActiveTexture(GL_TEXTURE0);

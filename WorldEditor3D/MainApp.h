@@ -34,7 +34,9 @@ private:
 	void processInput(); //handles input processing
 	void update(float deltaTime); //updates based on deltatime
 	void drawGame(); //draws on screen
-	
+	void resetData();
+	void openMap(const std::string& file);
+	void saveMap(const std::string& file);
 	void saveCreatedObject(char* buf);
 	void openCreatedObject(const std::string& object);
 	void renderToSelect(glm::vec2& coords);
@@ -58,8 +60,8 @@ private:
 
 	//this vector is to be filled with objects to draw 
 	//i hope a frustum culling will be implemented
-	std::vector<renderer::GameObject*> m_objectsInScene;
 	std::vector<renderer::GameObject*> m_objects_ToDraw;
+	std::vector<renderer::GameObject*> m_objectsInScene;
 
 	//creation state variables;
 	CreatedObject m_currentCreating;

@@ -47,6 +47,8 @@ namespace renderer{
 		ShaderProgram m_basicShader;
 		ShaderProgram m_selectShader;
 
+		bool m_flashlight;
+
 		glm::mat4 m_projection;
 		glm::mat4 m_view;
 

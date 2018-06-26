@@ -55,10 +55,12 @@ void MainApp::initLevel(){
 	//set default data for the creatingEntiy object during the process of creating a new gameobject;
 	
 	m_creatingModel = *(renderer::ResourceManager::loadModel("default"));
-	m_creatingLight = renderer::DirLight(glm::vec3(0.05f, 0.05f, 0.05f),
+	m_creatingLight = renderer::DirLight(glm::vec3(0.5f, 0.5f, 0.5f),
 										 glm::vec3(0.4f, 0.4f, 0.4f),
 										 glm::vec3(0.5f, 0.5f, 0.5f),
-										 glm::vec3(-2000.0f, 2000.0f, 2000.0f));
+										 //glm::vec3(-2000.0f, 2000.0f, 2000.0f));
+										 glm::vec3(0.0f, 0.0f, 0.0f));
+
 	
 	// initial lighting
 
@@ -226,6 +228,162 @@ void MainApp::drawGame(){
 	m_window.swapBuffer();
 }
 
+void MainApp::resetData(){
+	m_gui = GUI(this);
+	m_currentlySelectedObject = nullptr;
+
+	m_gameObjectsMap.clear();
+	m_objects_ToDraw.clear();
+	for(auto obj : m_objectsInScene)
+		delete obj;
+	m_objectsInScene.clear();
+	for(auto light : m_lights)
+		delete light;
+	m_lights.clear();
+
+	renderer::ResourceManager::ClearData();
+
+	m_creatingModel = *(renderer::ResourceManager::loadModel("default"));
+	m_currentCreating = CreatedObject();
+}
+
+void MainApp::openMap(const std::string& file){
+	std::string path = m_gui.currentPath + file;
+	resetData();
+
+	std::ifstream in(path);
+	json mapFile;
+	in >> mapFile;
+
+	renderer::GameObject* object;
+	//gameobjects
+	for(auto it = mapFile["gameobjects"].begin(); it != mapFile["gameobjects"].end(); ++it){
+		json obj = it.value();
+		std::string obj_name = obj["name"].get<std::string>();
+		std::string obj_inEditorName = obj["inEditorName"].get<std::string>();
+
+
+		std::vector<float> p = obj["pos"].get<std::vector<float>>();
+		glm::vec3 pos = glm::vec3(p[0], p[1], p[2]);
+		std::vector<float> r = obj["rot"].get<std::vector<float>>();
+		glm::vec3 rot = glm::vec3(r[0], r[1], r[2]);
+		std::vector<float> s = obj["scale"].get<std::vector<float>>();
+		glm::vec3 scale = glm::vec3(s[0], s[1], s[2]);
+
+		bool isStatic = obj["static"].get<bool>();
+
+		object = new renderer::GameObject(renderer::ResourceManager::loadModel(obj_name));
+		object->setName(obj_name);
+		object->setInEditorName(obj_inEditorName);
+		object->setPosition(pos);
+		object->setRotation(rot);
+		object->setScale(scale);
+		object->setIsStatic(isStatic);
+
+		m_objectsInScene.push_back(object);
+		m_gameObjectsMap[object->getCode()] = object;
+	}
+	
+	//lights
+	std::vector<float> v;
+	///dirlight
+	v = mapFile["lights"]["dirLight"]["amb"].get<std::vector<float>>();
+	glm::vec3 amb = glm::vec3(v[0], v[1], v[2]);
+	v.clear(), v = mapFile["lights"]["dirLight"]["diff"].get<std::vector<float>>();
+	glm::vec3 diff = glm::vec3(v[0], v[1], v[2]);
+	v.clear(), v = mapFile["lights"]["dirLight"]["spec"].get<std::vector<float>>();
+	glm::vec3 spec = glm::vec3(v[0], v[1], v[2]);
+	v.clear(), v = mapFile["lights"]["dirLight"]["dir"].get<std::vector<float>>();
+	glm::vec3 dir = glm::vec3(v[0], v[1], v[2]);
+	m_lights.push_back(new renderer::DirLight(amb, diff, spec, dir));
+	
+	///spotlight
+	v = mapFile["lights"]["spotLight"]["amb"].get<std::vector<float>>();
+	amb = glm::vec3(v[0], v[1], v[2]);
+	v.clear(), v = mapFile["lights"]["spotLight"]["diff"].get<std::vector<float>>();
+	diff = glm::vec3(v[0], v[1], v[2]);
+	v.clear(), v = mapFile["lights"]["spotLight"]["spec"].get<std::vector<float>>();
+	spec = glm::vec3(v[0], v[1], v[2]);
+	v.clear(), v = mapFile["lights"]["spotLight"]["dir"].get<std::vector<float>>();
+	dir = glm::vec3(v[0], v[1], v[2]);
+	v.clear(), v = mapFile["lights"]["spotLight"]["pos"].get<std::vector<float>>();
+	glm::vec3 pos = glm::vec3(v[0], v[1], v[2]);
+	v.clear(), v = mapFile["lights"]["spotLight"]["att"].get<std::vector<float>>();
+	glm::vec3 att = glm::vec3(v[0], v[1], v[2]);
+	float cutOff = mapFile["lights"]["spotLight"]["cutOff"].get<float>();
+	float outCutOff = mapFile["lights"]["spotLight"]["outCutOff"].get<float>();
+	m_lights.push_back(new renderer::SpotLight(amb, diff, spec, dir, pos, att, cutOff, outCutOff));
+	
+	///pointlights
+	for(auto it = mapFile["lights"]["pointLights"].begin(); it != mapFile["lights"]["pointLights"].end(); ++it){
+		v = mapFile["lights"]["spotLight"]["amb"].get<std::vector<float>>();
+		amb = glm::vec3(v[0], v[1], v[2]);
+		v.clear(), v = mapFile["lights"]["spotLight"]["diff"].get<std::vector<float>>();
+		diff = glm::vec3(v[0], v[1], v[2]);
+		v.clear(), v = mapFile["lights"]["spotLight"]["spec"].get<std::vector<float>>();
+		spec = glm::vec3(v[0], v[1], v[2]);
+		v.clear(), v = mapFile["lights"]["spotLight"]["pos"].get<std::vector<float>>();
+		pos = glm::vec3(v[0], v[1], v[2]);
+		v.clear(), v = mapFile["lights"]["spotLight"]["att"].get<std::vector<float>>();
+		att = glm::vec3(v[0], v[1], v[2]);
+		m_lights.push_back(new renderer::PointLight(amb, diff, spec, pos, att));
+	}
+}
+
+void MainApp::saveMap(const std::string& file){
+	std::string path = m_gui.currentPath + file;
+	json map;
+	map["gameobjects"] = {};
+	map["lights"] = {};
+	map["lights"]["pointLights"] = {};
+	
+	for(auto obj : m_objectsInScene){
+		json entry = {
+			{"name", obj->getName()},
+			{"inEditorName", obj->getInEditorName()},
+			{"pos", {obj->getPosition().x, obj->getPosition().y, obj->getPosition().z}},
+			{"rot", {obj->getRotation().x, obj->getRotation().y, obj->getRotation().z}},
+			{"scale", {obj->getScale().x, obj->getScale().y, obj->getScale().z}},
+			{"static", obj->isStatic()}
+		};
+		map["gameobjects"].push_back(entry);
+	}
+	
+	renderer::DirLight* dl = static_cast<renderer::DirLight*>(m_lights[0]);
+	map["lights"]["dirLight"] = {
+		{"amb", {dl->ambient.x, dl->ambient.y, dl->ambient.z}},
+		{"diff", {dl->diffuse.x, dl->diffuse.y, dl->diffuse.z}},
+		{"spec", {dl->specular.x, dl->specular.y, dl->specular.z}},
+		{"dir", {dl->direction.x, dl->direction.y, dl->direction.z}}
+	};
+	renderer::SpotLight* sl = static_cast<renderer::SpotLight*>(m_lights[1]);
+	//l->
+	map["lights"]["spotLight"] = {
+		{"amb", {sl->ambient.x, sl->ambient.y, sl->ambient.z}},
+		{"diff", {sl->diffuse.x, sl->diffuse.y, sl->diffuse.z}},
+		{"spec", {sl->specular.x, sl->specular.y, sl->specular.z}},
+		{"dir", {sl->direction.x, sl->direction.y, sl->direction.z}},
+		{"pos", {sl->position.x, sl->position.y, sl->position.z}},
+		{"att", {sl->attenuation.x, sl->attenuation.y, sl->attenuation.z}},
+		{"cutOff", sl->cutOff},
+		{"outCutOff", sl->outerCutOff}
+	};
+	for(size_t index = 2; index < m_lights.size(); index++){
+		renderer::PointLight* pl = static_cast<renderer::PointLight*>(m_lights[index]);
+		json entry = {
+			{"amb",		{pl->ambient.x,		pl->ambient.y,		pl->ambient.z}},
+			{"diff",	{pl->diffuse.x,		pl->diffuse.y,		pl->diffuse.z}},
+			{"spec",	{pl->specular.x,	pl->specular.y,		pl->specular.z}},
+			{"pos",		{pl->position.x,	pl->position.y,		pl->position.z}},
+			{"att",		{pl->attenuation.x, pl->attenuation.y,	pl->attenuation.z}},
+		};
+		map["lights"]["pointLights"].push_back(entry);
+	}
+	std::ofstream out(path);
+	out << std::setw(4) << map << std::endl;
+	out.close();
+}
+
 void MainApp::saveCreatedObject(char* buf){
 	json entry = {
 		{"diff", m_currentCreating.diff},
@@ -305,6 +463,8 @@ void MainApp::addNewObject(const std::string & file){
 	renderer::GameObject* object;
 	object = new renderer::GameObject(renderer::ResourceManager::loadModel(file));
 	object->setName(file);
+	object->setInEditorName(file);
+
 	glm::vec3 pos = m_camera.getPos() + m_camera.getFront() * 4.0f;
 	object->setPosition(pos);
 	m_objectsInScene.push_back(object);

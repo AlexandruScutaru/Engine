@@ -1,6 +1,6 @@
 #include "Camera.h"
 #include "InputManager.h"
-
+#include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
 #include <SDL/SDL.h>
 
@@ -17,7 +17,8 @@ namespace renderer{
 		m_yaw(yaw),
 		m_movementSpeed(movementSpeed),
 		m_mouseSensitivity(mouseSensitivity),
-		m_FOV(fov)
+		m_FOV(fov),
+		m_flashlight(false)
 	{
 		updateCameraVectors();
 	}
@@ -32,6 +33,7 @@ namespace renderer{
 	void Camera::update(InputManager& manager, float deltaTime){
 		//camera movement
 		float cameraSpeed = m_movementSpeed * deltaTime;
+
 		if(manager.isKeyDown(SDLK_w))
 			m_position += cameraSpeed * m_front;
 		else if(manager.isKeyDown(SDLK_s))
@@ -47,6 +49,9 @@ namespace renderer{
 		else if(manager.isKeyDown(SDLK_e))
 			m_position += cameraSpeed * m_up;
 
+		if(manager.isKeyPressed(SDLK_f))
+			m_flashlight = !m_flashlight;
+
 		//camera rotation
 		//for now it is only in edit mode so Right Mouse Button needs to be pressed in order to rotate the camera
 		if(manager.isKeyDown(SDL_BUTTON_RIGHT)){
@@ -58,6 +63,12 @@ namespace renderer{
 			if(m_pitch < -89.0f)
 				m_pitch = -89.0f;
 		}
+
+		if(manager.getMouseWheel() == 1)
+			incCamSpeed();
+		else if(manager.getMouseWheel() == -1)
+			decCamSpeed();
+
 		updateCameraVectors();
 	}
 
@@ -71,6 +82,18 @@ namespace renderer{
 		// Also re-calculate the Right and Up vector
 		m_right = glm::normalize(glm::cross(m_front, m_worldUp));  // Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
 		m_up = glm::normalize(glm::cross(m_right, m_front));
+	}
+
+	void Camera::incCamSpeed(){
+		m_movementSpeed += 0.2f;
+		if(m_movementSpeed > 6.0f)
+			m_movementSpeed = 6.0f;
+	}
+
+	void Camera::decCamSpeed(){
+		m_movementSpeed -= 0.2f;
+		if(m_movementSpeed < 1.0f)
+			m_movementSpeed = 1.0f;
 	}
 
 }
