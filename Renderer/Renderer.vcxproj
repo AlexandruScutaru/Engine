@@ -151,6 +151,7 @@
     <ClCompile Include="TexturedModel.cpp" />
     <ClCompile Include="TextureLoader.cpp" />
     <ClCompile Include="Timing.cpp" />
+    <ClCompile Include="TranformGizmos.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -168,6 +169,7 @@
     <ClInclude Include="TexturedModel.h" />
     <ClInclude Include="TextureLoader.h" />
     <ClInclude Include="Timing.h" />
+    <ClInclude Include="TranformGizmos.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

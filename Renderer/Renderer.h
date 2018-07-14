@@ -12,6 +12,7 @@
 #include "TexturedModel.h"
 #include "GameObject.h"
 #include "MasterRenderer.h"
+#include "TranformGizmos.h"
 
 #endif // !RENDERER_H
 

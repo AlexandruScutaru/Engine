@@ -82,6 +82,7 @@ namespace renderer{
 		// Also re-calculate the Right and Up vector
 		m_right = glm::normalize(glm::cross(m_front, m_worldUp));  // Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
 		m_up = glm::normalize(glm::cross(m_right, m_front));
+		m_forward = glm::normalize(glm::cross(m_right, m_worldUp));
 	}
 
 	void Camera::incCamSpeed(){

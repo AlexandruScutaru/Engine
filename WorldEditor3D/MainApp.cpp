@@ -7,8 +7,13 @@
 
 //#define SCREEN_WIDTH 1366
 //#define SCREEN_HEIGHT 768
-#define SCREEN_WIDTH 1280
-#define SCREEN_HEIGHT 720
+
+//#define SCREEN_WIDTH 1280
+//#define SCREEN_HEIGHT 720
+
+#define SCREEN_WIDTH  900
+#define SCREEN_HEIGHT 540
+
 
 #define MAX_FPS 120
 
@@ -25,6 +30,15 @@ MainApp::MainApp():
 
 MainApp::~MainApp(){
 	ImGui_ImplSdlGL3_Shutdown();
+
+	m_gameObjectsMap.clear();
+	m_objects_ToDraw.clear();
+	for(auto obj : m_objectsInScene)
+		delete obj;
+	m_objectsInScene.clear();
+	for(auto light : m_lights)
+		delete light;
+	m_lights.clear();
 
 	renderer::ResourceManager::ClearData();
 }
@@ -51,76 +65,23 @@ void MainApp::initSystems(){
 }
 
 void MainApp::initLevel(){
+	m_gizmos.init(&m_currentlySelectedObject);
 	/// lighting, game objects etc
-	//set default data for the creatingEntiy object during the process of creating a new gameobject;
-	
+	//set default data for the creatingEntiy object during the process of creating a new gameobject
 	m_creatingModel = *(renderer::ResourceManager::loadModel("default"));
 	m_creatingLight = renderer::DirLight(glm::vec3(0.5f, 0.5f, 0.5f),
 										 glm::vec3(0.4f, 0.4f, 0.4f),
 										 glm::vec3(0.5f, 0.5f, 0.5f),
-										 //glm::vec3(-2000.0f, 2000.0f, 2000.0f));
 										 glm::vec3(0.0f, 0.0f, 0.0f));
-
 	
-	// initial lighting
-
-	//some objects to draw
-	//renderer::TexturedModel model;
-	//renderer::Material mat;
-	//renderer::GameObject* object;
-	
-	//character
-	
-	//mat = renderer::Material(renderer::ResourceManager::getTexture("res/textures/character_DIFF.png"),
-	//						 renderer::ResourceManager::getTexture("res/textures/character_SPEC.png"));
-	
-	//model.setMaterial(mat);
-	//model.setMesh(renderer::ResourceManager::getMesh("res/models/character.obj"));
-	//object = new renderer::GameObject(renderer::ResourceManager::addTexturedModel(model));
-	//object->setPosition(glm::vec3(0.0f, 0.0f, 10.0f));
-	//object->setScale(glm::vec3(10.0f));
-	//m_objects_ToDraw.push_back(object);
-	/*
-	//plane
-	mat.setDiffuseMap(renderer::ResourceManager::getTexture("res/textures/crate_DIFF.png"));
-	mat.setSpecularMap(renderer::ResourceManager::getTexture("res/textures/crate_SPEC.png"));
-	model.setMaterial(mat);
-	model.setMesh(renderer::ResourceManager::getMesh("res/models/quad.obj"));
-	object = new renderer::GameObject(renderer::ResourceManager::addTexturedModel(model));
-	m_objects_ToDraw.push_back(object);
-	m_gameObjectsMap[object->getCode()] = object;
-
-	*/
-	//directional light billboard
-	//mat.setDiffuseMap(renderer::ResourceManager::getTexture("res/textures/billboard_dirLight.png"));
-	//mat.setSpecularMap(nullptr);
-	////model.setMaterial(mat);
-	//model.setMesh(renderer::ResourceManager::getMesh("res/models/quad.obj"));
-	//object = new renderer::GameObject(renderer::ResourceManager::addTexturedModel(model), true, false);
-	//m_objects_ToDraw.push_back(object);
-	//m_gameObjectsMap[object->getCode()] = object;
+	// initial lighting	
 	m_lights.push_back(new renderer::DirLight(glm::vec3(0.2f, 0.2f, 0.2f),
 											  glm::vec3(0.4f, 0.4f, 0.4f),
 											  glm::vec3(0.5f, 0.5f, 0.5f),
 											  glm::vec3(0.0f, 0.0f, 0.0f))
 
 	);
-	//m_billboardLightsMap[object] = m_lights[0];
-	/*
-	//point light billboard
-	mat.setDiffuseMap(renderer::ResourceManager::getTexture("res/textures/billboard_pointLight.png"));
-	mat.setSpecularMap(nullptr);
-	model.setMaterial(mat);
-	model.setMesh(renderer::ResourceManager::getMesh("res/models/quad.obj"));
-	m_billboard_PointLight = new renderer::GameObject(renderer::ResourceManager::addTexturedModel(model), true);
-
-	///lights
-	m_dirLight = renderer::DirLight(glm::vec3(0.05f, 0.05f, 0.05f), 
-									glm::vec3(0.4f, 0.4f, 0.4f), 
-									glm::vec3(0.5f, 0.5f, 0.5f),
-									glm::vec3(2.0f, 1.0f, 0.0f));
-	m_objects_ToDraw.push_back(m_billboard_DirectionalLight);
-	*/
+	
 	m_lights.push_back(new renderer::SpotLight(glm::vec3(0.6f, 0.6f, 0.6f),
 									  glm::vec3(1.0f, 1.0f, 1.0f),
 									  glm::vec3(1.0f, 1.0f, 1.0f),
@@ -130,22 +91,7 @@ void MainApp::initLevel(){
 									  glm::cos(glm::radians(15.0f)),
 									  glm::cos(glm::radians(22.0f)))
 	);
-
-	/*for(int x = -3; x < 3; x++){
-		for(int y = -3; y < 3; y++){
-			for(int z = -3; z < 3; z++){
-				renderer::GameObject* object;
-				object = new renderer::GameObject(renderer::ResourceManager::loadModel("default"));
-				object->setName("def");
-				object->setPosition(glm::vec3(x,y,z));
-				object->setScale(glm::vec3(0.25f));
-				m_objectsInScene.push_back(object);
-				m_gameObjectsMap[object->getCode()] = object;
-				object = nullptr;
-			}
-		}
-	}*/
-									  
+								  
 }
 
 void MainApp::loop(){
@@ -153,10 +99,12 @@ void MainApp::loop(){
 		float deltaTime = m_fpsLimiter.begin();
 	
 		processInput();
+
 		update(deltaTime);
 		m_gui.updateImGuiWindows();
+		
 		drawGame();
-		glm::vec3 pos = m_camera.getPos();
+		
 		m_fpsLimiter.end();
 	}
 }
@@ -193,9 +141,10 @@ void MainApp::processInput(){
 		}
 	}
 
-	if(m_inputManager.isKeyPressed(SDL_BUTTON_LEFT) &&
-	   m_gui.b_placementTab &&
-	   !ImGui::IsMouseHoveringAnyWindow()){
+	if(m_inputManager.isKeyPressed(SDL_BUTTON_LEFT) && 
+	   m_gui.b_placementTab && 
+	   !ImGui::IsMouseHoveringAnyWindow())
+	{
 		renderToSelect(m_inputManager.getActualMouseCoords());
 	}
 }
@@ -203,11 +152,9 @@ void MainApp::processInput(){
 void MainApp::update(float deltaTime){
 	if(!ImGui::GetIO().WantCaptureKeyboard)
 		m_camera.update(m_inputManager, deltaTime);
-
-	///object rotation
-	glm::mat4 rotationMat(1);
-	rotationMat = glm::rotate(rotationMat, 1.0f*deltaTime, glm::vec3(0.0, 1.0, 0.0));
 	
+	m_gizmos.updateGizmo(m_camera, m_inputManager, deltaTime);
+
 	static_cast<renderer::SpotLight*>(m_lights[1])->position = m_camera.getPos();
 	static_cast<renderer::SpotLight*>(m_lights[1])->direction = m_camera.getFront();
 }
@@ -218,9 +165,9 @@ void MainApp::drawGame(){
 	if(m_gui.b_creationTab){
 		m_masterRenderer.renderSingleEntity(&m_creatingModel, m_creatingLight, m_camera);
 		m_masterRenderer.renderCollisionBodies(m_currentCreating.colBodies, m_camera);
-	}
-	else if(m_gui.b_placementTab){
+	} else if(m_gui.b_placementTab){
 		m_masterRenderer.renderScene(m_objectsInScene, m_lights, m_camera);
+		m_masterRenderer.renderGizmos(m_gizmos, m_camera);
 	}
 
 	ImGui::Render();
@@ -240,8 +187,6 @@ void MainApp::resetData(){
 	for(auto light : m_lights)
 		delete light;
 	m_lights.clear();
-
-	renderer::ResourceManager::ClearData();
 
 	m_creatingModel = *(renderer::ResourceManager::loadModel("default"));
 	m_currentCreating = CreatedObject();
@@ -441,21 +386,27 @@ void MainApp::openCreatedObject(const std::string& object){
 }
 
 void MainApp::renderToSelect(glm::vec2& coords){
-	int val = m_masterRenderer.pixelPick(m_objectsInScene, m_camera, m_inputManager.getActualMouseCoords());
-	if(m_currentlySelectedObject)
-		m_currentlySelectedObject->setSelected(false);
-	if(val){
-		renderer::GameObject* obj = m_gameObjectsMap[val];
-		m_currentlySelectedObject = obj;
-		m_currentlySelectedObject->setSelected(true);
-		for(size_t i = 0; i < m_objectsInScene.size(); ++i){
-			if(m_objectsInScene[i] == obj){
-				m_gui.placeGameobjectEntryItem = i;
-			}
-		}
+	int val = m_masterRenderer.pixelPick(m_objectsInScene, m_gizmos, m_camera, m_inputManager.getActualMouseCoords());
+	//check if clicked on gizmo
+	if(m_gizmos.wasClicked(val)){
+		m_gizmos.setActivated(val);
 	} else{
-		m_currentlySelectedObject = nullptr;
-		m_gui.placeGameobjectEntryItem = -1;
+		m_gizmos.setActivated(0);
+		if(m_currentlySelectedObject)
+			m_currentlySelectedObject->setSelected(false);
+		if(val){
+			renderer::GameObject* obj = m_gameObjectsMap[val];
+			m_currentlySelectedObject = obj;
+			m_currentlySelectedObject->setSelected(true);
+			for(size_t i = 0; i < m_objectsInScene.size(); ++i){
+				if(m_objectsInScene[i] == obj){
+					m_gui.placeGameobjectEntryItem = i;
+				}
+			}
+		} else{
+			m_currentlySelectedObject = nullptr;
+			m_gui.placeGameobjectEntryItem = -1;
+		}
 	}
 }
 

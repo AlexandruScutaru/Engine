@@ -28,7 +28,9 @@ namespace renderer{
 		bool getFlashlight(){ return m_flashlight; }
 		glm::vec3 getPos(){ return m_position; }
 		glm::vec3 getFront(){ return m_front; }
+		glm::vec3 getForward(){ return m_forward; }
 		glm::vec3 getUp(){ return m_up; }
+		glm::vec3 getRight(){ return m_right; }
 		glm::vec3 backupCameraProperties(){ return glm::vec3(m_FOV, m_pitch, m_yaw); }
 		
 		void setPitch(float val){ m_pitch = val; }
@@ -46,6 +48,7 @@ namespace renderer{
 		// Camera Attributes
 		glm::vec3 m_position;
 		glm::vec3 m_front;
+		glm::vec3 m_forward;
 		glm::vec3 m_up;
 		glm::vec3 m_right;
 		glm::vec3 m_worldUp;

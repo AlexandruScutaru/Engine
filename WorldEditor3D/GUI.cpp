@@ -42,9 +42,9 @@ void GUI::showEditorWindow(){
 	ImGui::SetNextWindowCollapsed(false, ImGuiCond_Once);
 	ImGui::SetNextWindowPos(ImVec2(app->m_window.getW() - 300.0f, 0.0f), ImGuiSetCond_Once);
 	ImGui::SetNextWindowSize(ImVec2(300, (float)app->m_window.getH()), ImGuiCond_Once);
-
+	
 	ImGui::Begin("editor", NULL);
-
+	
 	///main tabs for the editor
 	//gameobject creation
 	if(ImGui::Button("Object Creation") && !b_creationTab){
@@ -322,18 +322,16 @@ void GUI::updateDirContents(std::vector<std::string>& directory){
 
 void GUI::showAddObjectTab(){
 	ImGui::Text("Available files:");
-	ImGui::SameLine();
-	if(ImGui::Button("Update")){
-		currentPath = "res/gameobjects/";
-		updateDirContents(dir_gameobjects);
-	}
-	
 	ImGui::ListBox("##2", &addGameobjectEntryItem, VectorOfStringGetter, (void*)(&dir_gameobjects), (int)(dir_gameobjects.size()), 10);
-
 	if(ImGui::Button("Add") && addGameobjectEntryItem >= 0){
 		app->addNewObject(dir_gameobjects[addGameobjectEntryItem]);
 		placeGameobjectEntryItem = app->m_objectsInScene.size() - 1;
 		glm::vec3 pos = app->m_camera.getPos();
+	}
+	ImGui::SameLine();
+	if(ImGui::Button("Update")){
+		currentPath = "res/gameobjects/";
+		updateDirContents(dir_gameobjects);
 	}
 
 }
@@ -368,22 +366,29 @@ reiterate:
 			goto reiterate;
 		}
 		//positional modifiers
+		int gizmoMode = app->m_gizmos.getGizmoMode();
 		ImGui::Separator();
-		ImGui::DragFloat("Inc", &m_moveInc, 0.01f, 0.01f, 5.0f);
+		ImGui::Text("Transforms");
+		ImGui::DragFloat("Step", &m_moveInc, 0.01f, 0.01f, 5.0f);
 		renderer::GameObject* obj = app->m_objectsInScene[placeGameobjectEntryItem];
+		ImGui::RadioButton("Move", &gizmoMode, (int)renderer::GizmoMode::TRANSLATE); ImGui::SameLine();
+		ImGui::RadioButton("Scale", &gizmoMode, (int)renderer::GizmoMode::SCALE);	 ImGui::SameLine();
+		ImGui::RadioButton("Rotate", &gizmoMode, (int)renderer::GizmoMode::ROTATE);	 ImGui::SameLine();
+		ImGui::RadioButton("Off", &gizmoMode, (int)renderer::GizmoMode::NONE);
+		app->m_gizmos.setGizmoMode(gizmoMode);
 
-		ImGui::DragFloat("Pos x", &obj->getPosition().x, m_moveInc, -300.0f, 300.0f);
-		ImGui::DragFloat("Pos Y", &obj->getPosition().y, m_moveInc, -300.0f, 300.0f);
-		ImGui::DragFloat("Pos Z", &obj->getPosition().z, m_moveInc, -300.0f, 300.0f);
-		ImGui::Text("\n");
-		ImGui::SliderAngle("Rot x", &obj->getRotation().x, 0.0f, 359.0f);
-		ImGui::SliderAngle("Rot Y", &obj->getRotation().y, 0.0f, 359.0f);
-		ImGui::SliderAngle("Rot Z", &obj->getRotation().z, 0.0f, 359.0f);
-		ImGui::Text("\n");
-		ImGui::DragFloat("Scale x", &obj->getScale().x, 0.01f, 0.01f, 10.0f);
-		ImGui::DragFloat("Scale Y", &obj->getScale().y, 0.01f, 0.01f, 10.0f);
-		ImGui::DragFloat("Scale Z", &obj->getScale().z, 0.01f, 0.01f, 10.0f);
-		ImGui::Text("\n");
+			/*ImGui::DragFloat("Pos x", &obj->getPosition().x, m_moveInc, -300.0f, 300.0f);
+			ImGui::DragFloat("Pos Y", &obj->getPosition().y, m_moveInc, -300.0f, 300.0f);
+			ImGui::DragFloat("Pos Z", &obj->getPosition().z, m_moveInc, -300.0f, 300.0f);
+			ImGui::Text("\n");
+			ImGui::SliderAngle("Rot x", &obj->getRotation().x, 0.0f, 359.0f);
+			ImGui::SliderAngle("Rot Y", &obj->getRotation().y, 0.0f, 359.0f);
+			ImGui::SliderAngle("Rot Z", &obj->getRotation().z, 0.0f, 359.0f);
+			ImGui::Text("\n");
+			ImGui::DragFloat("Scale x", &obj->getScale().x, 0.01f, 0.01f, 10.0f);
+			ImGui::DragFloat("Scale Y", &obj->getScale().y, 0.01f, 0.01f, 10.0f);
+			ImGui::DragFloat("Scale Z", &obj->getScale().z, 0.01f, 0.01f, 10.0f);
+			ImGui::Text("\n");*/
 	}
 }
 

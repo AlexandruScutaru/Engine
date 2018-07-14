@@ -5,6 +5,8 @@
 #include "Lights.h"
 #include "GameObject.h"
 #include "ShaderProgram.h"
+#include "TranformGizmos.h"
+
 
 namespace renderer{
 
@@ -28,7 +30,9 @@ namespace renderer{
 
 		void renderSingleEntity(TexturedModel* object, DirLight& sun, Camera& camera);
 		void renderCollisionBodies(std::vector<CollisionBody>& bodies, Camera& camera);
-		int pixelPick(std::vector<GameObject*> objects, Camera& camera, glm::vec2& coords);
+		int pixelPick(std::vector<GameObject*> objects, TranformGizmos& gizmos, Camera& camera, glm::vec2& coords);
+
+		void renderGizmos(TranformGizmos& gizmos, Camera& camera);
 
 	private:
 		void MasterRenderer::processObject(GameObject* gameObject);

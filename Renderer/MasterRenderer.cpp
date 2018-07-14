@@ -94,6 +94,7 @@ namespace renderer{
 		m_basicShader.use();
 		m_basicShader.loadMat4("projection", m_projection);
 		m_basicShader.loadMat4("view", view);
+		m_basicShader.loadVec3("color", glm::vec3(0.0f, 1.0f, 0.0f));
 		TexturedModel* td;
 		for(auto body : bodies){
 			glm::mat4 model;
@@ -115,7 +116,7 @@ namespace renderer{
 		}
 	}
 
-	int MasterRenderer::pixelPick(std::vector<GameObject*> objects, Camera & camera, glm::vec2& coords){
+	int MasterRenderer::pixelPick(std::vector<GameObject*> objects, TranformGizmos& gizmos, Camera& camera, glm::vec2& coords){
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		glm::vec3 colorCode;
@@ -123,6 +124,7 @@ namespace renderer{
 		m_selectShader.use();
 		m_selectShader.loadMat4("projection", m_projection);
 		m_selectShader.loadMat4("view", m_view);
+		//render gameobjects
 		for(auto object : objects){
 			glm::mat4 model;
 			if(object->isBillboard()){
@@ -156,7 +158,33 @@ namespace renderer{
 			glBindVertexArray(object->getTexturedModel()->getMesh()->vertexArrayObject);
 			glDrawElements(GL_TRIANGLES, object->getTexturedModel()->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
 		}
+		//render gizmos on top of the gameobjects
+		const std::vector<Gizmo>* gzms = gizmos.getGizmos();
+		TexturedModel* td;
+		if(gizmos.canBeShown()){
+			glClear(GL_DEPTH_BUFFER_BIT);
+			glm::vec3 scale = glm::vec3(0.5f) * glm::distance(gizmos.getPosition(), camera.getPos());
+			for(auto gzm : *gzms){
+				glm::mat4 model;
+				model = glm::translate(model, gizmos.getPosition());
+				model = glm::rotate(model, gzm.obj->getRotation().x, glm::vec3(1.0f, 0.0f, 0.0f));
+				model = glm::rotate(model, gzm.obj->getRotation().y, glm::vec3(0.0f, 1.0f, 0.0f));
+				model = glm::rotate(model, gzm.obj->getRotation().z, glm::vec3(0.0f, 0.0f, 1.0f));
+				model = glm::scale(model, scale);
 
+				m_selectShader.loadMat4("model", model);
+				int code = gzm.obj->getCode();
+				colorCode = glm::vec3(
+					((code & 0x000000FF) >> 0) / 255.0f,
+					((code & 0x0000FF00) >> 8) / 255.0f,
+					((code & 0x00FF0000) >> 16) / 255.0f
+				);
+				m_selectShader.loadVec3("colorCode", colorCode);
+				td = gzm.obj->getTexturedModel();
+				glBindVertexArray(td->getMesh()->vertexArrayObject);
+				glDrawElements(GL_TRIANGLES, td->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
+			}
+		}
 		
 		unsigned char color[4];
 		GLint viewport[4];
@@ -169,6 +197,38 @@ namespace renderer{
 					color[2] * 256 * 256;
 
 		return index;
+	}
+
+	void MasterRenderer::renderGizmos(TranformGizmos& gizmos, Camera& camera){
+		glClear(GL_DEPTH_BUFFER_BIT);
+		const std::vector<Gizmo>* gzms = gizmos.getGizmos();
+		if(!gizmos.canBeShown())
+			return;
+
+		// view/projection transformations
+		glm::mat4 view = camera.getViewMatrix();
+		m_basicShader.use();
+		m_basicShader.loadMat4("projection", m_projection);
+		m_basicShader.loadMat4("view", view);
+		glm::vec3 scale = glm::vec3(0.5f) * glm::distance(gizmos.getPosition(), camera.getPos());
+		TexturedModel* td;
+		for(auto gzm : *gzms){
+			m_basicShader.loadVec3("color", gzm.color);
+			glm::mat4 model;
+			model = glm::translate(model, gizmos.getPosition());
+
+			model = glm::rotate(model, gzm.obj->getRotation().x, glm::vec3(1.0f, 0.0f, 0.0f));
+			model = glm::rotate(model, gzm.obj->getRotation().y, glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::rotate(model, gzm.obj->getRotation().z, glm::vec3(0.0f, 0.0f, 1.0f));
+
+			model = glm::scale(model, scale);
+
+			m_basicShader.loadMat4("model", model);
+
+			td = gzm.obj->getTexturedModel();
+			glBindVertexArray(td->getMesh()->vertexArrayObject);
+			glDrawElements(GL_TRIANGLES, td->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
+		}
 	}
 
 	void MasterRenderer::processObject(GameObject* gameObject){
@@ -238,7 +298,6 @@ namespace renderer{
 		m_billBoardShader.loadMat4("projection", m_projection);
 		m_billBoardShader.loadMat4("view", m_view);
 
-		glm::mat4 modelMatrix;
 
 		for(auto const& model : m_billboardBatches){
 			glActiveTexture(GL_TEXTURE0);
@@ -246,6 +305,7 @@ namespace renderer{
 			glBindVertexArray(model.first->getMesh()->vertexArrayObject);
 
 			for(auto const& billboard : model.second){
+				glm::mat4 modelMatrix;
 				modelMatrix = glm::translate(modelMatrix, billboard->getPosition());
 				modelMatrix[0][0] = m_view[0][0];
 				modelMatrix[0][1] = m_view[1][0];
