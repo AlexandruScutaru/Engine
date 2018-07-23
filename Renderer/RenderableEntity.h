@@ -1,5 +1,5 @@
-#ifndef GAME_OBJECT_H
-#define GAME_OBJECT_H
+#ifndef RENDERABLEENTITY_H
+#define RENDERABLEENTITY_H
 
 #include "ResourceManager.h"
 
@@ -18,21 +18,21 @@ namespace renderer{
 		glm::vec3 colScale;
 	};
 
-	class GameObject{
+	class RenderableEntity{
 	public:
-		GameObject();
-		GameObject(TexturedModel* model,
+		RenderableEntity();
+		RenderableEntity(TexturedModel* model,
 				   bool static_obj
 		);
-		GameObject(TexturedModel* model,
+		RenderableEntity(TexturedModel* model,
 				   glm::vec3& pos = glm::vec3(0.0f),
 				   glm::vec3& rot = glm::vec3(0.0f),
 				   glm::vec3& scale = glm::vec3(1.0f),
 				   bool static_obj = false
 		);
-		GameObject(const GameObject& other);
+		RenderableEntity(const RenderableEntity& other);
 		
-		virtual ~GameObject();
+		virtual ~RenderableEntity();
 
 		void setTexturedModel(TexturedModel* model){ m_model = model; }
 		void setPosition(glm::vec3& pos){ m_pos = pos; }
@@ -54,7 +54,6 @@ namespace renderer{
 		bool isSelected(){ return m_selected; }
 		const std::string& getName(){ return m_name; }
 		const std::string& getInEditorName(){ return m_inEditorName; }
-
 
 		virtual void update(float deltaTime){}
 
@@ -78,4 +77,4 @@ namespace renderer{
 
 }
 
-#endif // !GAME_OBJECT_H
+#endif // !RENDERABLEENTITY_H

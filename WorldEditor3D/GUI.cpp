@@ -370,7 +370,7 @@ reiterate:
 		ImGui::Separator();
 		ImGui::Text("Transforms");
 		ImGui::DragFloat("Step", &m_moveInc, 0.01f, 0.01f, 5.0f);
-		renderer::GameObject* obj = app->m_objectsInScene[placeGameobjectEntryItem];
+		GameObject* obj = app->m_objectsInScene[placeGameobjectEntryItem];
 		ImGui::RadioButton("Move", &gizmoMode, (int)renderer::GizmoMode::TRANSLATE); ImGui::SameLine();
 		ImGui::RadioButton("Scale", &gizmoMode, (int)renderer::GizmoMode::SCALE);	 ImGui::SameLine();
 		ImGui::RadioButton("Rotate", &gizmoMode, (int)renderer::GizmoMode::ROTATE);	 ImGui::SameLine();
@@ -400,7 +400,7 @@ bool VectorOfStringGetter(void* data, int n, const char** out_text){
 }
 
 bool VectorOfObjectsGetter(void * data, int n, const char ** out_text){
-	std::vector<renderer::GameObject*>* v = (std::vector<renderer::GameObject*>*)data;
+	std::vector<GameObject*>* v = (std::vector<GameObject*>*)data;
 	*out_text = (*v)[n]->getInEditorName().c_str();
 	return true;
 }
@@ -413,8 +413,8 @@ bool VectorOfShapesGetter(void * data, int n, const char ** out_text){
 }
 
 bool MapOfGameObjectsGetter(void * data, int n, const char ** out_text){
-	std::map<unsigned int, renderer::GameObject*>* m = (std::map<unsigned int, renderer::GameObject*>*)data;
-	std::map<unsigned int, renderer::GameObject*>::iterator it;
+	std::map<unsigned int, GameObject*>* m = (std::map<unsigned int, GameObject*>*)data;
+	std::map<unsigned int, GameObject*>::iterator it;
 	int i = 0;
 	for(it = m->begin(); i <= n; it++){
 		i++;

@@ -4,6 +4,7 @@
 #include "GUI.h"
 #include <Renderer/Renderer.h>
 #include <GLM/glm.hpp>
+#include "GameObject.h"
 
 #include <vector>
 #include <map>
@@ -43,6 +44,7 @@ private:
 	void addNewObject(const std::string& file);
 	void removeSelectedObject(int index);
 	void duplicateSelectedObject(int index);
+	void updateToDrawVector();
 
 	renderer::Window m_window; //the app window
 	renderer::InputManager m_inputManager;
@@ -51,18 +53,18 @@ private:
 	renderer::Camera m_camera;
 	renderer::TranformGizmos m_gizmos;
 
-	renderer::GameObject* m_currentlySelectedObject;
+	GameObject* m_currentlySelectedObject;
 	
 	AppState m_appState;
 
 	//mapping all objects by a specific code to pixel select them in the editor
-	std::map<unsigned int, renderer::GameObject*> m_gameObjectsMap;
-	std::map<renderer::GameObject*, renderer::Light*> m_billboardLightsMap;
+	std::map<unsigned int, GameObject*> m_gameObjectsMap;
+	//std::map<GameObject*, renderer::Light*> m_billboardLightsMap;
 
 	//this vector is to be filled with objects to draw 
 	//i hope a frustum culling will be implemented
-	std::vector<renderer::GameObject*> m_objects_ToDraw;
-	std::vector<renderer::GameObject*> m_objectsInScene;
+	std::vector<renderer::RenderableEntity*> m_objects_ToDraw;
+	std::vector<GameObject*> m_objectsInScene;
 
 	//creation state variables;
 	CreatedObject m_currentCreating;

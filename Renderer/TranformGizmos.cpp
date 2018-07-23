@@ -1,30 +1,30 @@
 #include "TranformGizmos.h"
 #include "ResourceManager.h"
-#include "GameObject.h"
+#include "RenderableEntity.h"
 #include "InputManager.h"
 #include "Camera.h"
 
 
 namespace renderer{
 
-	static void translateX	(GameObject* pObj, InputManager& input, Camera& camera, float dt);
-	static void translateY	(GameObject* pObj, InputManager& input, Camera& camera, float dt);
-	static void translateZ	(GameObject* pObj, InputManager& input, Camera& camera, float dt);
-	static void translateXY	(GameObject* pObj, InputManager& input, Camera& camera, float dt);
-	static void translateXZ	(GameObject* pObj, InputManager& input, Camera& camera, float dt);
-	static void translateYZ	(GameObject* pObj, InputManager& input, Camera& camera, float dt);
+	static void translateX	(RenderableEntity* pObj, InputManager& input, Camera& camera, float dt);
+	static void translateY	(RenderableEntity* pObj, InputManager& input, Camera& camera, float dt);
+	static void translateZ	(RenderableEntity* pObj, InputManager& input, Camera& camera, float dt);
+	static void translateXY	(RenderableEntity* pObj, InputManager& input, Camera& camera, float dt);
+	static void translateXZ	(RenderableEntity* pObj, InputManager& input, Camera& camera, float dt);
+	static void translateYZ	(RenderableEntity* pObj, InputManager& input, Camera& camera, float dt);
 
-	static void scaleX		(GameObject* pObj, InputManager& input, Camera& camera, float dt);
-	static void scaleY		(GameObject* pObj, InputManager& input, Camera& camera, float dt);
-	static void scaleZ		(GameObject* pObj, InputManager& input, Camera& camera, float dt);
-	static void scaleXY		(GameObject* pObj, InputManager& input, Camera& camera, float dt);
-	static void scaleXZ		(GameObject* pObj, InputManager& input, Camera& camera, float dt);
-	static void scaleYZ		(GameObject* pObj, InputManager& input, Camera& camera, float dt);
-	static void scaleXYZ	(GameObject* pObj, InputManager& input, Camera& camera, float dt);
+	static void scaleX		(RenderableEntity* pObj, InputManager& input, Camera& camera, float dt);
+	static void scaleY		(RenderableEntity* pObj, InputManager& input, Camera& camera, float dt);
+	static void scaleZ		(RenderableEntity* pObj, InputManager& input, Camera& camera, float dt);
+	static void scaleXY		(RenderableEntity* pObj, InputManager& input, Camera& camera, float dt);
+	static void scaleXZ		(RenderableEntity* pObj, InputManager& input, Camera& camera, float dt);
+	static void scaleYZ		(RenderableEntity* pObj, InputManager& input, Camera& camera, float dt);
+	static void scaleXYZ	(RenderableEntity* pObj, InputManager& input, Camera& camera, float dt);
 
-	static void rotateX		(GameObject* pObj, InputManager& input, Camera& camera, float dt);
-	static void rotateY		(GameObject* pObj, InputManager& input, Camera& camera, float dt);
-	static void rotateZ		(GameObject* pObj, InputManager& input, Camera& camera, float dt);
+	static void rotateX		(RenderableEntity* pObj, InputManager& input, Camera& camera, float dt);
+	static void rotateY		(RenderableEntity* pObj, InputManager& input, Camera& camera, float dt);
+	static void rotateZ		(RenderableEntity* pObj, InputManager& input, Camera& camera, float dt);
 
 
 	TranformGizmos::TranformGizmos(){}
@@ -46,100 +46,100 @@ namespace renderer{
 	}
 
 
-	void TranformGizmos::init(GameObject** obj){
+	void TranformGizmos::init(RenderableEntity** obj){
 		m_currentlyActivated = 0;
 		m_pSelectedGameObject = obj;
 		m_gizmoMode = GizmoMode::TRANSLATE;
-		GameObject* object;
+		RenderableEntity* object;
 
 		///translate
 		//x translate gizmo
-		object = new GameObject(ResourceManager::loadModel("gizmo-t1a"));
+		object = new RenderableEntity(ResourceManager::loadModel("gizmo-t1a"));
 		object->setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
 		m_gizmosTranslate.push_back(Gizmo(object, glm::vec3(1.0f, 0.0f, 0.0f)));
 		m_gizmoFunctionality[object->getCode()] = translateX;
 		//xy translate gizmo
-		object = new GameObject(ResourceManager::loadModel("gizmo-2a"));
+		object = new RenderableEntity(ResourceManager::loadModel("gizmo-2a"));
 		object->setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
 		m_gizmosTranslate.push_back(Gizmo(object, glm::vec3(0.0f, 0.0f, 1.0f)));
 		m_gizmoFunctionality[object->getCode()] = translateXY;
 
 		//y translate gizmo
-		object = new GameObject(ResourceManager::loadModel("gizmo-t1a"));
+		object = new RenderableEntity(ResourceManager::loadModel("gizmo-t1a"));
 		object->setRotation(glm::vec3(0.0f, 0.0f, glm::radians(90.0f)));
 		m_gizmosTranslate.push_back(Gizmo(object, glm::vec3(0.0f, 1.0f, 0.0f)));
 		m_gizmoFunctionality[object->getCode()] = translateY;
 		//xz translate gizmo
-		object = new GameObject(ResourceManager::loadModel("gizmo-2a"));
+		object = new RenderableEntity(ResourceManager::loadModel("gizmo-2a"));
 		object->setRotation(glm::vec3(glm::radians(90.0f), 0.0f, 0.0f));
 		m_gizmosTranslate.push_back(Gizmo(object, glm::vec3(0.0f, 1.0f, 0.0f)));
 		m_gizmoFunctionality[object->getCode()] = translateXZ;
 
 		//z translate gizmo
-		object = new GameObject(ResourceManager::loadModel("gizmo-t1a"));
+		object = new RenderableEntity(ResourceManager::loadModel("gizmo-t1a"));
 		object->setRotation(glm::vec3(0.0f, glm::radians(-90.0f), 0.0f));
 		m_gizmosTranslate.push_back(Gizmo(object, glm::vec3(0.0f, 0.0f, 1.0f)));
 		m_gizmoFunctionality[object->getCode()] = translateZ;
 
 		//yz translate gizmo
-		object = new GameObject(ResourceManager::loadModel("gizmo-2a"));
+		object = new RenderableEntity(ResourceManager::loadModel("gizmo-2a"));
 		object->setRotation(glm::vec3(0.0f, glm::radians(-90.0f), 0.0f));
 		m_gizmosTranslate.push_back(Gizmo(object, glm::vec3(1.0f, 0.0f, 0.0f)));
 		m_gizmoFunctionality[object->getCode()] = translateYZ;
 
 		///scale
 		//x scale gizmo
-		object = new GameObject(ResourceManager::loadModel("gizmo-s1a"));
+		object = new RenderableEntity(ResourceManager::loadModel("gizmo-s1a"));
 		object->setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
 		m_gizmosScale.push_back(Gizmo(object, glm::vec3(1.0f, 0.0f, 0.0f)));
 		m_gizmoFunctionality[object->getCode()] = scaleX;
 		//xy scale gizmo
-		object = new GameObject(ResourceManager::loadModel("gizmo-2a"));
+		object = new RenderableEntity(ResourceManager::loadModel("gizmo-2a"));
 		object->setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
 		m_gizmosScale.push_back(Gizmo(object, glm::vec3(0.0f, 0.0f, 1.0f)));
 		m_gizmoFunctionality[object->getCode()] = scaleXY;
 
 		//y scale gizmo
-		object = new GameObject(ResourceManager::loadModel("gizmo-s1a"));
+		object = new RenderableEntity(ResourceManager::loadModel("gizmo-s1a"));
 		object->setRotation(glm::vec3(0.0f, 0.0f, glm::radians(90.0f)));
 		m_gizmosScale.push_back(Gizmo(object, glm::vec3(0.0f, 1.0f, 0.0f)));
 		m_gizmoFunctionality[object->getCode()] = scaleY;
 		//xz scale gizmo
-		object = new GameObject(ResourceManager::loadModel("gizmo-2a"));
+		object = new RenderableEntity(ResourceManager::loadModel("gizmo-2a"));
 		object->setRotation(glm::vec3(glm::radians(90.0f), 0.0f, 0.0f));
 		m_gizmosScale.push_back(Gizmo(object, glm::vec3(0.0f, 1.0f, 0.0f)));
 		m_gizmoFunctionality[object->getCode()] = scaleXZ;
 
 		//z scale gizmo
-		object = new GameObject(ResourceManager::loadModel("gizmo-s1a"));
+		object = new RenderableEntity(ResourceManager::loadModel("gizmo-s1a"));
 		object->setRotation(glm::vec3(0.0f, glm::radians(-90.0f), 0.0f));
 		m_gizmosScale.push_back(Gizmo(object, glm::vec3(0.0f, 0.0f, 1.0f)));
 		m_gizmoFunctionality[object->getCode()] = scaleZ;
 		//yz scale gizmo
-		object = new GameObject(ResourceManager::loadModel("gizmo-2a"));
+		object = new RenderableEntity(ResourceManager::loadModel("gizmo-2a"));
 		object->setRotation(glm::vec3(0.0f, glm::radians(-90.0f), 0.0f));
 		m_gizmosScale.push_back(Gizmo(object, glm::vec3(1.0f, 0.0f, 0.0f)));
 		m_gizmoFunctionality[object->getCode()] = scaleYZ;
 
 		//xyz scale gizmo
-		object = new GameObject(ResourceManager::loadModel("gizmo-s3a"));
+		object = new RenderableEntity(ResourceManager::loadModel("gizmo-s3a"));
 		object->setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
 		m_gizmosScale.push_back(Gizmo(object, glm::vec3(1.0f, 1.0f, 0.0f)));
 		m_gizmoFunctionality[object->getCode()] = scaleXYZ;
 
 		///rotate
 		//x roate gizmo
-		object = new GameObject(ResourceManager::loadModel("gizmo-r"));
+		object = new RenderableEntity(ResourceManager::loadModel("gizmo-r"));
 		object->setRotation(glm::vec3(0.0f, 0.0f, glm::radians(90.0f)));
 		m_gizmosRotate.push_back(Gizmo(object, glm::vec3(1.0f, 0.0f, 0.0f)));
 		m_gizmoFunctionality[object->getCode()] = rotateX;
 		//y rotate gizmo
-		object = new GameObject(ResourceManager::loadModel("gizmo-r"));
+		object = new RenderableEntity(ResourceManager::loadModel("gizmo-r"));
 		object->setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
 		m_gizmosRotate.push_back(Gizmo(object, glm::vec3(0.0f, 1.0f, 0.0f)));
 		m_gizmoFunctionality[object->getCode()] = rotateY;
 		//z roate gizmo
-		object = new GameObject(ResourceManager::loadModel("gizmo-r"));
+		object = new RenderableEntity(ResourceManager::loadModel("gizmo-r"));
 		object->setRotation(glm::vec3(0.0f, glm::radians(90.0f), glm::radians(90.0f)));
 		m_gizmosRotate.push_back(Gizmo(object, glm::vec3(0.0f, 0.0f, 1.0f)));
 		m_gizmoFunctionality[object->getCode()] = rotateZ;
@@ -188,7 +188,7 @@ namespace renderer{
 
 
 	//function definitions
-	void translateX(GameObject* pObj, InputManager& input, Camera& camera, float dt){
+	void translateX(RenderableEntity* pObj, InputManager& input, Camera& camera, float dt){
 		float dotRX = glm::dot(glm::vec3(1.0f, 0.0f, 0.0f), camera.getRight());
 		float dotUX = glm::dot(glm::vec3(1.0f, 0.0f, 0.0f), camera.getUp());
 		
@@ -203,11 +203,11 @@ namespace renderer{
 			pObj->getPosition().x -= input.getMouseDX()*dt; //left
 	}
 
-	void translateY(GameObject * pObj, InputManager & input, Camera & camera, float dt){
+	void translateY(RenderableEntity * pObj, InputManager & input, Camera & camera, float dt){
 		pObj->getPosition().y -= input.getMouseDY()*dt;
 	}
 
-	void translateZ(GameObject * pObj, InputManager & input, Camera & camera, float dt){
+	void translateZ(RenderableEntity * pObj, InputManager & input, Camera & camera, float dt){
 		float dotRZ = glm::dot(glm::vec3(0.0f, 0.0f, 1.0f), camera.getRight());
 		float dotUZ = glm::dot(glm::vec3(0.0f, 0.0f, 1.0f), camera.getUp());
 
@@ -222,7 +222,7 @@ namespace renderer{
 			pObj->getPosition().z -= input.getMouseDX()*dt; //left
 	}
 
-	void translateXY(GameObject * pObj, InputManager & input, Camera & camera, float dt){
+	void translateXY(RenderableEntity * pObj, InputManager & input, Camera & camera, float dt){
 		float dotRX = glm::dot(glm::vec3(1.0f, 0.0f, 0.0f), camera.getRight());
 		float dotUX = glm::dot(glm::vec3(1.0f, 0.0f, 0.0f), camera.getUp());
 
@@ -240,7 +240,7 @@ namespace renderer{
 		}
 	}
 
-	void translateXZ(GameObject * pObj, InputManager & input, Camera & camera, float dt){
+	void translateXZ(RenderableEntity * pObj, InputManager & input, Camera & camera, float dt){
 		float dotRX = glm::dot(glm::vec3(1.0f, 0.0f, 0.0f), camera.getRight());
 		float dotUX = glm::dot(glm::vec3(1.0f, 0.0f, 0.0f), camera.getUp());
 
@@ -277,7 +277,7 @@ namespace renderer{
 		}
 	}
 
-	void translateYZ(GameObject * pObj, InputManager & input, Camera & camera, float dt){
+	void translateYZ(RenderableEntity * pObj, InputManager & input, Camera & camera, float dt){
 		float dotRZ = glm::dot(glm::vec3(0.0f, 0.0f, 1.0f), camera.getRight());
 		float dotUZ = glm::dot(glm::vec3(0.0f, 0.0f, 1.0f), camera.getUp());
 
@@ -295,7 +295,7 @@ namespace renderer{
 		}
 	}
 
-	void scaleX(GameObject * pObj, InputManager & input, Camera & camera, float dt){
+	void scaleX(RenderableEntity * pObj, InputManager & input, Camera & camera, float dt){
 		float dotRX = glm::dot(glm::vec3(1.0f, 0.0f, 0.0f), camera.getRight());
 		float dotUX = glm::dot(glm::vec3(1.0f, 0.0f, 0.0f), camera.getUp());
 
@@ -310,11 +310,11 @@ namespace renderer{
 			pObj->getScale().x -= input.getMouseDX()*dt; //left
 	}
 
-	void scaleY(GameObject * pObj, InputManager & input, Camera & camera, float dt){
+	void scaleY(RenderableEntity * pObj, InputManager & input, Camera & camera, float dt){
 		pObj->getScale().y -= input.getMouseDY()*dt;
 	}
 
-	void scaleZ(GameObject * pObj, InputManager & input, Camera & camera, float dt){
+	void scaleZ(RenderableEntity * pObj, InputManager & input, Camera & camera, float dt){
 		float dotRZ = glm::dot(glm::vec3(0.0f, 0.0f, 1.0f), camera.getRight());
 		float dotUZ = glm::dot(glm::vec3(0.0f, 0.0f, 1.0f), camera.getUp());
 
@@ -329,29 +329,29 @@ namespace renderer{
 			pObj->getScale().z -= input.getMouseDX()*dt; //left
 	}
 
-	void scaleXY(GameObject * pObj, InputManager & input, Camera & camera, float dt){
+	void scaleXY(RenderableEntity * pObj, InputManager & input, Camera & camera, float dt){
 		float d = (input.getMouseDX() - input.getMouseDY()) / 2.0f;
 		pObj->getScale().x += d *dt;
 		pObj->getScale().y += d *dt;
 	}
 
-	void scaleXZ(GameObject * pObj, InputManager & input, Camera & camera, float dt){
+	void scaleXZ(RenderableEntity * pObj, InputManager & input, Camera & camera, float dt){
 		float d = (input.getMouseDX() - input.getMouseDY()) / 2.0f;
 		pObj->getScale().x += d *dt;
 		pObj->getScale().z += d *dt;
 	}
 
-	void scaleYZ(GameObject * pObj, InputManager & input, Camera & camera, float dt){
+	void scaleYZ(RenderableEntity * pObj, InputManager & input, Camera & camera, float dt){
 		float d = (input.getMouseDX() - input.getMouseDY()) / 2.0f;
 		pObj->getScale().y += d *dt;
 		pObj->getScale().z += d *dt;
 	}
 
-	void scaleXYZ(GameObject * pObj, InputManager & input, Camera & camera, float dt){
+	void scaleXYZ(RenderableEntity * pObj, InputManager & input, Camera & camera, float dt){
 		pObj->setScale(pObj->getScale() + glm::vec3(input.getMouseDX()*dt));
 	}
 
-	void rotateX(GameObject * pObj, InputManager & input, Camera & camera, float dt){
+	void rotateX(RenderableEntity * pObj, InputManager & input, Camera & camera, float dt){
 		float dotRX = glm::dot(glm::vec3(1.0f, 0.0f, 0.0f), camera.getRight());
 		if(dotRX >= 0.0f)
 			pObj->getRotation().x += input.getMouseDY() * dt;
@@ -359,11 +359,11 @@ namespace renderer{
 			pObj->getRotation().x -= input.getMouseDY() * dt;
 	}
 
-	void rotateY(GameObject * pObj, InputManager & input, Camera & camera, float dt){
+	void rotateY(RenderableEntity * pObj, InputManager & input, Camera & camera, float dt){
 		pObj->getRotation().y += input.getMouseDX() * dt;
 	}
 
-	void rotateZ(GameObject * pObj, InputManager & input, Camera & camera, float dt){
+	void rotateZ(RenderableEntity * pObj, InputManager & input, Camera & camera, float dt){
 		float dotRZ = glm::dot(glm::vec3(0.0f, 0.0f, 1.0f), camera.getRight());
 		if(dotRZ >= 0.0f)
 			pObj->getRotation().z += input.getMouseDY() * dt;

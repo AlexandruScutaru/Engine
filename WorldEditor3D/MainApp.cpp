@@ -65,7 +65,7 @@ void MainApp::initSystems(){
 }
 
 void MainApp::initLevel(){
-	m_gizmos.init(&m_currentlySelectedObject);
+	m_gizmos.init((renderer::RenderableEntity**)(&m_currentlySelectedObject));
 	/// lighting, game objects etc
 	//set default data for the creatingEntiy object during the process of creating a new gameobject
 	m_creatingModel = *(renderer::ResourceManager::loadModel("default"));
@@ -157,6 +157,8 @@ void MainApp::update(float deltaTime){
 
 	static_cast<renderer::SpotLight*>(m_lights[1])->position = m_camera.getPos();
 	static_cast<renderer::SpotLight*>(m_lights[1])->direction = m_camera.getFront();
+
+	updateToDrawVector();
 }
 
 void MainApp::drawGame(){
@@ -166,7 +168,7 @@ void MainApp::drawGame(){
 		m_masterRenderer.renderSingleEntity(&m_creatingModel, m_creatingLight, m_camera);
 		m_masterRenderer.renderCollisionBodies(m_currentCreating.colBodies, m_camera);
 	} else if(m_gui.b_placementTab){
-		m_masterRenderer.renderScene(m_objectsInScene, m_lights, m_camera);
+		m_masterRenderer.renderScene(m_objects_ToDraw, m_lights, m_camera);
 		m_masterRenderer.renderGizmos(m_gizmos, m_camera);
 	}
 
@@ -200,7 +202,7 @@ void MainApp::openMap(const std::string& file){
 	json mapFile;
 	in >> mapFile;
 
-	renderer::GameObject* object;
+	GameObject* object;
 	//gameobjects
 	for(auto it = mapFile["gameobjects"].begin(); it != mapFile["gameobjects"].end(); ++it){
 		json obj = it.value();
@@ -217,7 +219,7 @@ void MainApp::openMap(const std::string& file){
 
 		bool isStatic = obj["static"].get<bool>();
 
-		object = new renderer::GameObject(renderer::ResourceManager::loadModel(obj_name));
+		object = new GameObject(renderer::ResourceManager::loadModel(obj_name));
 		object->setName(obj_name);
 		object->setInEditorName(obj_inEditorName);
 		object->setPosition(pos);
@@ -386,7 +388,7 @@ void MainApp::openCreatedObject(const std::string& object){
 }
 
 void MainApp::renderToSelect(glm::vec2& coords){
-	int val = m_masterRenderer.pixelPick(m_objectsInScene, m_gizmos, m_camera, m_inputManager.getActualMouseCoords());
+	int val = m_masterRenderer.pixelPick(m_objects_ToDraw, m_gizmos, m_camera, m_inputManager.getActualMouseCoords());
 	//check if clicked on gizmo
 	if(m_gizmos.wasClicked(val)){
 		m_gizmos.setActivated(val);
@@ -395,7 +397,7 @@ void MainApp::renderToSelect(glm::vec2& coords){
 		if(m_currentlySelectedObject)
 			m_currentlySelectedObject->setSelected(false);
 		if(val){
-			renderer::GameObject* obj = m_gameObjectsMap[val];
+			GameObject* obj = m_gameObjectsMap[val];
 			m_currentlySelectedObject = obj;
 			m_currentlySelectedObject->setSelected(true);
 			for(size_t i = 0; i < m_objectsInScene.size(); ++i){
@@ -411,8 +413,8 @@ void MainApp::renderToSelect(glm::vec2& coords){
 }
 
 void MainApp::addNewObject(const std::string & file){
-	renderer::GameObject* object;
-	object = new renderer::GameObject(renderer::ResourceManager::loadModel(file));
+	GameObject* object;
+	object = new GameObject(renderer::ResourceManager::loadModel(file));
 	object->setName(file);
 	object->setInEditorName(file);
 
@@ -434,8 +436,8 @@ void MainApp::removeSelectedObject(int index){
 }
 
 void MainApp::duplicateSelectedObject(int index){
-	renderer::GameObject* object;
-	object = new renderer::GameObject(*m_objectsInScene[index]);
+	GameObject* object;
+	object = new GameObject(*m_objectsInScene[index]);
 	m_objectsInScene.push_back(object);
 	m_gameObjectsMap[object->getCode()] = object;
 	if(m_currentlySelectedObject)
@@ -443,4 +445,12 @@ void MainApp::duplicateSelectedObject(int index){
 	m_currentlySelectedObject = object;
 	m_currentlySelectedObject->setSelected(true);
 	object = nullptr;
+}
+
+void MainApp::updateToDrawVector(){
+	printf("%d objects to draw\n", m_objects_ToDraw.size());
+	m_objects_ToDraw.clear();
+	for(const auto& gameObject : m_objectsInScene){
+		m_objects_ToDraw.push_back(gameObject);
+	}
 }

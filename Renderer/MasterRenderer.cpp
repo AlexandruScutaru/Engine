@@ -38,7 +38,7 @@ namespace renderer{
 		//glClearColor(0.1f, 0.1f, 0.1f, 1.0);
 	}
 
-	void MasterRenderer::renderScene(std::vector<GameObject*>& gameObjects, std::vector<Light*>& lights, Camera& camera){
+	void MasterRenderer::renderScene(std::vector<RenderableEntity*>& gameObjects, std::vector<Light*>& lights, Camera& camera){
 		m_flashlight = camera.getFlashlight();
 		for(auto gameObject : gameObjects){
 			processObject(gameObject);
@@ -116,7 +116,7 @@ namespace renderer{
 		}
 	}
 
-	int MasterRenderer::pixelPick(std::vector<GameObject*> objects, TranformGizmos& gizmos, Camera& camera, glm::vec2& coords){
+	int MasterRenderer::pixelPick(std::vector<RenderableEntity*> objects, TranformGizmos& gizmos, Camera& camera, glm::vec2& coords){
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		glm::vec3 colorCode;
@@ -231,31 +231,31 @@ namespace renderer{
 		}
 	}
 
-	void MasterRenderer::processObject(GameObject* gameObject){
+	void MasterRenderer::processObject(RenderableEntity* gameObject){
 		if(gameObject->isBillboard())
 			processBillboard(gameObject);
 		else{
 			TexturedModel* model = gameObject->getTexturedModel();
-			std::vector<GameObject*> batch = m_gameObjectsBatches[model];
+			std::vector<RenderableEntity*> batch = m_gameObjectsBatches[model];
 			if(!batch.empty()){
 				batch.push_back(gameObject);
 				m_gameObjectsBatches[model] = batch;
 			} else{
-				std::vector<GameObject*> newBatch;
+				std::vector<RenderableEntity*> newBatch;
 				newBatch.push_back(gameObject);
 				m_gameObjectsBatches[model] = newBatch;
 			}
 		}
 	}
 
-	void MasterRenderer::processBillboard(GameObject* billboard){
+	void MasterRenderer::processBillboard(RenderableEntity* billboard){
 		TexturedModel* model = billboard->getTexturedModel();
-		std::vector<GameObject*> batch = m_billboardBatches[model];
+		std::vector<RenderableEntity*> batch = m_billboardBatches[model];
 		if(!batch.empty()){
 			batch.push_back(billboard);
 			m_billboardBatches[model] = batch;
 		} else{
-			std::vector<GameObject*> newBatch;
+			std::vector<RenderableEntity*> newBatch;
 			newBatch.push_back(billboard);
 			m_billboardBatches[model] = newBatch;
 		}

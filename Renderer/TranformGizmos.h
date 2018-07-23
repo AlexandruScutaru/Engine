@@ -9,7 +9,7 @@
 
 namespace renderer{
 
-	class GameObject;
+	class RenderableEntity;
 	class InputManager;
 	class Camera;
 
@@ -22,8 +22,8 @@ namespace renderer{
 
 	struct Gizmo{
 		Gizmo(){}
-		Gizmo(GameObject* obj, glm::vec3& color):obj(obj), color(color){}
-		GameObject* obj;
+		Gizmo(RenderableEntity* obj, glm::vec3& color):obj(obj), color(color){}
+		RenderableEntity* obj;
 		glm::vec3 color;
 	};
 
@@ -33,12 +33,12 @@ namespace renderer{
 		TranformGizmos();
 		~TranformGizmos();
 		
-		void init(GameObject** obj);
+		void init(RenderableEntity** obj);
 		bool canBeShown();
 		void updateGizmo(Camera& camera, InputManager& input, float deltaTime);
 		bool wasClicked(int val);
 		
-		void setSelectedGameObject(GameObject** obj){ m_pSelectedGameObject = obj; }
+		void setSelectedGameObject(RenderableEntity** obj){ m_pSelectedGameObject = obj; }
 		void setGizmoMode(int mode){ m_gizmoMode = (GizmoMode)mode; }
 		void setActivated(int val){ m_currentlyActivated = val; }
 		
@@ -48,12 +48,12 @@ namespace renderer{
 		int getActivated(){ return m_currentlyActivated; }
 
 	private:
-		GameObject** m_pSelectedGameObject;
+		RenderableEntity** m_pSelectedGameObject;
 		GizmoMode m_gizmoMode;
 		std::vector<Gizmo> m_gizmosTranslate;
 		std::vector<Gizmo> m_gizmosScale;
 		std::vector<Gizmo> m_gizmosRotate;
-		std::map<int, std::function<void(GameObject*, InputManager&, Camera&, float)>> m_gizmoFunctionality;
+		std::map<int, std::function<void(RenderableEntity*, InputManager&, Camera&, float)>> m_gizmoFunctionality;
 		int m_currentlyActivated;
 
 	};

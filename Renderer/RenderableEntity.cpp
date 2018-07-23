@@ -1,12 +1,12 @@
-#include "GameObject.h"
+#include "RenderableEntity.h"
 #include <climits>
 
 
 namespace renderer{
 
-	int GameObject::objectCount = 0;
+	int RenderableEntity::objectCount = 0;
 
-	GameObject::GameObject():
+	RenderableEntity::RenderableEntity():
 		m_isStatic(false),
 		m_selected(false),
 		m_pos(glm::vec3(0.0f)),
@@ -18,7 +18,7 @@ namespace renderer{
 		code = objectCount;
 	}
 
-	GameObject::GameObject(TexturedModel* model, bool static_obj):
+	RenderableEntity::RenderableEntity(TexturedModel* model, bool static_obj):
 		m_model(model),
 		m_isStatic(static_obj),
 		m_selected(false),
@@ -30,7 +30,7 @@ namespace renderer{
 		code = objectCount;
 	}
 
-	GameObject::GameObject(TexturedModel* model, glm::vec3& pos, glm::vec3& rot, glm::vec3& scale, bool static_obj) :
+	RenderableEntity::RenderableEntity(TexturedModel* model, glm::vec3& pos, glm::vec3& rot, glm::vec3& scale, bool static_obj) :
 		m_model(model),
 		m_isStatic(static_obj),
 		m_selected(false),
@@ -42,7 +42,7 @@ namespace renderer{
 		code = objectCount;
 	}
 
-	GameObject::GameObject(const GameObject& other):
+	RenderableEntity::RenderableEntity(const RenderableEntity& other):
 		m_selected(false)
 	{
 		m_model = other.m_model;
@@ -57,6 +57,6 @@ namespace renderer{
 		code = objectCount;
 	}
 
-	GameObject::~GameObject(){}
+	RenderableEntity::~RenderableEntity(){}
 
 }

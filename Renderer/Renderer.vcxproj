@@ -141,7 +141,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="RenderableEntity.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="MasterRenderer.cpp" />
     <ClCompile Include="Material.cpp" />
@@ -156,7 +156,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="GameObject.h" />
+    <ClInclude Include="RenderableEntity.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Lights.h" />
     <ClInclude Include="MasterRenderer.h" />

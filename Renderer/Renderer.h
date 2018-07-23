@@ -10,7 +10,7 @@
 #include "Lights.h"
 #include "ResourceManager.h"
 #include "TexturedModel.h"
-#include "GameObject.h"
+#include "RenderableEntity.h"
 #include "MasterRenderer.h"
 #include "TranformGizmos.h"
 
