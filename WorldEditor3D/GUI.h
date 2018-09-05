@@ -26,19 +26,6 @@ enum class FD_Mode{
 	MAP_SAVE
 };
 
-struct CreatedObject{
-	CreatedObject(){
-		diff = "default.png";
-		spec = "no_SPEC.png";
-		mesh = "sphere.obj";
-		isBillboard = false;
-	}
-	std::string diff;
-	std::string spec;
-	std::string mesh;
-	bool isBillboard;
-	std::vector<renderer::CollisionBody> colBodies;
-};
 
 class GUI{
 public:

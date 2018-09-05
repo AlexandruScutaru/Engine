@@ -15,102 +15,94 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MainApp.cpp">
+    <ClCompile Include="Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="imgui_impl_sdl_gl3.cpp">
+    <ClCompile Include="Material.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GUI.cpp">
+    <ClCompile Include="TexturedModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GameObject.cpp">
+    <ClCompile Include="RenderableEntity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TranformGizmos.cpp">
+    <ClCompile Include="InputManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Player.cpp">
+    <ClCompile Include="ModelLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GameObjectShader.cpp">
+    <ClCompile Include="ResourceManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BillboardShader.cpp">
+    <ClCompile Include="TextureLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BasicColorShader.cpp">
+    <ClCompile Include="Timing.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Utilities.cpp">
+    <ClCompile Include="IShaderProgram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Actor.cpp">
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CollidableEntity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MainApp.h">
+    <ClInclude Include="Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="imgui_impl_sdl_gl3.h">
+    <ClInclude Include="Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GUI.h">
+    <ClInclude Include="Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GameObject.h">
+    <ClInclude Include="Lights.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TranformGizmos.h">
+    <ClInclude Include="Material.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Player.h">
+    <ClInclude Include="TexturedModel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GameObjectShader.h">
+    <ClInclude Include="ModelDataStructs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BillboardShader.h">
+    <ClInclude Include="RenderableEntity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BasicColorShader.h">
+    <ClInclude Include="InputManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Utilities.h">
+    <ClInclude Include="ModelLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Actor.h">
+    <ClInclude Include="ResourceManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="shaders\entity.fs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="shaders\entity.vs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="shaders\billboard.fs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="shaders\billboard.vs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="shaders\basic.fs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="shaders\basic.vs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="shaders\selection.fs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="shaders\selection.vs">
-      <Filter>Resource Files</Filter>
-    </None>
+    <ClInclude Include="TextureLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Timing.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IShaderProgram.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionBody.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CollidableEntity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

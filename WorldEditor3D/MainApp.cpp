@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <fstream>
+#include "Utilities.h"
 
 //#define SCREEN_WIDTH 1366
 //#define SCREEN_HEIGHT 768
@@ -23,8 +24,6 @@ MainApp::MainApp():
 	m_gui(this),
 	m_currentlySelectedObject(nullptr)
 {
-	m_cameraPos = m_camera.getPos();
-	m_cameraBck = m_camera.backupCameraProperties();
 	initSystems();
 }
 
@@ -40,7 +39,7 @@ MainApp::~MainApp(){
 		delete light;
 	m_lights.clear();
 
-	renderer::ResourceManager::ClearData();
+	utilities::ResourceManager::ClearData();
 }
 
 
@@ -56,42 +55,55 @@ void MainApp::initSystems(){
 	ImGui_ImplSdlGL3_Init(m_window.getWindow());
 	ImGui::StyleColorsDark();
 
-	m_masterRenderer.init();
-	m_masterRenderer.setProjectionMatrix(m_camera);
+	renderer::Renderer::Init();
+
+	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
 
 	m_fpsLimiter.setMaxFPS(MAX_FPS);
 
-	renderer::ResourceManager::Init();
+	utilities::ResourceManager::Init();
 }
 
 void MainApp::initLevel(){
-	m_gizmos.init((renderer::RenderableEntity**)(&m_currentlySelectedObject));
+	m_gameObjectsShader.initShader("shaders/entity");
+	m_basicColorShader.initShader("shaders/basic");
+
+	m_gizmos.init((Actor**)(&m_currentlySelectedObject));
+
 	/// lighting, game objects etc
 	//set default data for the creatingEntiy object during the process of creating a new gameobject
-	m_creatingModel = *(renderer::ResourceManager::loadModel("default"));
-	m_creatingLight = renderer::DirLight(glm::vec3(0.5f, 0.5f, 0.5f),
-										 glm::vec3(0.4f, 0.4f, 0.4f),
-										 glm::vec3(0.5f, 0.5f, 0.5f),
-										 glm::vec3(0.0f, 0.0f, 0.0f));
+	m_creationTabGameObject =  GameObject(utilities::ResourceManager::loadModel("default"));
+
+	m_creationTabLight = renderer::DirLight(glm::vec3(0.5f, 0.5f, 0.5f),
+											glm::vec3(0.4f, 0.4f, 0.4f),
+											glm::vec3(0.5f, 0.5f, 0.5f),
+											glm::vec3(0.0f, 0.0f, 0.0f)
+	);
 	
 	// initial lighting	
-	m_lights.push_back(new renderer::DirLight(glm::vec3(0.2f, 0.2f, 0.2f),
-											  glm::vec3(0.4f, 0.4f, 0.4f),
+	m_lights.push_back(new renderer::DirLight(glm::vec3(0.3f, 0.24f, 0.14f),
+											  glm::vec3(0.7f, 0.42f, 0.26f),
 											  glm::vec3(0.5f, 0.5f, 0.5f),
-											  glm::vec3(0.0f, 0.0f, 0.0f))
+											  glm::vec3(20.0f, 5.0f, 10.0f))
+	);
 
+	m_lights.push_back(new renderer::SpotLight(glm::vec3(0.0f, 0.0f, 0.0f),
+									  glm::vec3(0.8f, 0.8f, 0.0f),
+									  glm::vec3(0.8f, 0.8f, 0.0f),
+									  m_player.getCamera()->getFront(),
+									  m_player.getCamera()->getPos(),
+									  glm::vec3(1.0f, 0.09f, 0.032f),
+									  glm::cos(glm::radians(14.5f)),
+									  glm::cos(glm::radians(20.0f)))
 	);
 	
-	m_lights.push_back(new renderer::SpotLight(glm::vec3(0.6f, 0.6f, 0.6f),
-									  glm::vec3(1.0f, 1.0f, 1.0f),
-									  glm::vec3(1.0f, 1.0f, 1.0f),
-									  m_camera.getFront(),
-									  m_camera.getPos(),
-									  glm::vec3(1.0f, 0.09f, 0.032f),
-									  glm::cos(glm::radians(15.0f)),
-									  glm::cos(glm::radians(22.0f)))
-	);
-								  
+	/*m_lights.push_back(new renderer::PointLight(
+		glm::vec3(0.0f, 1.0f, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f),
+		glm::vec3(-1.0f, 0.5f, -4.0f),
+		glm::vec3(1.0f, 0.09f, 0.032f))
+	);*/
 }
 
 void MainApp::loop(){
@@ -141,36 +153,36 @@ void MainApp::processInput(){
 		}
 	}
 
-	if(m_inputManager.isKeyPressed(SDL_BUTTON_LEFT) && 
-	   m_gui.b_placementTab && 
-	   !ImGui::IsMouseHoveringAnyWindow())
+	if(m_inputManager.isKeyPressed(SDL_BUTTON_LEFT) 
+	   && m_gui.b_placementTab
+	   && !ImGui::IsMouseHoveringAnyWindow())
 	{
-		renderToSelect(m_inputManager.getActualMouseCoords());
+		pixelPick(m_inputManager.getActualMouseCoords());
 	}
 }
 
 void MainApp::update(float deltaTime){
 	if(!ImGui::GetIO().WantCaptureKeyboard)
-		m_camera.update(m_inputManager, deltaTime);
+		m_player.update(m_inputManager, deltaTime);
 	
-	m_gizmos.updateGizmo(m_camera, m_inputManager, deltaTime);
+	m_gizmos.updateGizmo(m_player.getCamera(), m_inputManager, deltaTime);
 
-	static_cast<renderer::SpotLight*>(m_lights[1])->position = m_camera.getPos();
-	static_cast<renderer::SpotLight*>(m_lights[1])->direction = m_camera.getFront();
+	static_cast<renderer::SpotLight*>(m_lights[1])->position = m_player.getCamera()->getPos();
+	static_cast<renderer::SpotLight*>(m_lights[1])->direction = m_player.getCamera()->getFront();
 
 	updateToDrawVector();
 }
 
 void MainApp::drawGame(){
 	glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
-
-	if(m_gui.b_creationTab){
-		m_masterRenderer.renderSingleEntity(&m_creatingModel, m_creatingLight, m_camera);
-		m_masterRenderer.renderCollisionBodies(m_currentCreating.colBodies, m_camera);
-	} else if(m_gui.b_placementTab){
-		m_masterRenderer.renderScene(m_objects_ToDraw, m_lights, m_camera);
-		m_masterRenderer.renderGizmos(m_gizmos, m_camera);
-	}
+	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	bool bDrawColBodies = false;
+	if(m_gui.b_creationTab)
+		bDrawColBodies = true;
+	drawGameObjects(bDrawColBodies);
+	drawTransformGizmos();
 
 	ImGui::Render();
 	//sdl: swap buffers
@@ -190,8 +202,7 @@ void MainApp::resetData(){
 		delete light;
 	m_lights.clear();
 
-	m_creatingModel = *(renderer::ResourceManager::loadModel("default"));
-	m_currentCreating = CreatedObject();
+	m_creationTabGameObject = GameObject(utilities::ResourceManager::loadModel("default"));
 }
 
 void MainApp::openMap(const std::string& file){
@@ -209,7 +220,6 @@ void MainApp::openMap(const std::string& file){
 		std::string obj_name = obj["name"].get<std::string>();
 		std::string obj_inEditorName = obj["inEditorName"].get<std::string>();
 
-
 		std::vector<float> p = obj["pos"].get<std::vector<float>>();
 		glm::vec3 pos = glm::vec3(p[0], p[1], p[2]);
 		std::vector<float> r = obj["rot"].get<std::vector<float>>();
@@ -219,7 +229,7 @@ void MainApp::openMap(const std::string& file){
 
 		bool isStatic = obj["static"].get<bool>();
 
-		object = new GameObject(renderer::ResourceManager::loadModel(obj_name));
+		object = new GameObject(utilities::ResourceManager::loadModel(obj_name));
 		object->setName(obj_name);
 		object->setInEditorName(obj_inEditorName);
 		object->setPosition(pos);
@@ -304,7 +314,6 @@ void MainApp::saveMap(const std::string& file){
 		{"dir", {dl->direction.x, dl->direction.y, dl->direction.z}}
 	};
 	renderer::SpotLight* sl = static_cast<renderer::SpotLight*>(m_lights[1]);
-	//l->
 	map["lights"]["spotLight"] = {
 		{"amb", {sl->ambient.x, sl->ambient.y, sl->ambient.z}},
 		{"diff", {sl->diffuse.x, sl->diffuse.y, sl->diffuse.z}},
@@ -333,12 +342,12 @@ void MainApp::saveMap(const std::string& file){
 
 void MainApp::saveCreatedObject(char* buf){
 	json entry = {
-		{"diff", m_currentCreating.diff},
-		{"spec", m_currentCreating.spec},
-		{"mesh", m_currentCreating.mesh},
-		{"billboard", m_currentCreating.isBillboard}
+		{"diff", m_creationTabGameObject.getDiffName()},
+		{"spec", m_creationTabGameObject.getSpecName()},
+		{"mesh", m_creationTabGameObject.getMeshName()},
+		{"billboard", m_creationTabGameObject.isBillboard()}
 	};
-	for(renderer::CollisionBody body : m_currentCreating.colBodies){
+	for(renderer::CollisionBody body : m_creationTabGameObject.getColBodies()){
 		json col = {
 			{"shape", body.shape},
 			{"pos", {body.colRelativePos.x, body.colRelativePos.y, body.colRelativePos.z}},
@@ -359,11 +368,11 @@ void MainApp::openCreatedObject(const std::string& object){
 	std::ifstream in(path);
 	json obj;
 	in >> obj;
-	m_currentCreating = CreatedObject();
-	m_currentCreating.diff = obj["diff"].get<std::string>();
-	m_currentCreating.spec = obj["spec"].get<std::string>();
-	m_currentCreating.mesh = obj["mesh"].get<std::string>();
-	m_currentCreating.isBillboard = obj["billboard"].get<bool>();
+
+	m_creationTabGameObject.setDiffName(obj["diff"].get<std::string>());
+	m_creationTabGameObject.setSpecName(obj["spec"].get<std::string>());
+	m_creationTabGameObject.setMeshName(obj["mesh"].get<std::string>());
+	m_creationTabGameObject.setIsBillboard(obj["billboard"].get<bool>());
 	for(auto it = obj["collision"].begin(); it != obj["collision"].end(); it++){
 		json col = it.value();
 		renderer::CollisionBody body;
@@ -377,22 +386,27 @@ void MainApp::openCreatedObject(const std::string& object){
 		body.colRelativePos = pos;
 		body.colRot = rot;
 		body.colScale = scale;
-		m_currentCreating.colBodies.push_back(body);
+		m_creationTabGameObject.addColBody(body);
 		m_gui.collisionBodies.push_back(body.shape);
 	}
 	in.close();
 
-	m_creatingModel.setMesh(renderer::ResourceManager::getMesh("res/models/" + m_currentCreating.mesh));
-	m_creatingModel.getMaterial().setDiffuseMap(renderer::ResourceManager::getTexture("res/textures/" + m_currentCreating.diff));
-	m_creatingModel.getMaterial().setSpecularMap(renderer::ResourceManager::getTexture("res/textures/" + m_currentCreating.spec));
+	m_creationTabGameObject.getTexturedModel()->setMesh(utilities::ResourceManager::getMesh("res/models/" + m_creationTabGameObject.getMeshName()));
+	m_creationTabGameObject.getTexturedModel()->getMaterial().setDiffuseMap( utilities::ResourceManager::getTexture("res/textures/" + m_creationTabGameObject.getDiffName()));
+	m_creationTabGameObject.getTexturedModel()->getMaterial().setSpecularMap(utilities::ResourceManager::getTexture("res/textures/" + m_creationTabGameObject.getSpecName()));
 }
 
-void MainApp::renderToSelect(glm::vec2& coords){
-	int val = m_masterRenderer.pixelPick(m_objects_ToDraw, m_gizmos, m_camera, m_inputManager.getActualMouseCoords());
+void MainApp::pixelPick(glm::vec2& coords){
+	prePixelPickDraw();
+	glm::u8vec4 color = renderer::Renderer::getColorAt(coords);
+	int val = color[0] +
+			  color[1] * 256 +
+			  color[2] * 256 * 256;
+
 	//check if clicked on gizmo
 	if(m_gizmos.wasClicked(val)){
 		m_gizmos.setActivated(val);
-	} else{
+	} else {
 		m_gizmos.setActivated(0);
 		if(m_currentlySelectedObject)
 			m_currentlySelectedObject->setSelected(false);
@@ -400,6 +414,7 @@ void MainApp::renderToSelect(glm::vec2& coords){
 			GameObject* obj = m_gameObjectsMap[val];
 			m_currentlySelectedObject = obj;
 			m_currentlySelectedObject->setSelected(true);
+
 			for(size_t i = 0; i < m_objectsInScene.size(); ++i){
 				if(m_objectsInScene[i] == obj){
 					m_gui.placeGameobjectEntryItem = i;
@@ -414,11 +429,11 @@ void MainApp::renderToSelect(glm::vec2& coords){
 
 void MainApp::addNewObject(const std::string & file){
 	GameObject* object;
-	object = new GameObject(renderer::ResourceManager::loadModel(file));
+	object = new GameObject(utilities::ResourceManager::loadModel(file));
 	object->setName(file);
 	object->setInEditorName(file);
 
-	glm::vec3 pos = m_camera.getPos() + m_camera.getFront() * 4.0f;
+	glm::vec3 pos = m_player.getCamera()->getPos() + m_player.getCamera()->getFront() * 4.0f;
 	object->setPosition(pos);
 	m_objectsInScene.push_back(object);
 	m_gameObjectsMap[object->getCode()] = object;
@@ -448,9 +463,211 @@ void MainApp::duplicateSelectedObject(int index){
 }
 
 void MainApp::updateToDrawVector(){
-	printf("%d objects to draw\n", m_objects_ToDraw.size());
 	m_objects_ToDraw.clear();
-	for(const auto& gameObject : m_objectsInScene){
-		m_objects_ToDraw.push_back(gameObject);
+	if(m_gui.b_creationTab){
+		m_objects_ToDraw.push_back(&m_creationTabGameObject);
 	}
+	else{
+		for(const auto& gameObject : m_objectsInScene){
+			m_objects_ToDraw.push_back(gameObject);
+		}
+	}
+}
+
+void MainApp::drawGameObjects(bool bDrawColbodies){
+	std::vector<renderer::CollisionBody*> colBodies;
+	//prepare shader
+	m_gameObjectsShader.use();
+	m_gameObjectsShader.loadFlashlight(m_player.isFlashLightOn());
+	
+	if(m_gui.b_creationTab)
+		m_gameObjectsShader.loadLights(std::vector<renderer::Light*>{(renderer::Light*)&m_creationTabLight});
+	else
+		m_gameObjectsShader.loadLights(m_lights);
+	glm::mat4 view = m_player.getCamera()->getViewMatrix();
+	m_gameObjectsShader.loadViewPosition(m_player.getCamera()->getPos());
+	m_gameObjectsShader.loadViewMatrix(view);
+	m_gameObjectsShader.loadProjectionMatrix(renderer::Renderer::GetProjectionMatrix());
+
+	//get textured model batches
+	auto batches = Utilities::BatchRenderables<GameObject>(m_objects_ToDraw);
+	//std::cout << batches.size() << std::endl;
+	for(auto const& batch : batches){
+		renderer::Renderer::BindTexturedModel(batch.first);
+
+		for(auto const& gameObject : batch.second){
+			m_gameObjectsShader.loadSelected(gameObject->isSelected());
+			glm::mat4 modelMatrix;
+			if(gameObject->getTexturedModel()->isBillboard()){
+				modelMatrix = glm::translate(modelMatrix, gameObject->getPosition());
+				modelMatrix[0][0] = view[0][0];
+				modelMatrix[0][1] = view[1][0];
+				modelMatrix[0][2] = view[2][0];
+				modelMatrix[1][0] = view[0][1];
+				modelMatrix[1][1] = view[1][1];
+				modelMatrix[1][2] = view[2][1];
+				modelMatrix[2][0] = view[0][2];
+				modelMatrix[2][1] = view[1][2];
+				modelMatrix[2][2] = view[2][2];
+				modelMatrix = glm::scale(modelMatrix, gameObject->getScale());
+			} else{
+				modelMatrix = glm::translate(modelMatrix, gameObject->getPosition());
+				modelMatrix = glm::rotate(modelMatrix, gameObject->getRotation().x, glm::vec3(1.0f, 0.0f, 0.0f));
+				modelMatrix = glm::rotate(modelMatrix, gameObject->getRotation().y, glm::vec3(0.0f, 1.0f, 0.0f));
+				modelMatrix = glm::rotate(modelMatrix, gameObject->getRotation().z, glm::vec3(0.0f, 0.0f, 1.0f));
+				modelMatrix = glm::scale(modelMatrix, gameObject->getScale());
+			}
+			m_gameObjectsShader.loadModelMatrix(modelMatrix);
+			
+			renderer::Renderer::DrawTexturedModel(batch.first);
+		}
+		if(bDrawColbodies){
+			std::vector<renderer::CollisionBody>* cb = &batch.second[0]->getColBodies();
+			for(auto& body : *cb)
+				colBodies.push_back(&body);
+		}
+	}
+	m_gameObjectsShader.unuse();
+	if(bDrawColbodies)
+		drawCollisionBodies(colBodies);
+}
+
+void MainApp::drawCollisionBodies(std::vector<renderer::CollisionBody*>& colBodies){
+	if(!colBodies.size())
+		return;
+
+	// view/projection transformations
+	glm::mat4 view = m_player.getCamera()->getViewMatrix();
+	m_basicColorShader.use();
+	m_basicColorShader.loadViewMatrix(view);
+	m_basicColorShader.loadProjectionMatrix(renderer::Renderer::GetProjectionMatrix());
+	m_basicColorShader.loadColor(glm::vec3(0.0f, 1.0f, 0.0f));
+	renderer::TexturedModel* td;
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	for(auto body : colBodies){
+		glm::mat4 model;
+		model = glm::translate(model, body->colRelativePos);
+
+		model = glm::rotate(model, body->colRot.x, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, body->colRot.y, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, body->colRot.z, glm::vec3(0.0f, 0.0f, 1.0f));
+
+		model = glm::scale(model, body->colScale);
+
+		m_basicColorShader.loadModelMatrix(model);
+
+		td = utilities::ResourceManager::loadModel(body->shape);
+		glBindVertexArray(td->getMesh()->vertexArrayObject);
+		glDrawElements(GL_TRIANGLES, td->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
+	}
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	m_basicColorShader.unuse();
+}
+
+void MainApp::prePixelPickDraw(){
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glm::vec3 colorCode;
+	
+	m_basicColorShader.use();
+	glm::mat4 view = m_player.getCamera()->getViewMatrix();
+	m_basicColorShader.loadViewMatrix(view);
+	m_basicColorShader.loadProjectionMatrix(renderer::Renderer::GetProjectionMatrix());
+
+	//render gameobjects
+	for(auto object : m_objects_ToDraw){
+		glm::mat4 model;
+		if(object->isBillboard()){
+			model = glm::translate(model, object->getPosition());
+			model[0][0] = view[0][0];
+			model[0][1] = view[1][0];
+			model[0][2] = view[2][0];
+			model[1][0] = view[0][1];
+			model[1][1] = view[1][1];
+			model[1][2] = view[2][1];
+			model[2][0] = view[0][2];
+			model[2][1] = view[1][2];
+			model[2][2] = view[2][2];
+			model = glm::scale(model, glm::vec3(0.2f));
+		} else{
+			model = glm::translate(model, object->getPosition());
+			model = glm::rotate(model, object->getRotation().x, glm::vec3(1.0f, 0.0f, 0.0f));
+			model = glm::rotate(model, object->getRotation().y, glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::rotate(model, object->getRotation().z, glm::vec3(0.0f, 0.0f, 1.0f));
+			model = glm::scale(model, object->getScale());
+		}
+
+		m_basicColorShader.loadModelMatrix(model);
+		int code = object->getCode();
+		colorCode = glm::vec3(
+			((code & 0x000000FF) >>  0) / 255.0f,
+			((code & 0x0000FF00) >>  8) / 255.0f,
+			((code & 0x00FF0000) >> 16) / 255.0f
+		);
+		m_basicColorShader.loadColor(colorCode);
+		glBindVertexArray(object->getTexturedModel()->getMesh()->vertexArrayObject);
+		glDrawElements(GL_TRIANGLES, object->getTexturedModel()->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
+	}
+
+	if(m_gizmos.canBeShown()){
+		auto gizmos = m_gizmos.getGizmos();
+		renderer::TexturedModel* td;
+		glClear(GL_DEPTH_BUFFER_BIT);
+		glm::vec3 scale = glm::vec3(0.5f) * glm::distance(m_gizmos.getPosition(), m_player.getCamera()->getPos());
+		for(auto gizmo : *gizmos){
+			glm::mat4 model;
+			model = glm::translate(model, m_gizmos.getPosition());
+			model = glm::rotate(model, gizmo.obj->getRotation().x, glm::vec3(1.0f, 0.0f, 0.0f));
+			model = glm::rotate(model, gizmo.obj->getRotation().y, glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::rotate(model, gizmo.obj->getRotation().z, glm::vec3(0.0f, 0.0f, 1.0f));
+			model = glm::scale(model, scale);
+
+			m_basicColorShader.loadModelMatrix(model);
+			int code = gizmo.obj->getCode();
+			colorCode = glm::vec3(
+				((code & 0x000000FF) >>  0) / 255.0f,
+				((code & 0x0000FF00) >>  8) / 255.0f,
+				((code & 0x00FF0000) >> 16) / 255.0f
+			);
+			m_basicColorShader.loadColor(colorCode);
+			td = gizmo.obj->getTexturedModel();
+			glBindVertexArray(td->getMesh()->vertexArrayObject);
+			glDrawElements(GL_TRIANGLES, td->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
+		}
+	}
+	m_basicColorShader.unuse();
+}
+
+void MainApp::drawTransformGizmos(){
+	if(!m_gizmos.canBeShown() || m_gui.b_creationTab)
+		return;
+
+	glClear(GL_DEPTH_BUFFER_BIT);
+	const std::vector<Gizmo>* gzms = m_gizmos.getGizmos();
+
+	m_basicColorShader.use();
+	// view/projection transformations
+	glm::mat4 view = m_player.getCamera()->getViewMatrix();
+	m_basicColorShader.loadViewMatrix(view);
+	m_basicColorShader.loadProjectionMatrix(renderer::Renderer::GetProjectionMatrix());
+	glm::vec3 scale = glm::vec3(0.5f) * glm::distance(m_gizmos.getPosition(), m_player.getCamera()->getPos());
+	renderer::TexturedModel* td;
+	for(auto gzm : *gzms){
+		m_basicColorShader.loadColor(gzm.color);
+		glm::mat4 model;
+		model = glm::translate(model, m_gizmos.getPosition());
+
+		model = glm::rotate(model, gzm.obj->getRotation().x, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, gzm.obj->getRotation().y, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, gzm.obj->getRotation().z, glm::vec3(0.0f, 0.0f, 1.0f));
+
+		model = glm::scale(model, scale);
+
+		m_basicColorShader.loadModelMatrix(model);
+
+		td = gzm.obj->getTexturedModel();
+		glBindVertexArray(td->getMesh()->vertexArrayObject);
+		glDrawElements(GL_TRIANGLES, td->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
+	}
+	m_basicColorShader.unuse();
 }

@@ -52,11 +52,12 @@ void GUI::showEditorWindow(){
 		b_placementTab = false;
 
 		//backup and set new camera transforms
-		app->m_cameraPos = app->m_camera.getPos();
-		app->m_cameraBck = app->m_camera.backupCameraProperties();
-		app->m_camera.setPos(glm::vec3(0.0f, 0.0f, 5.0f));
-		app->m_camera.setPitch(0.0f);
-		app->m_camera.setYaw(-90.0f);
+		app->m_player.backup();
+		app->m_player.setPosition(glm::vec3(0.0f, 0.0f, 5.0f));
+		app->m_player.setRotation(glm::vec3(0.0f, -90.0f, 0.0f));
+		app->m_player.setFlashlight(false);
+		//app->m_gizmos.m_pPosition = nullptr;
+		//app->m_gizmos.m_pValueToChange = nullptr;
 	}
 	ImGui::SameLine();
 	//gameobject placement
@@ -65,8 +66,7 @@ void GUI::showEditorWindow(){
 		b_creationTab = false;
 
 		//restore camera 
-		app->m_camera.setPos(app->m_cameraPos);
-		app->m_camera.restoreCameraProperties(app->m_cameraBck);
+		app->m_player.restore();
 	}
 
 	if(b_creationTab) showCreationTab();
@@ -87,7 +87,7 @@ void GUI::showCreationTab(){
 			updateDirContents(dirContents);
 		}
 		ImGui::SameLine();
-		ImGui::Text(app->m_currentCreating.diff.c_str());
+		ImGui::Text(app->m_creationTabGameObject.getDiffName().c_str());
 		if(ImGui::Button("Set specular")){
 			b_showOpenFileDialog = true;
 			currentPath = "res/textures/";
@@ -95,7 +95,7 @@ void GUI::showCreationTab(){
 			updateDirContents(dirContents);
 		}
 		ImGui::SameLine();
-		ImGui::Text(app->m_currentCreating.spec.c_str());
+		ImGui::Text(app->m_creationTabGameObject.getSpecName().c_str());
 		if(ImGui::Button("Set mesh")){
 			b_showOpenFileDialog = true;
 			currentPath = "res/models/";
@@ -103,47 +103,46 @@ void GUI::showCreationTab(){
 			updateDirContents(dirContents);
 		}
 		ImGui::SameLine();
-		ImGui::Text(app->m_currentCreating.mesh.c_str());
+		ImGui::Text(app->m_creationTabGameObject.getMeshName().c_str());
 		
 		ImGui::Separator();
 		ImGui::Text("\nObject type");
-		ImGui::Checkbox("Billboard", &app->m_currentCreating.isBillboard);
+		ImGui::Checkbox("Billboard", &(app->m_creationTabGameObject.isBillboardRef()));
 		
 		ImGui::Separator();
 		ImGui::Text("\nObject collision");
 		
 		ImGui::ListBox("##3", &collisionBodyEntryItem, VectorOfShapesGetter, (void*)(&collisionBodies), (int)(collisionBodies.size()), 5);
 		
-		static int collisionBodyIndex = renderer::ResourceManager::CollisionShapes::SHAPE_CUBE;
+		static int collisionBodyIndex = utilities::ResourceManager::CollisionShapes::SHAPE_CUBE;
 		ImGui::Combo("Shape", &collisionBodyIndex, "Cube\0Sphere\0Cilinder\0Cone\0Capsule\0\0");
 		if(ImGui::Button("Add##shape")){
-			std::string shape = std::string(renderer::ResourceManager::IndexToShape(collisionBodyIndex));
+			std::string shape = std::string(utilities::ResourceManager::IndexToShape(collisionBodyIndex));
 			collisionBodies.push_back(collisionBodyIndex);
 			renderer::CollisionBody body;
 			body.shape = collisionBodyIndex;
-			app->m_currentCreating.colBodies.push_back(body);
+			app->m_creationTabGameObject.addColBody(body);
 		}
 		ImGui::SameLine();
 		if(ImGui::Button("Remove##shape") && collisionBodyEntryItem != -1){
 			collisionBodies.erase(collisionBodies.begin() + collisionBodyEntryItem);
-			app->m_currentCreating.colBodies.erase(app->m_currentCreating.colBodies.begin() + collisionBodyEntryItem);
+			app->m_creationTabGameObject.removeColBody(collisionBodyEntryItem);
 			collisionBodyEntryItem--;
 		}
 
 //		ImGui::Separator();
 		if(collisionBodyEntryItem != -1){
-			renderer::CollisionBody& body = app->m_currentCreating.colBodies[collisionBodyEntryItem];
-
+			renderer::CollisionBody& body = app->m_creationTabGameObject.getColBodies()[collisionBodyEntryItem];
 			ImGui::DragFloat("Pos x", &body.colRelativePos.x, 0.01f, -300000.0f, 300000.0f);
 			ImGui::DragFloat("Pos Y", &body.colRelativePos.y, 0.01f, -300000.0f, 300000.0f);
 			ImGui::DragFloat("Pos Z", &body.colRelativePos.z, 0.01f, -300000.0f, 300000.0f);
 			ImGui::Separator();
-
+			
 			ImGui::SliderAngle("Rot x", &body.colRot.x, 0.0f, 359.0f);
 			ImGui::SliderAngle("Rot Y", &body.colRot.y, 0.0f, 359.0f);
 			ImGui::SliderAngle("Rot Z", &body.colRot.z, 0.0f, 359.0f);
 			ImGui::Separator();	
-
+			
 			ImGui::DragFloat("Scale x", &body.colScale.x, 0.01f, 0.01f, 10.0f);
 			ImGui::DragFloat("Scale Y", &body.colScale.y, 0.01f, 0.01f, 10.0f);
 			ImGui::DragFloat("Scale Z", &body.colScale.z, 0.01f, 0.01f, 10.0f);
@@ -159,8 +158,7 @@ void GUI::showCreationTab(){
 		}
 		ImGui::SameLine();
 		if(ImGui::Button("Reset")){
-			app->m_creatingModel = *(renderer::ResourceManager::loadModel("default"));
-			app->m_currentCreating = CreatedObject();
+			app->m_creationTabGameObject = GameObject(utilities::ResourceManager::loadModel("default"));
 			collisionBodyEntryItem = -1;
 			collisionBodies.clear();
 		}
@@ -282,16 +280,16 @@ void GUI::showSaveFileDialog(){
 void GUI::openButtonPressed(){
 	switch(fdMode){
 	case FD_Mode::DIFF:
-		app->m_currentCreating.diff = dirContents[fdEntryItem];
-		app->m_creatingModel.getMaterial().setDiffuseMap(renderer::ResourceManager::getTexture("res/textures/" + dirContents[fdEntryItem]));
+		app->m_creationTabGameObject.setDiffName(dirContents[fdEntryItem]);
+		app->m_creationTabGameObject.getTexturedModel()->getMaterial().setDiffuseMap(utilities::ResourceManager::getTexture("res/textures/" + dirContents[fdEntryItem]));
 		break;
 	case FD_Mode::SPEC:
-		app->m_currentCreating.spec = dirContents[fdEntryItem];
-		app->m_creatingModel.getMaterial().setSpecularMap(renderer::ResourceManager::getTexture("res/textures/" + dirContents[fdEntryItem]));
+		app->m_creationTabGameObject.setSpecName(dirContents[fdEntryItem]);
+		app->m_creationTabGameObject.getTexturedModel()->getMaterial().setSpecularMap(utilities::ResourceManager::getTexture("res/textures/" + dirContents[fdEntryItem]));
 		break;
 	case FD_Mode::MESH:
-		app->m_currentCreating.mesh = dirContents[fdEntryItem];
-		app->m_creatingModel.setMesh(renderer::ResourceManager::getMesh("res/models/" + dirContents[fdEntryItem]));
+		app->m_creationTabGameObject.setMeshName(dirContents[fdEntryItem]);
+		app->m_creationTabGameObject.getTexturedModel()->setMesh(utilities::ResourceManager::getMesh("res/models/" + dirContents[fdEntryItem]));
 		break;
 	case FD_Mode::MAP_OPEN:
 		app->openMap(dirContents[fdEntryItem]);
@@ -326,7 +324,7 @@ void GUI::showAddObjectTab(){
 	if(ImGui::Button("Add") && addGameobjectEntryItem >= 0){
 		app->addNewObject(dir_gameobjects[addGameobjectEntryItem]);
 		placeGameobjectEntryItem = app->m_objectsInScene.size() - 1;
-		glm::vec3 pos = app->m_camera.getPos();
+		glm::vec3 pos = app->m_player.getCamera()->getPos();
 	}
 	ImGui::SameLine();
 	if(ImGui::Button("Update")){
@@ -371,12 +369,13 @@ reiterate:
 		ImGui::Text("Transforms");
 		ImGui::DragFloat("Step", &m_moveInc, 0.01f, 0.01f, 5.0f);
 		GameObject* obj = app->m_objectsInScene[placeGameobjectEntryItem];
-		ImGui::RadioButton("Move", &gizmoMode, (int)renderer::GizmoMode::TRANSLATE); ImGui::SameLine();
-		ImGui::RadioButton("Scale", &gizmoMode, (int)renderer::GizmoMode::SCALE);	 ImGui::SameLine();
-		ImGui::RadioButton("Rotate", &gizmoMode, (int)renderer::GizmoMode::ROTATE);	 ImGui::SameLine();
-		ImGui::RadioButton("Off", &gizmoMode, (int)renderer::GizmoMode::NONE);
+		ImGui::RadioButton("Move", &gizmoMode, (int)GizmoMode::TRANSLATE); ImGui::SameLine();
+		ImGui::RadioButton("Scale", &gizmoMode, (int)GizmoMode::SCALE);	 ImGui::SameLine();
+		ImGui::RadioButton("Rotate", &gizmoMode, (int)GizmoMode::ROTATE);	 ImGui::SameLine();
+		ImGui::RadioButton("Off", &gizmoMode, (int)GizmoMode::NONE);
 		app->m_gizmos.setGizmoMode(gizmoMode);
 
+		
 			/*ImGui::DragFloat("Pos x", &obj->getPosition().x, m_moveInc, -300.0f, 300.0f);
 			ImGui::DragFloat("Pos Y", &obj->getPosition().y, m_moveInc, -300.0f, 300.0f);
 			ImGui::DragFloat("Pos Z", &obj->getPosition().z, m_moveInc, -300.0f, 300.0f);
@@ -407,7 +406,7 @@ bool VectorOfObjectsGetter(void * data, int n, const char ** out_text){
 
 bool VectorOfShapesGetter(void * data, int n, const char ** out_text){
 	std::vector<int>* v = (std::vector<int>*)data;
-	*out_text = renderer::ResourceManager::IndexToShape((*v)[n]);
+	*out_text = utilities::ResourceManager::IndexToShape((*v)[n]);
 		
 	return true;
 }

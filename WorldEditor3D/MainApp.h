@@ -2,9 +2,25 @@
 #define MAINAPP_H
 
 #include "GUI.h"
-#include <Renderer/Renderer.h>
-#include <GLM/glm.hpp>
+#include <Engine/Window.h>
+#include <Engine/Camera.h>
+#include <Engine/IShaderProgram.h>
+#include <Engine/Lights.h>
+#include <Engine/TexturedModel.h>
+#include <Engine/RenderableEntity.h>
+#include <Engine/Renderer.h>
+#include <Engine/Timing.h>
+#include <Engine/InputManager.h>
+#include <Engine/ResourceManager.h>
+
+#include "GameObjectShader.h"
+#include "BasicColorShader.h"
+
 #include "GameObject.h"
+#include "TranformGizmos.h"
+#include "Player.h"
+
+#include <GLM/glm.hpp>
 
 #include <vector>
 #include <map>
@@ -35,24 +51,28 @@ private:
 	void processInput(); //handles input processing
 	void update(float deltaTime); //updates based on deltatime
 	void drawGame(); //draws on screen
+	
 	void resetData();
 	void openMap(const std::string& file);
 	void saveMap(const std::string& file);
 	void saveCreatedObject(char* buf);
 	void openCreatedObject(const std::string& object);
-	void renderToSelect(glm::vec2& coords);
+	void pixelPick(glm::vec2& coords);
 	void addNewObject(const std::string& file);
 	void removeSelectedObject(int index);
 	void duplicateSelectedObject(int index);
+
 	void updateToDrawVector();
+	void drawGameObjects(bool drawCollisionBodies);
+	void drawCollisionBodies(std::vector<renderer::CollisionBody*>& colBodies);
+	void prePixelPickDraw();
+	void drawTransformGizmos();
 
 	renderer::Window m_window; //the app window
-	renderer::InputManager m_inputManager;
-	renderer::FpsLimiter m_fpsLimiter;
-	renderer::MasterRenderer m_masterRenderer;
-	renderer::Camera m_camera;
-	renderer::TranformGizmos m_gizmos;
-
+	utilities::InputManager m_inputManager;
+	utilities::FpsLimiter m_fpsLimiter;
+	//renderer::MasterRenderer m_masterRenderer;
+	TranformGizmos m_gizmos;
 	GameObject* m_currentlySelectedObject;
 	
 	AppState m_appState;
@@ -61,20 +81,21 @@ private:
 	std::map<unsigned int, GameObject*> m_gameObjectsMap;
 	//std::map<GameObject*, renderer::Light*> m_billboardLightsMap;
 
-	//this vector is to be filled with objects to draw 
-	//i hope a frustum culling will be implemented
-	std::vector<renderer::RenderableEntity*> m_objects_ToDraw;
 	std::vector<GameObject*> m_objectsInScene;
+	//this vector is to be filled with objects to draw 
+	//i hope at aleat a frustum culling will be implemented
+	std::vector<GameObject*> m_objects_ToDraw;
 
 	//creation state variables;
-	CreatedObject m_currentCreating;
-	renderer::TexturedModel m_creatingModel;
-	renderer::DirLight m_creatingLight;
-	glm::vec3 m_cameraPos;
-	glm::vec3 m_cameraBck;
+	GameObject m_creationTabGameObject;
+	renderer::DirLight m_creationTabLight;
 
 	// lighting
 	std::vector<renderer::Light*> m_lights;
+	Player m_player;
+
+	GameObjectShader m_gameObjectsShader;
+	BasicColorShader m_basicColorShader;
 
 	//gui stuff
 	GUI m_gui;

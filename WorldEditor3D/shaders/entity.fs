@@ -1,5 +1,6 @@
 #version 330 core
 
+
 in vec2 TexCoords; 
 in vec3 Normal;
 in vec3 FragPos;
@@ -89,7 +90,8 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir){
     vec3 ambient  = light.ambient  * vec3(texture(material.diffuse, TexCoords));
     vec3 diffuse  = light.diffuse  * diff * vec3(texture(material.diffuse, TexCoords));
     vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
-    return (ambient + diffuse + specular);
+
+	return (ambient + diffuse + specular);
 }
 
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir){
