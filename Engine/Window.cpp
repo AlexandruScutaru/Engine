@@ -47,15 +47,14 @@ namespace renderer{
 		//Default flag - so openGL cant take control over it
 		Uint32 flags = SDL_WINDOW_OPENGL;
 		//check the user flags
-		if(currentFlags & INVISIBLE){
+		if(currentFlags & INVISIBLE)
 			flags |= SDL_WINDOW_HIDDEN;
-		}
-		if(currentFlags & FULLSCREEN){
+		if(currentFlags & FULLSCREEN)
 			flags |= SDL_WINDOW_FULLSCREEN;
-		}
-		if(currentFlags & BORDERLESS){
+		if(currentFlags & BORDERLESS)
 			flags |= SDL_WINDOW_BORDERLESS;
-		}
+		if(currentFlags & RESIZABLE)
+			flags |= SDL_WINDOW_RESIZABLE;
 
 		//create a SDL window
 		m_sdlWindow = SDL_CreateWindow(name.c_str(),

@@ -4,6 +4,10 @@ namespace renderer{
 
 	CollidableEntity::CollidableEntity(){}
 
+	CollidableEntity::CollidableEntity(const CollidableEntity & other){
+		m_colBodies = other.m_colBodies;
+	}
+
 	CollidableEntity::~CollidableEntity(){}
 
 

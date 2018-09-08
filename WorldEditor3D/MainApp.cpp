@@ -6,18 +6,14 @@
 #include <fstream>
 #include "Utilities.h"
 
-//#define SCREEN_WIDTH 1366
-//#define SCREEN_HEIGHT 768
-
-//#define SCREEN_WIDTH 1280
-//#define SCREEN_HEIGHT 720
-
-#define SCREEN_WIDTH  900
-#define SCREEN_HEIGHT 540
-
-
+#define SCREEN_WIDTH 1280
+#define SCREEN_HEIGHT 720
+#define WINDOW_TITLE "Map Editor"
 #define MAX_FPS 120
 
+///TODO:
+	//investigate object rename issue
+	//fix clear data lighting issues
 
 MainApp::MainApp():
 	m_appState(AppState::EDIT),
@@ -49,7 +45,7 @@ void MainApp::run(){
 }
 
 void MainApp::initSystems(){
-	m_window.create("Renderer", SCREEN_WIDTH, SCREEN_HEIGHT/*, renderer::WindowFlags::BORDERLESS*/);
+	m_window.create(WINDOW_TITLE, SCREEN_WIDTH, SCREEN_HEIGHT, renderer::WindowFlags::RESIZABLE);
 	
 	//Setup ImGui
 	ImGui_ImplSdlGL3_Init(m_window.getWindow());
@@ -150,6 +146,13 @@ void MainApp::processInput(){
 		case SDL_MOUSEBUTTONUP:
 			m_inputManager.releaseKey(e.button.button);
 			break;
+		case SDL_WINDOWEVENT:
+			switch(e.window.event){
+			case SDL_WINDOWEVENT_RESIZED:
+				renderer::Window::setW(e.window.data1);
+				renderer::Window::setH(e.window.data2);
+				break;
+			}
 		}
 	}
 
@@ -417,12 +420,12 @@ void MainApp::pixelPick(glm::vec2& coords){
 
 			for(size_t i = 0; i < m_objectsInScene.size(); ++i){
 				if(m_objectsInScene[i] == obj){
-					m_gui.placeGameobjectEntryItem = i;
+					m_gui.placedGameobjectEntryItem = i;
 				}
 			}
 		} else{
 			m_currentlySelectedObject = nullptr;
-			m_gui.placeGameobjectEntryItem = -1;
+			m_gui.placedGameobjectEntryItem = -1;
 		}
 	}
 }
@@ -455,10 +458,10 @@ void MainApp::duplicateSelectedObject(int index){
 	object = new GameObject(*m_objectsInScene[index]);
 	m_objectsInScene.push_back(object);
 	m_gameObjectsMap[object->getCode()] = object;
-	if(m_currentlySelectedObject)
-		m_currentlySelectedObject->setSelected(false);
-	m_currentlySelectedObject = object;
-	m_currentlySelectedObject->setSelected(true);
+	//if(m_currentlySelectedObject)
+	//	m_currentlySelectedObject->setSelected(false);
+	//m_currentlySelectedObject = object;
+	//m_currentlySelectedObject->setSelected(true);
 	object = nullptr;
 }
 

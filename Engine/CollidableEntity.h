@@ -9,6 +9,7 @@ namespace renderer{
 	class CollidableEntity{
 	public:
 		CollidableEntity();
+		CollidableEntity(const CollidableEntity& other);
 		~CollidableEntity();
 
 		void addColBody(renderer::CollisionBody& body){ m_colBodies.push_back(body); };

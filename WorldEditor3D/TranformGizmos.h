@@ -51,6 +51,7 @@ public:
 	int getGizmoMode(){ return (int)m_gizmoMode; }
 	int getActivated(){ return m_currentlyActivated; }
 
+	float gridStep;
 private:
 	Actor** m_pSelectedActor;
 	GizmoMode m_gizmoMode;

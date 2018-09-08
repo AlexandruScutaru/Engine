@@ -6,7 +6,7 @@
 #include <SDL/SDL.h>
 #include <iostream>
 #include <Engine/Camera.h>
-
+#include <math.h>
 
 static void translateX	(Actor* pActor, utilities::InputManager& input, renderer::Camera* camera, float dt);
 static void translateY	(Actor* pActor, utilities::InputManager& input, renderer::Camera* camera, float dt);
@@ -28,7 +28,9 @@ static void rotateY		(Actor* pActor, utilities::InputManager& input, renderer::C
 static void rotateZ		(Actor* pActor, utilities::InputManager& input, renderer::Camera* camera, float dt);
 
 
-TranformGizmos::TranformGizmos() {}
+TranformGizmos::TranformGizmos() :
+	gridStep(0.01f)
+{}
 
 TranformGizmos::~TranformGizmos(){
 	for(auto gizmo : m_gizmosTranslate)
@@ -176,9 +178,12 @@ const glm::vec3& TranformGizmos::getPosition(){
 void TranformGizmos::updateGizmo(renderer::Camera* camera, utilities::InputManager& input, float deltaTime){
 	if(m_currentlyActivated && input.isKeyDown(SDL_BUTTON_LEFT)){
 		m_gizmoFunctionality[m_currentlyActivated](*m_pSelectedActor, input, camera, deltaTime);
-	}
-	else
+	} else if(m_currentlyActivated && !input.isKeyPressed(SDL_BUTTON_LEFT)){
+		(*m_pSelectedActor)->getPosition().x = std::round((*m_pSelectedActor)->getPosition().x / gridStep) * gridStep;
+		(*m_pSelectedActor)->getPosition().y = std::round((*m_pSelectedActor)->getPosition().y / gridStep) * gridStep;
+		(*m_pSelectedActor)->getPosition().z = std::round((*m_pSelectedActor)->getPosition().z / gridStep) * gridStep;
 		m_currentlyActivated = 0;
+	}
 }
 
 bool TranformGizmos::wasClicked(int val){
@@ -196,15 +201,18 @@ void translateX(Actor* pActor, utilities::InputManager& input, renderer::Camera*
 		
 	if(-0.25f <= dotRX && dotRX <= 0.25f) // up or down
 		if(dotUX > 0.0f)
-			//pObj->getPosition().x -= input.getMouseDY()*dt; //up
 			pActor->getPosition().x -= input.getMouseDY()*dt; //up
-
 		else
 			pActor->getPosition().x += input.getMouseDY()*dt; //down
 	else if(dotRX > 0.0f)
 		pActor->getPosition().x += input.getMouseDX()*dt; //right
 	else
 		pActor->getPosition().x -= input.getMouseDX()*dt; //left
+
+	float inc = 1.0f;
+
+	//pActor->getPosition().x = std::round(pActor->getPosition().x / inc) * inc;
+	//pActor->getPosition().y = std::round(pActor->getPosition().y / inc) * inc;
 }
 
 void translateY(Actor* pActor, utilities::InputManager & input, renderer::Camera* camera, float dt){

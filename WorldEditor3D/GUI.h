@@ -9,7 +9,10 @@
 #include <vector>
 #include <string>
 
-#define OBJECT_NAME 32
+#define OBJECT_NAME_SIZE 32
+#define TOOLBAR_HEIGHT 36
+#define MAIN_MENU_HEIGHT 18
+#define EDITOR_WINDOW_WIDTH 300
 
 class MainApp;
 namespace renderer{
@@ -22,6 +25,7 @@ enum class FD_Mode{
 	MESH,
 	OBJECT_SAVE,
 	OBJECT_OPEN,
+	ADD_GAMEOBJECT,
 	MAP_OPEN,
 	MAP_SAVE
 };
@@ -35,6 +39,8 @@ public:
 
 	//imgui variables and methods
 	void updateImGuiWindows();
+	void showMainMenu();
+	void showToolbar();
 	void showEditorWindow();
 	void showCreationTab();
 	void showPlacementTab();
@@ -42,23 +48,21 @@ public:
 	void showSaveFileDialog();
 	void openButtonPressed();
 	void updateDirContents(std::vector<std::string>& dir);
-	void showAddObjectTab();
-	void showSceneTab();
+	void showGameobjectsTab();
+	void showLightsTab();
 
 	bool b_creationTab;
 	bool b_placementTab;
 	bool b_showOpenFileDialog;
 	bool b_showSaveFileDialog;
 
-	char m_name[OBJECT_NAME];
+	char m_name[OBJECT_NAME_SIZE];
 	int fdEntryItem;
-	int addGameobjectEntryItem;
-	int placeGameobjectEntryItem;
+	int placedGameobjectEntryItem;
 	int collisionBodyEntryItem;
 	FD_Mode fdMode;
 	std::string currentPath;
 	std::vector<std::string> dirContents;
-	std::vector<std::string> dir_gameobjects;
 	std::vector<int> collisionBodies;
 
 private:

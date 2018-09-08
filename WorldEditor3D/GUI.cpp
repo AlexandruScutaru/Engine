@@ -8,8 +8,6 @@ bool VectorOfStringGetter(void* data, int n, const char** out_text);
 bool VectorOfObjectsGetter(void* data, int n, const char** out_text);
 bool VectorOfShapesGetter(void* data, int n, const char** out_text);
 
-bool MapOfGameObjectsGetter(void* data, int n, const char** out_text);
-
 
 GUI::GUI():
 	app(nullptr)
@@ -21,11 +19,18 @@ GUI::GUI(MainApp* app) :
 	b_placementTab(true),
 	b_showOpenFileDialog(false),
 	b_showSaveFileDialog(false),
-	addGameobjectEntryItem(-1),
-	placeGameobjectEntryItem(-1),
+	placedGameobjectEntryItem(-1),
 	collisionBodyEntryItem(-1),
 	m_moveInc(0.01f)
-{}
+{
+	ImGui::GetStyle().WindowRounding = 0.0f;
+	ImGui::GetStyle().ChildRounding = 0.0f;
+	ImGui::GetStyle().FrameRounding = 0.0f;
+	ImGui::GetStyle().GrabRounding = 0.0f;
+	ImGui::GetStyle().PopupRounding = 0.0f;
+	ImGui::GetStyle().ScrollbarRounding = 0.0f;
+	//ImGui::GetStyle().WindowBorderSize = 1.0f;
+}
 
 GUI::~GUI(){}
 
@@ -33,18 +38,177 @@ GUI::~GUI(){}
 void GUI::updateImGuiWindows(){
 	ImGui_ImplSdlGL3_NewFrame(app->m_window.getWindow());
 
+	showMainMenu();
+	showToolbar();
 	showEditorWindow();
 	if(b_showOpenFileDialog) showOpenFileDialog();
 	if(b_showSaveFileDialog) showSaveFileDialog();
 }
 
+void GUI::showMainMenu(){
+	if(ImGui::BeginMainMenuBar()){
+		if(ImGui::BeginMenu("File")){
+			if(ImGui::MenuItem("New")) {
+				app->resetData();
+			}
+			if(ImGui::MenuItem("Open")) {
+				b_showOpenFileDialog = true;
+				currentPath = "res/maps/";
+				fdMode = FD_Mode::MAP_OPEN;
+				updateDirContents(dirContents);
+			}
+			if(ImGui::MenuItem("Save")){
+				b_showSaveFileDialog = true;
+				currentPath = "res/maps/";
+				fdMode = FD_Mode::MAP_SAVE;
+				updateDirContents(dirContents);
+			}
+			ImGui::Separator();
+			if(ImGui::MenuItem("Exit")) { 
+				app->m_appState = AppState::EXIT; 
+			}
+			ImGui::EndMenu();
+		}
+		if(ImGui::BeginMenu("Edit")){
+			ImGui::EndMenu();
+		}
+		ImGui::EndMainMenuBar();
+	}
+}
+
+void GUI::showToolbar(){
+	static ImGuiWindowFlags toolbar_flags = ImGuiWindowFlags_NoTitleBar |
+											ImGuiWindowFlags_NoScrollbar |
+											ImGuiWindowFlags_NoMove |
+											ImGuiWindowFlags_NoResize;
+
+	ImGui::SetNextWindowSize(ImVec2((float)renderer::Window::getW(), TOOLBAR_HEIGHT), ImGuiCond_Always);
+	ImGui::SetNextWindowPos(ImVec2(0.0f, MAIN_MENU_HEIGHT), ImGuiCond_Once);
+
+	ImGui::Begin("##toolbar", NULL, toolbar_flags);
+
+	renderer::TextureData td;
+	///gameobject placement
+	//add gameobject
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+	td = *utilities::ResourceManager::getTexture("res/gui/add.png");
+	if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1)){
+		b_showOpenFileDialog = true;
+		currentPath = "res/gameobjects/";
+		fdMode = FD_Mode::ADD_GAMEOBJECT;
+		updateDirContents(dirContents);
+	}
+	//duplicate gameobject
+	ImGui::SameLine();
+	td = *utilities::ResourceManager::getTexture("res/gui/duplicate.png");
+	if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1)){
+		if(placedGameobjectEntryItem >= 0){
+			app->duplicateSelectedObject(placedGameobjectEntryItem);
+			//placedGameobjectEntryItem = app->m_objectsInScene.size() - 1;
+		}
+	}
+	//remove gameobject
+	ImGui::SameLine();
+	td = *utilities::ResourceManager::getTexture("res/gui/remove.png");
+	if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1)){
+		if(placedGameobjectEntryItem >= 0){
+			app->removeSelectedObject(placedGameobjectEntryItem);
+			placedGameobjectEntryItem = -1;
+		}
+	}
+	ImGui::PopStyleColor();
+	///separator
+	ImGui::SameLine();
+	td = *utilities::ResourceManager::getTexture("res/gui/sep.png");
+	ImGui::Image((ImTextureID)td.id, ImVec2(3, 27), ImVec2(0, 0), ImVec2(1, -1));
+
+	///transform gizmo mode selectors
+	//none - select only
+	ImGui::SameLine();
+	td = *utilities::ResourceManager::getTexture("res/gui/select.png");
+	if(app->m_gizmos.getGizmoMode() == (int)GizmoMode::NONE)
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(200, 200, 200, 255));
+	else
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+	if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1)){
+		app->m_gizmos.setGizmoMode((int)GizmoMode::NONE);
+	}
+	ImGui::PopStyleColor();
+	//translate
+	ImGui::SameLine();
+	td = *utilities::ResourceManager::getTexture("res/gui/move.png");
+	if(app->m_gizmos.getGizmoMode() == (int)GizmoMode::TRANSLATE)
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(200, 200, 200, 255));
+	else
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+	if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1)){
+		app->m_gizmos.setGizmoMode((int)GizmoMode::TRANSLATE);
+	}
+	ImGui::PopStyleColor();
+	//rotate
+	ImGui::SameLine();
+	td = *utilities::ResourceManager::getTexture("res/gui/rotate.png");
+	if(app->m_gizmos.getGizmoMode() == (int)GizmoMode::ROTATE)
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(200, 200, 200, 255));
+	else
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+	if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1)){
+		app->m_gizmos.setGizmoMode((int)GizmoMode::ROTATE);
+	}
+	ImGui::PopStyleColor();
+	//scale
+	ImGui::SameLine();
+	td = *utilities::ResourceManager::getTexture("res/gui/scale.png");
+	if(app->m_gizmos.getGizmoMode() == (int)GizmoMode::SCALE)
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(200, 200, 200, 255));
+	else
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+	if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1)){
+		app->m_gizmos.setGizmoMode((int)GizmoMode::SCALE);
+	}
+	ImGui::PopStyleColor();
+
+	///separator
+	ImGui::SameLine();
+	td = *utilities::ResourceManager::getTexture("res/gui/sep.png");
+	ImGui::Image((ImTextureID)td.id, ImVec2(3, 27), ImVec2(0, 0), ImVec2(1, -1));
+
+	///Grid Size selection
+	ImGui::SameLine();
+	ImGui::Text("Grid size:");
+	ImGui::SameLine();
+	static int it = 0;
+	ImGui::PushItemWidth(60);
+	ImGui::Combo("##incStepCombo", &it, " 0.01 \0 0.10 \0 1.00 \0\0", 3);
+	switch(it){
+	case 0:
+		app->m_gizmos.gridStep = 0.01f;
+		break;
+	case 1:
+		app->m_gizmos.gridStep = 0.1f;
+		break;
+	case 2:
+		app->m_gizmos.gridStep = 1.0f;
+		break;
+	default:
+		break;
+	}
+	ImGui::PopItemWidth();
+
+	ImGui::End();
+}
+
 void GUI::showEditorWindow(){
-	ImGui::SetNextWindowCollapsed(false, ImGuiCond_Once);
-	ImGui::SetNextWindowPos(ImVec2(app->m_window.getW() - 300.0f, 0.0f), ImGuiSetCond_Once);
-	ImGui::SetNextWindowSize(ImVec2(300, (float)app->m_window.getH()), ImGuiCond_Once);
-	
-	ImGui::Begin("editor", NULL);
-	
+	static ImGuiWindowFlags editorWindow_flags = ImGuiWindowFlags_NoMove |
+												 ImGuiWindowFlags_NoResize;
+
+	ImGui::SetNextWindowSize(ImVec2(EDITOR_WINDOW_WIDTH, (float)app->m_window.getH() - MAIN_MENU_HEIGHT - TOOLBAR_HEIGHT), ImGuiCond_Always);
+	ImGui::SetNextWindowPos(ImVec2(app->m_window.getW() - EDITOR_WINDOW_WIDTH, MAIN_MENU_HEIGHT + TOOLBAR_HEIGHT), ImGuiSetCond_Always);
+
+	ImGui::Begin("##editorWindow", NULL, editorWindow_flags);
+
+	ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.8f);
+
 	///main tabs for the editor
 	//gameobject creation
 	if(ImGui::Button("Object Creation") && !b_creationTab){
@@ -56,8 +220,6 @@ void GUI::showEditorWindow(){
 		app->m_player.setPosition(glm::vec3(0.0f, 0.0f, 5.0f));
 		app->m_player.setRotation(glm::vec3(0.0f, -90.0f, 0.0f));
 		app->m_player.setFlashlight(false);
-		//app->m_gizmos.m_pPosition = nullptr;
-		//app->m_gizmos.m_pValueToChange = nullptr;
 	}
 	ImGui::SameLine();
 	//gameobject placement
@@ -76,11 +238,12 @@ void GUI::showEditorWindow(){
 }
 
 void GUI::showCreationTab(){
-	ImGui::BeginChild("creation", ImVec2(-1.0f, -1.0f), true, ImGuiWindowFlags_NoScrollWithMouse);
+	ImGui::BeginChild("creation", ImVec2(-1.0f, -1.0f), true/*, ImGuiWindowFlags_NoScrollWithMouse*/);
 	{
+		ImGui::PushItemWidth(-1);
 		ImGui::Text("Object info");
 		static float radius;
-		if(ImGui::Button("Set diffuse")){
+		if(ImGui::Button("Set diff")){
 			b_showOpenFileDialog = true;
 			currentPath = "res/textures/";
 			fdMode = FD_Mode::DIFF;
@@ -88,7 +251,7 @@ void GUI::showCreationTab(){
 		}
 		ImGui::SameLine();
 		ImGui::Text(app->m_creationTabGameObject.getDiffName().c_str());
-		if(ImGui::Button("Set specular")){
+		if(ImGui::Button("Set spec")){
 			b_showOpenFileDialog = true;
 			currentPath = "res/textures/";
 			fdMode = FD_Mode::SPEC;
@@ -112,11 +275,11 @@ void GUI::showCreationTab(){
 		ImGui::Separator();
 		ImGui::Text("\nObject collision");
 		
-		ImGui::ListBox("##3", &collisionBodyEntryItem, VectorOfShapesGetter, (void*)(&collisionBodies), (int)(collisionBodies.size()), 5);
+		ImGui::ListBox("##collisionBodiesListBox", &collisionBodyEntryItem, VectorOfShapesGetter, (void*)(&collisionBodies), (int)(collisionBodies.size()), 5);
 		
 		static int collisionBodyIndex = utilities::ResourceManager::CollisionShapes::SHAPE_CUBE;
-		ImGui::Combo("Shape", &collisionBodyIndex, "Cube\0Sphere\0Cilinder\0Cone\0Capsule\0\0");
-		if(ImGui::Button("Add##shape")){
+		ImGui::Combo("##collisionBodyShape", &collisionBodyIndex, "Cube\0Sphere\0Cilinder\0Cone\0Capsule\0\0");
+		if(ImGui::Button("Add##collisionShape")){
 			std::string shape = std::string(utilities::ResourceManager::IndexToShape(collisionBodyIndex));
 			collisionBodies.push_back(collisionBodyIndex);
 			renderer::CollisionBody body;
@@ -124,31 +287,46 @@ void GUI::showCreationTab(){
 			app->m_creationTabGameObject.addColBody(body);
 		}
 		ImGui::SameLine();
-		if(ImGui::Button("Remove##shape") && collisionBodyEntryItem != -1){
+		if(ImGui::Button("Remove##collisionShape") && collisionBodyEntryItem != -1){
 			collisionBodies.erase(collisionBodies.begin() + collisionBodyEntryItem);
 			app->m_creationTabGameObject.removeColBody(collisionBodyEntryItem);
 			collisionBodyEntryItem--;
 		}
 
-//		ImGui::Separator();
 		if(collisionBodyEntryItem != -1){
 			renderer::CollisionBody& body = app->m_creationTabGameObject.getColBodies()[collisionBodyEntryItem];
-			ImGui::DragFloat("Pos x", &body.colRelativePos.x, 0.01f, -300000.0f, 300000.0f);
-			ImGui::DragFloat("Pos Y", &body.colRelativePos.y, 0.01f, -300000.0f, 300000.0f);
-			ImGui::DragFloat("Pos Z", &body.colRelativePos.z, 0.01f, -300000.0f, 300000.0f);
-			ImGui::Separator();
-			
-			ImGui::SliderAngle("Rot x", &body.colRot.x, 0.0f, 359.0f);
-			ImGui::SliderAngle("Rot Y", &body.colRot.y, 0.0f, 359.0f);
-			ImGui::SliderAngle("Rot Z", &body.colRot.z, 0.0f, 359.0f);
-			ImGui::Separator();	
-			
-			ImGui::DragFloat("Scale x", &body.colScale.x, 0.01f, 0.01f, 10.0f);
-			ImGui::DragFloat("Scale Y", &body.colScale.y, 0.01f, 0.01f, 10.0f);
-			ImGui::DragFloat("Scale Z", &body.colScale.z, 0.01f, 0.01f, 10.0f);
-			ImGui::Separator();
-		}
+			ImGui::BeginChild("colls", ImVec2(-1, 65), false);
+			{
+				ImGui::PushItemWidth(70);
+				ImGui::Text("P:");
+				ImGui::SameLine();
+				ImGui::DragFloat("##dragPosX", &body.colRelativePos.x, 0.01f, 0.0f, 10.0f);
+				ImGui::SameLine();
+				ImGui::DragFloat("##dragPosY", &body.colRelativePos.y, 0.01f, 0.0f, 10.0f);
+				ImGui::SameLine();
+				ImGui::DragFloat("##dragPosZ", &body.colRelativePos.z, 0.01f, 0.0f, 10.0f);
 
+				ImGui::Text("R:");
+				ImGui::SameLine();
+				ImGui::DragFloat("##dragRotX", &body.colRot.x, 1.0f, 0.0f, 359.0f); body.colRot.x = glm::radians(body.colRot.x);
+				ImGui::SameLine();
+				ImGui::DragFloat("##dragRotY", &body.colRot.y, 1.0f, 0.0f, 359.0f); body.colRot.y = glm::radians(body.colRot.y);
+				ImGui::SameLine();
+				ImGui::DragFloat("##dragRotZ", &body.colRot.z, 1.0f, 0.0f, 359.0f); body.colRot.z = glm::radians(body.colRot.z);
+				
+				ImGui::Text("S:");
+				ImGui::SameLine();
+				ImGui::DragFloat("##dragScaleX", &body.colScale.x, 0.01f, 0.01f, 10.0f);
+				ImGui::SameLine();						  
+				ImGui::DragFloat("##dragScaleY", &body.colScale.y, 0.01f, 0.01f, 10.0f);
+				ImGui::SameLine();						  
+				ImGui::DragFloat("##dragScaleZ", &body.colScale.z, 0.01f, 0.01f, 10.0f);
+				
+				ImGui::PopItemWidth();
+			}
+			ImGui::EndChild();
+		}
+		ImGui::Separator();
 		ImGui::Text("\n");
 		if(ImGui::Button("Save object")){
 			b_showSaveFileDialog = true;
@@ -174,31 +352,12 @@ void GUI::showCreationTab(){
 }
 
 void GUI::showPlacementTab(){
-	ImGui::BeginChild("placement", ImVec2(), true);
+	ImGui::BeginChild("scene", ImVec2(), true);
 	{
-		if(ImGui::CollapsingHeader("Scene")){
-			showSceneTab();
-		}
-		if(ImGui::CollapsingHeader("Add Object")){
-			showAddObjectTab();
-		}
-		if(ImGui::CollapsingHeader("Add light")){
-
-		}
-		ImGui::Separator();
-		if(ImGui::Button("Save")){
-			b_showSaveFileDialog = true;
-			currentPath = "res/maps/";
-			fdMode = FD_Mode::MAP_SAVE;
-			updateDirContents(dirContents);
-		}
-		ImGui::SameLine();
-		if(ImGui::Button("Open")){
-			b_showOpenFileDialog = true;
-			currentPath = "res/maps/";
-			fdMode = FD_Mode::MAP_OPEN;
-			updateDirContents(dirContents);
-		}
+		if(ImGui::CollapsingHeader("Gameobjects"))
+			showGameobjectsTab();
+		if(ImGui::CollapsingHeader("Lights"))
+			showLightsTab();
 	}
 	ImGui::EndChild();
 }
@@ -224,6 +383,7 @@ void GUI::showOpenFileDialog(){
 	if(ImGui::Button("Cancel")){
 		b_showOpenFileDialog = false;
 	}
+	ImGui::PopItemWidth();
 	ImGui::End();
 }
 
@@ -274,6 +434,7 @@ void GUI::showSaveFileDialog(){
 	if(ImGui::Button("Cancel")){
 		b_showSaveFileDialog = false;
 	}
+	ImGui::PopItemWidth();
 	ImGui::End();
 }
 
@@ -297,6 +458,10 @@ void GUI::openButtonPressed(){
 	case FD_Mode::OBJECT_OPEN:
 		app->openCreatedObject(dirContents[fdEntryItem]);
 		break;
+	case FD_Mode::ADD_GAMEOBJECT:
+		app->addNewObject(dirContents[fdEntryItem]);
+		placedGameobjectEntryItem = app->m_objectsInScene.size() - 1;
+		break;
 	default:
 		break;
 	}
@@ -318,77 +483,62 @@ void GUI::updateDirContents(std::vector<std::string>& directory){
 	}
 }
 
-void GUI::showAddObjectTab(){
-	ImGui::Text("Available files:");
-	ImGui::ListBox("##2", &addGameobjectEntryItem, VectorOfStringGetter, (void*)(&dir_gameobjects), (int)(dir_gameobjects.size()), 10);
-	if(ImGui::Button("Add") && addGameobjectEntryItem >= 0){
-		app->addNewObject(dir_gameobjects[addGameobjectEntryItem]);
-		placeGameobjectEntryItem = app->m_objectsInScene.size() - 1;
-		glm::vec3 pos = app->m_player.getCamera()->getPos();
-	}
-	ImGui::SameLine();
-	if(ImGui::Button("Update")){
-		currentPath = "res/gameobjects/";
-		updateDirContents(dir_gameobjects);
-	}
-
-}
-
-void GUI::showSceneTab(){
-reiterate:
+void GUI::showGameobjectsTab(){
 	//objects in scene list
-	ImGui::Text("Objects list:");
-	ImGui::ListBox("##3", &placeGameobjectEntryItem, VectorOfObjectsGetter, (void*)(&app->m_objectsInScene), (int)(app->m_objectsInScene.size()), 10);
+	ImGui::PushItemWidth(-1);
+	ImGui::Text("Gameobjects in scene:");
+	ImGui::ListBox("##gameobjectsList", &placedGameobjectEntryItem, VectorOfObjectsGetter, (void*)(&app->m_objectsInScene), (int)(app->m_objectsInScene.size()), 10);
 	//placement settings
-	if(placeGameobjectEntryItem >= 0){
+	if(placedGameobjectEntryItem >= 0){
 		if(app->m_currentlySelectedObject)
 			app->m_currentlySelectedObject->setSelected(false);
-		app->m_currentlySelectedObject = app->m_objectsInScene[placeGameobjectEntryItem];
+		app->m_currentlySelectedObject = app->m_objectsInScene[placedGameobjectEntryItem];
 		app->m_currentlySelectedObject->setSelected(true);
 		//object info
-		memset(m_name, '\0', OBJECT_NAME);
-		strncat_s(m_name, app->m_objectsInScene[placeGameobjectEntryItem]->getInEditorName().c_str(), OBJECT_NAME);
-		ImGui::InputText("Name", m_name, OBJECT_NAME);
-		app->m_objectsInScene[placeGameobjectEntryItem]->setInEditorName(m_name);
+		memset(m_name, '\0', OBJECT_NAME_SIZE);
+		strncat_s(m_name, app->m_objectsInScene[placedGameobjectEntryItem]->getInEditorName().c_str(), OBJECT_NAME_SIZE);
+		ImGui::InputText("##gameobjectName", m_name, OBJECT_NAME_SIZE);
+		app->m_objectsInScene[placedGameobjectEntryItem]->setInEditorName(m_name);
 		
-		//object modifier
-		if(ImGui::Button("Duplicate")){
-			app->duplicateSelectedObject(placeGameobjectEntryItem);
-			placeGameobjectEntryItem = app->m_objectsInScene.size()-1;
-			goto reiterate;
-		}
-		ImGui::SameLine();
-		if(ImGui::Button("Remove")){
-			app->removeSelectedObject(placeGameobjectEntryItem);
-			placeGameobjectEntryItem = -1;
-			goto reiterate;
-		}
-		//positional modifiers
-		int gizmoMode = app->m_gizmos.getGizmoMode();
 		ImGui::Separator();
 		ImGui::Text("Transforms");
-		ImGui::DragFloat("Step", &m_moveInc, 0.01f, 0.01f, 5.0f);
-		GameObject* obj = app->m_objectsInScene[placeGameobjectEntryItem];
-		ImGui::RadioButton("Move", &gizmoMode, (int)GizmoMode::TRANSLATE); ImGui::SameLine();
-		ImGui::RadioButton("Scale", &gizmoMode, (int)GizmoMode::SCALE);	 ImGui::SameLine();
-		ImGui::RadioButton("Rotate", &gizmoMode, (int)GizmoMode::ROTATE);	 ImGui::SameLine();
-		ImGui::RadioButton("Off", &gizmoMode, (int)GizmoMode::NONE);
-		app->m_gizmos.setGizmoMode(gizmoMode);
+		GameObject* obj = app->m_objectsInScene[placedGameobjectEntryItem];
+		ImGui::BeginChild("gmaeobjectTransoforms", ImVec2(-1, 65), false);
+		{
+			ImGui::PushItemWidth(70);
+			ImGui::Text("P:");
+			ImGui::SameLine();
+			ImGui::InputFloat("##objInputPosX", &obj->getPosition().x, 0.0f, 1);
+			ImGui::SameLine();
+			ImGui::InputFloat("##objInputPosY", &obj->getPosition().y, 0.0f, 1);
+			ImGui::SameLine();
+			ImGui::InputFloat("##objInputPosZ", &obj->getPosition().z, 0.0f, 1);
 
-		
-			/*ImGui::DragFloat("Pos x", &obj->getPosition().x, m_moveInc, -300.0f, 300.0f);
-			ImGui::DragFloat("Pos Y", &obj->getPosition().y, m_moveInc, -300.0f, 300.0f);
-			ImGui::DragFloat("Pos Z", &obj->getPosition().z, m_moveInc, -300.0f, 300.0f);
-			ImGui::Text("\n");
-			ImGui::SliderAngle("Rot x", &obj->getRotation().x, 0.0f, 359.0f);
-			ImGui::SliderAngle("Rot Y", &obj->getRotation().y, 0.0f, 359.0f);
-			ImGui::SliderAngle("Rot Z", &obj->getRotation().z, 0.0f, 359.0f);
-			ImGui::Text("\n");
-			ImGui::DragFloat("Scale x", &obj->getScale().x, 0.01f, 0.01f, 10.0f);
-			ImGui::DragFloat("Scale Y", &obj->getScale().y, 0.01f, 0.01f, 10.0f);
-			ImGui::DragFloat("Scale Z", &obj->getScale().z, 0.01f, 0.01f, 10.0f);
-			ImGui::Text("\n");*/
+			ImGui::Text("R:");
+			ImGui::SameLine();
+			ImGui::InputFloat("##objInputRotX", &obj->getRotation().x, 0.0f, 1);
+			ImGui::SameLine();
+			ImGui::InputFloat("##objInputRotY", &obj->getRotation().y, 0.0f, 1);
+			ImGui::SameLine();
+			ImGui::InputFloat("##objInputRotZ", &obj->getRotation().z, 0.0f, 1);
+
+			ImGui::Text("S:");
+			ImGui::SameLine();
+			ImGui::InputFloat("##objInputScaleX", &obj->getScale().x, 0.0f, 1);
+			ImGui::SameLine();
+			ImGui::InputFloat("##objInputScaleY", &obj->getScale().y, 0.0f, 1);
+			ImGui::SameLine();
+			ImGui::InputFloat("##objInputScaleZ", &obj->getScale().z, 0.0f, 1);
+
+			ImGui::PopItemWidth();
+		}
+		ImGui::EndChild();
 	}
+	ImGui::PopItemWidth();
+}
+
+void GUI::showLightsTab(){
+
 }
 
 
@@ -408,16 +558,5 @@ bool VectorOfShapesGetter(void * data, int n, const char ** out_text){
 	std::vector<int>* v = (std::vector<int>*)data;
 	*out_text = utilities::ResourceManager::IndexToShape((*v)[n]);
 		
-	return true;
-}
-
-bool MapOfGameObjectsGetter(void * data, int n, const char ** out_text){
-	std::map<unsigned int, GameObject*>* m = (std::map<unsigned int, GameObject*>*)data;
-	std::map<unsigned int, GameObject*>::iterator it;
-	int i = 0;
-	for(it = m->begin(); i <= n; it++){
-		i++;
-		*out_text = it->second->getInEditorName().c_str();
-	}
 	return true;
 }

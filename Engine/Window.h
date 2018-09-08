@@ -13,7 +13,8 @@ namespace renderer{
 		DEFAULT = 0x0,
 		INVISIBLE = 0x1,
 		FULLSCREEN = 0x2,
-		BORDERLESS = 0x4
+		BORDERLESS = 0x4,
+		RESIZABLE = 0x8
 	};
 
 	//Creates and manages a window
@@ -24,6 +25,9 @@ namespace renderer{
 
 		int create(const std::string& name, int w, int h, unsigned int currentFlags = 0);
 		void swapBuffer();
+
+		static void setW(int w) { m_width = w; }
+		static void setH(int h) { m_height = h; }
 
 		SDL_Window* getWindow(){ return m_sdlWindow; }
 		static int getW() { return m_width; }

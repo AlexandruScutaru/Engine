@@ -20,14 +20,20 @@ GameObject::GameObject(TexturedModel* model, glm::vec3& pos, glm::vec3& rot, glm
 	m_selected(false)
 {
 	m_model->setBillboard(false);
-
 }
 
 GameObject::GameObject(const GameObject& other) :
+	Actor(other),
 	RenderableEntity(other),
+	CollidableEntity(other),
 	m_selected(false)
 {
-	m_isStatic = other.m_isStatic;
+	m_name			= other.m_name;
+	m_inEditorName	= other.m_inEditorName;
+	m_diffName		= other.m_diffName;
+	m_specName		= other.m_specName;
+	m_meshName		= other.m_meshName;
+	m_isStatic  	= other.m_isStatic;
 	m_model->setBillboard(other.m_model->isBillboard());
 }
 
