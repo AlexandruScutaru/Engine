@@ -59,6 +59,7 @@ public:
 	char m_name[OBJECT_NAME_SIZE];
 	int fdEntryItem;
 	int placedGameobjectEntryItem;
+	int placedLightEntryItem;
 	int collisionBodyEntryItem;
 	FD_Mode fdMode;
 	std::string currentPath;

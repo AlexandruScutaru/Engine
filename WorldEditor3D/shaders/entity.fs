@@ -70,6 +70,7 @@ void main(){
     // phase 2: Point lights
 	for(int i = 0; i < pointLightsNum; i++)
 		result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);    
+
     // phase 3: Spot light
 	if(flashlightOn)
 		result += CalcSpotLight(spotLight, norm, FragPos, viewDir);    
@@ -111,6 +112,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir){
     ambient  *= attenuation;
     diffuse  *= attenuation;
     specular *= attenuation;
+
     return (ambient + diffuse + specular);
 }
 

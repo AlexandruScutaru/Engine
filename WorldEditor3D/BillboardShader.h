@@ -10,13 +10,20 @@ public:
 	~BillboardShader();
 
 	void initShader(const std::string& shader);
-	void bindAttributes();
 	void getAllUniformLocations();
 
+	void loadSelected(bool value);
+	void loadModelMatrix(glm::mat4 & model);
+	void loadViewMatrix(glm::mat4 & view);
+	void loadProjectionMatrix(glm::mat4 & projection);
 
 private:
+	void connectTextureUnits();
+
 	enum{
 		TEX_DIFF_U,
+
+		SELECTED_U,
 
 		PROJECTION_MATRIX_U,
 		VIEW_MATRIX_U,

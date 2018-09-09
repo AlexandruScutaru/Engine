@@ -7,6 +7,7 @@
 bool VectorOfStringGetter(void* data, int n, const char** out_text);
 bool VectorOfObjectsGetter(void* data, int n, const char** out_text);
 bool VectorOfShapesGetter(void* data, int n, const char** out_text);
+bool VectorOfLightsGetter(void* data, int n, const char** out_text);
 
 
 GUI::GUI():
@@ -20,6 +21,7 @@ GUI::GUI(MainApp* app) :
 	b_showOpenFileDialog(false),
 	b_showSaveFileDialog(false),
 	placedGameobjectEntryItem(-1),
+	placedLightEntryItem(-1),
 	collisionBodyEntryItem(-1),
 	m_moveInc(0.01f)
 {
@@ -492,6 +494,9 @@ void GUI::showGameobjectsTab(){
 	if(placedGameobjectEntryItem >= 0){
 		if(app->m_currentlySelectedObject)
 			app->m_currentlySelectedObject->setSelected(false);
+		app->m_currentlySelectedLight = nullptr;
+		placedLightEntryItem = -1;
+
 		app->m_currentlySelectedObject = app->m_objectsInScene[placedGameobjectEntryItem];
 		app->m_currentlySelectedObject->setSelected(true);
 		//object info
@@ -538,7 +543,82 @@ void GUI::showGameobjectsTab(){
 }
 
 void GUI::showLightsTab(){
+	//lights in scene list
+	ImGui::PushItemWidth(-1);
+	ImGui::Text("Lights in scene:");
+	ImGui::ListBox("##lightsList", &placedLightEntryItem, VectorOfLightsGetter, (void*)(&app->m_lights), (int)(app->m_lights.size()), 10);
+	//placement settings
+	if(placedLightEntryItem == 1){
+		if(app->m_currentlySelectedObject)
+			app->m_currentlySelectedObject->setSelected(false);
+		app->m_currentlySelectedObject = nullptr;
+		app->m_currentlySelectedLight = nullptr;
+		placedGameobjectEntryItem = -1;
+	}
+	else if(placedLightEntryItem >= 0){
+		if(app->m_currentlySelectedObject)
+			app->m_currentlySelectedObject->setSelected(false);
+		app->m_currentlySelectedObject = nullptr;
+		app->m_currentlySelectedLight = nullptr;
+		placedGameobjectEntryItem = -1;
+		for(auto entry : app->m_billboardLightsMap){
+			if(entry.second == app->m_lights[placedLightEntryItem]){
+				app->m_currentlySelectedObject = entry.first;
+				app->m_currentlySelectedObject->setSelected(true);
+				app->m_currentlySelectedLight = app->m_lights[placedLightEntryItem];
+				break;
+			}
+		}
 
+		//app->m_currentlySelectedObject = app->m_objectsInScene[placedGameobjectEntryItem];
+		//app->m_currentlySelectedObject->setSelected(true);
+		
+		ImGui::Text("bun");
+		//if(app->m_currentlySelectedObject)
+		//	app->m_currentlySelectedObject->setSelected(false);
+		//app->m_currentlySelectedObject = app->m_objectsInScene[placedGameobjectEntryItem];
+		//app->m_currentlySelectedObject->setSelected(true);
+		////object info
+		//memset(m_name, '\0', OBJECT_NAME_SIZE);
+		//strncat_s(m_name, app->m_objectsInScene[placedGameobjectEntryItem]->getInEditorName().c_str(), OBJECT_NAME_SIZE);
+		//ImGui::InputText("##gameobjectName", m_name, OBJECT_NAME_SIZE);
+		//app->m_objectsInScene[placedGameobjectEntryItem]->setInEditorName(m_name);
+
+		//ImGui::Separator();
+		//ImGui::Text("Transforms");
+		//GameObject* obj = app->m_objectsInScene[placedGameobjectEntryItem];
+		//ImGui::BeginChild("gmaeobjectTransoforms", ImVec2(-1, 65), false);
+		//{
+		//	ImGui::PushItemWidth(70);
+		//	ImGui::Text("P:");
+		//	ImGui::SameLine();
+		//	ImGui::InputFloat("##objInputPosX", &obj->getPosition().x, 0.0f, 1);
+		//	ImGui::SameLine();
+		//	ImGui::InputFloat("##objInputPosY", &obj->getPosition().y, 0.0f, 1);
+		//	ImGui::SameLine();
+		//	ImGui::InputFloat("##objInputPosZ", &obj->getPosition().z, 0.0f, 1);
+
+		//	ImGui::Text("R:");
+		//	ImGui::SameLine();
+		//	ImGui::InputFloat("##objInputRotX", &obj->getRotation().x, 0.0f, 1);
+		//	ImGui::SameLine();
+		//	ImGui::InputFloat("##objInputRotY", &obj->getRotation().y, 0.0f, 1);
+		//	ImGui::SameLine();
+		//	ImGui::InputFloat("##objInputRotZ", &obj->getRotation().z, 0.0f, 1);
+
+		//	ImGui::Text("S:");
+		//	ImGui::SameLine();
+		//	ImGui::InputFloat("##objInputScaleX", &obj->getScale().x, 0.0f, 1);
+		//	ImGui::SameLine();
+		//	ImGui::InputFloat("##objInputScaleY", &obj->getScale().y, 0.0f, 1);
+		//	ImGui::SameLine();
+		//	ImGui::InputFloat("##objInputScaleZ", &obj->getScale().z, 0.0f, 1);
+
+		//	ImGui::PopItemWidth();
+		//}
+		//ImGui::EndChild();
+	}
+	ImGui::PopItemWidth();
 }
 
 
@@ -558,5 +638,13 @@ bool VectorOfShapesGetter(void * data, int n, const char ** out_text){
 	std::vector<int>* v = (std::vector<int>*)data;
 	*out_text = utilities::ResourceManager::IndexToShape((*v)[n]);
 		
+	return true;
+}
+
+bool VectorOfLightsGetter(void * data, int n, const char ** out_text){
+	if(n == 0)		*out_text = "directional";
+	else if(n == 1)	*out_text = "spot";
+	else			*out_text = "point";
+
 	return true;
 }

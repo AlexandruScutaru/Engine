@@ -18,41 +18,31 @@ void GameObjectShader::initShader(const std::string& shader){
 void GameObjectShader::connectTextureUnits(){
 	loadInt(m_uniforms[MAT_TEX_DIFF_U], 0);
 	loadInt(m_uniforms[MAT_TEX_SPEC_U], 1);
-	
-	//loadInt(getUniformLocation("material.diffuse"), 0);
-	//loadInt(getUniformLocation("material.specular"), 1);
 }
 
 void GameObjectShader::loadShininess(float value){
 	loadFloat(m_uniforms[MAT_SHININESS_U], value);
-	//loadFloat(getUniformLocation("material.shininess"), value);
 
 }
 
 void GameObjectShader::loadFlashlight(bool value){
 	loadBool(m_uniforms[FLASHLIGHT_U], value);
-	//loadBool(getUniformLocation("flashlightOn"), value);
 }
 
 void GameObjectShader::loadSelected(bool value){
 	loadBool(m_uniforms[SELECTED_U], value);
-	//loadBool(getUniformLocation("selected"), value);
 }
 
 void GameObjectShader::loadModelMatrix(glm::mat4 & model){
 	loadMat4(m_uniforms[MODEL_MATRIX_U], model);
-	//loadMat4(getUniformLocation("model"), model);
 }
 
 void GameObjectShader::loadViewMatrix(glm::mat4 & view){
 	loadMat4(m_uniforms[VIEW_MATRIX_U], view);
-	//loadMat4(getUniformLocation("view"), view);
 }
 
 void GameObjectShader::loadProjectionMatrix(glm::mat4 & projection){
 	loadMat4(m_uniforms[PROJECTION_MATRIX_U], projection);
-	//loadMat4(getUniformLocation("projection"), projection);
-
 }
 
 void GameObjectShader::loadLights(std::vector<renderer::Light*>& lights){
@@ -79,10 +69,10 @@ void GameObjectShader::loadLights(std::vector<renderer::Light*>& lights){
 
 	//point lights
 	size_t num = (lights.size() - 2) > MAX_LIGHTS ? MAX_LIGHTS : lights.size() - 2;
-	loadInt(POINT_LIGHTS_NUM_U, (int)num);
-	
+
+	loadInt(m_uniforms[POINT_LIGHTS_NUM_U], (int)num);
 	for(unsigned int i = 0; i < num; i++){
-		renderer::PointLight* point = static_cast<renderer::PointLight*>(lights[i + 2]);
+		renderer::PointLight* point = static_cast<renderer::PointLight*>(lights[i+2]);
 		loadVec3(m_pointLightsLocations[i].position, point->position);
 		loadVec3(m_pointLightsLocations[i].ambient, point->ambient);
 		loadVec3(m_pointLightsLocations[i].diffuse, point->diffuse);
@@ -93,7 +83,6 @@ void GameObjectShader::loadLights(std::vector<renderer::Light*>& lights){
 
 void GameObjectShader::loadViewPosition(glm::vec3 & viewPos){
 	loadVec3(m_uniforms[VIEW_POSITION_U], viewPos);
-	//loadVec3(getUniformLocation("viewPos"), viewPos);
 }
 
 void GameObjectShader::getAllUniformLocations(){
@@ -127,7 +116,7 @@ void GameObjectShader::getAllUniformLocations(){
 	
 	m_uniforms[POINT_LIGHTS_NUM_U] = getUniformLocation("pointLightsNum");
 	PointLightUniforms plUniforms;
-	for(int i = 0; i < MAX_LIGHTS; i++){
+	for(unsigned int i = 0; i < MAX_LIGHTS; i++){
 		plUniforms.position = getUniformLocation("pointLights[" + std::to_string(i) + "].position");
 		plUniforms.ambient  = getUniformLocation("pointLights[" + std::to_string(i) + "].ambient");
 		plUniforms.diffuse  = getUniformLocation("pointLights[" + std::to_string(i) + "].diffuse");

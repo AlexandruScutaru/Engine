@@ -15,6 +15,7 @@
 
 #include "GameObjectShader.h"
 #include "BasicColorShader.h"
+#include "BillboardShader.h"
 
 #include "GameObject.h"
 #include "TranformGizmos.h"
@@ -74,13 +75,16 @@ private:
 	//renderer::MasterRenderer m_masterRenderer;
 	TranformGizmos m_gizmos;
 	GameObject* m_currentlySelectedObject;
+	renderer::Light* m_currentlySelectedLight;
+
 	
 	AppState m_appState;
 
 	//mapping all objects by a specific code to pixel select them in the editor
 	std::map<unsigned int, GameObject*> m_gameObjectsMap;
-	//std::map<GameObject*, renderer::Light*> m_billboardLightsMap;
+	std::map<GameObject*, renderer::Light*> m_billboardLightsMap;
 
+	std::vector<GameObject*> m_billboardsForLights;
 	std::vector<GameObject*> m_objectsInScene;
 	//this vector is to be filled with objects to draw 
 	//i hope at aleat a frustum culling will be implemented
@@ -96,6 +100,7 @@ private:
 
 	GameObjectShader m_gameObjectsShader;
 	BasicColorShader m_basicColorShader;
+	BillboardShader  m_billboardShader;
 
 	//gui stuff
 	GUI m_gui;
