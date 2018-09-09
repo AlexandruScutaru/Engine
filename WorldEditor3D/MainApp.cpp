@@ -318,17 +318,26 @@ void MainApp::openMap(const std::string& file){
 	
 	///pointlights
 	for(auto it = mapFile["lights"]["pointLights"].begin(); it != mapFile["lights"]["pointLights"].end(); ++it){
-		v = mapFile["lights"]["spotLight"]["amb"].get<std::vector<float>>();
+		json pointLight = it.value();
+		v = pointLight["amb"].get<std::vector<float>>();
 		amb = glm::vec3(v[0], v[1], v[2]);
-		v.clear(), v = mapFile["lights"]["spotLight"]["diff"].get<std::vector<float>>();
+		v.clear(), v = pointLight["diff"].get<std::vector<float>>();
 		diff = glm::vec3(v[0], v[1], v[2]);
-		v.clear(), v = mapFile["lights"]["spotLight"]["spec"].get<std::vector<float>>();
+		v.clear(), v = pointLight["spec"].get<std::vector<float>>();
 		spec = glm::vec3(v[0], v[1], v[2]);
-		v.clear(), v = mapFile["lights"]["spotLight"]["pos"].get<std::vector<float>>();
+		v.clear(), v = pointLight["pos"].get<std::vector<float>>();
 		pos = glm::vec3(v[0], v[1], v[2]);
-		v.clear(), v = mapFile["lights"]["spotLight"]["att"].get<std::vector<float>>();
+		v.clear(), v = pointLight["att"].get<std::vector<float>>();
 		att = glm::vec3(v[0], v[1], v[2]);
 		m_lights.push_back(new renderer::PointLight(amb, diff, spec, pos, att));
+
+		billboard_file = "billboard_pointLight";
+		object = new GameObject(utilities::ResourceManager::loadModel(billboard_file));
+		light_pos = static_cast<renderer::PointLight*>(m_lights.back())->position;
+		object->setPosition(light_pos);
+		m_billboardsForLights.push_back(object);
+		m_gameObjectsMap[object->getCode()] = object;
+		m_billboardLightsMap[object] = m_lights.back();
 	}
 }
 
