@@ -2,7 +2,6 @@
 #include <climits>
 
 
-
 namespace renderer{
 
 	RenderableEntity::RenderableEntity():

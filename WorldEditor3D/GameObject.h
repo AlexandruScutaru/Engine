@@ -19,7 +19,7 @@ public:
 			   bool static_obj = false
 	);
 	GameObject(const GameObject& other);
-	~GameObject();
+	virtual ~GameObject();
 
 	void setDiffName(const std::string& diff){ m_diffName = diff; }
 	void setSpecName(const std::string& spec){ m_specName = spec; }

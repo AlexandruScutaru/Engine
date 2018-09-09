@@ -47,6 +47,10 @@ namespace utilities{
 	renderer::TexturedModel* ResourceManager::loadModel(const std::string& file){
 		std::string path = "res/gameobjects/" + file;
 		auto it = m_modelsMap.find(path);
+		if(file == "default"){
+			m_modelsMap.erase(path);
+			it = m_modelsMap.end();
+		}
 		if(it == m_modelsMap.end()){
 			std::ifstream in(path);
 			json obj;

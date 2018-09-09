@@ -10,7 +10,7 @@ namespace renderer{
 	public:
 		CollidableEntity();
 		CollidableEntity(const CollidableEntity& other);
-		~CollidableEntity();
+		virtual ~CollidableEntity();
 
 		void addColBody(renderer::CollisionBody& body){ m_colBodies.push_back(body); };
 		void removeColBody(size_t index);
