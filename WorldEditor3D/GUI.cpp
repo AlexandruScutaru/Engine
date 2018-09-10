@@ -2,7 +2,7 @@
 #include "MainApp.h"
 #include <climits>
 #include <dirent/dirent.h>
-
+#include <cfloat>
 
 bool VectorOfStringGetter(void* data, int n, const char** out_text);
 bool VectorOfObjectsGetter(void* data, int n, const char** out_text);
@@ -90,11 +90,19 @@ void GUI::showToolbar(){
 	ImGui::Begin("##toolbar", NULL, toolbar_flags);
 
 	renderer::TextureData td;
-	///gameobject placement
-	//add gameobject
+	///gameobject and lights placement
 	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-	td = *utilities::ResourceManager::getTexture("res/gui/add.png");
-	if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1)){
+
+	//add point light
+	td = *utilities::ResourceManager::getTexture("res/gui/add-pointLight.png");
+	if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1) && b_placementTab){
+		app->addPointLight();
+	}
+
+	//add gameobject
+	ImGui::SameLine();
+	td = *utilities::ResourceManager::getTexture("res/gui/add-gameobject.png");
+	if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1) && b_placementTab){
 		b_showOpenFileDialog = true;
 		currentPath = "res/gameobjects/";
 		fdMode = FD_Mode::ADD_GAMEOBJECT;
@@ -103,21 +111,30 @@ void GUI::showToolbar(){
 	//duplicate gameobject
 	ImGui::SameLine();
 	td = *utilities::ResourceManager::getTexture("res/gui/duplicate.png");
-	if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1)){
+	if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1) && b_placementTab){
 		if(placedGameobjectEntryItem >= 0){
+			//object selected
 			app->duplicateSelectedObject(placedGameobjectEntryItem);
-			//placedGameobjectEntryItem = app->m_objectsInScene.size() - 1;
+		} else if(placedLightEntryItem > 1){
+			//point light selected
+			app->duplicatePointLight(placedLightEntryItem);
 		}
 	}
 	//remove gameobject
 	ImGui::SameLine();
 	td = *utilities::ResourceManager::getTexture("res/gui/remove.png");
-	if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1)){
+	if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1) && b_placementTab){
 		if(placedGameobjectEntryItem >= 0){
+			//remove object
 			app->removeSelectedObject(placedGameobjectEntryItem);
 			placedGameobjectEntryItem = -1;
+		} else if(placedLightEntryItem > 1){
+			//remove point light
+			app->removePointLight(placedLightEntryItem);
+			placedLightEntryItem = -1;
 		}
 	}
+
 	ImGui::PopStyleColor();
 	///separator
 	ImGui::SameLine();
@@ -205,7 +222,7 @@ void GUI::showEditorWindow(){
 												 ImGuiWindowFlags_NoResize;
 
 	ImGui::SetNextWindowSize(ImVec2(EDITOR_WINDOW_WIDTH, (float)app->m_window.getH() - MAIN_MENU_HEIGHT - TOOLBAR_HEIGHT), ImGuiCond_Always);
-	ImGui::SetNextWindowPos(ImVec2(app->m_window.getW() - EDITOR_WINDOW_WIDTH, MAIN_MENU_HEIGHT + TOOLBAR_HEIGHT), ImGuiSetCond_Always);
+	ImGui::SetNextWindowPos (ImVec2((float)app->m_window.getW() - EDITOR_WINDOW_WIDTH, MAIN_MENU_HEIGHT + TOOLBAR_HEIGHT), ImGuiSetCond_Always);
 
 	ImGui::Begin("##editorWindow", NULL, editorWindow_flags);
 
@@ -302,27 +319,33 @@ void GUI::showCreationTab(){
 				ImGui::PushItemWidth(70);
 				ImGui::Text("P:");
 				ImGui::SameLine();
-				ImGui::DragFloat("##dragPosX", &body.colRelativePos.x, 0.01f, 0.0f, 10.0f);
+				ImGui::DragFloat("##dragPosX", &body.colRelativePos.x, 0.01f, -100.0f, 100.0f);
 				ImGui::SameLine();
-				ImGui::DragFloat("##dragPosY", &body.colRelativePos.y, 0.01f, 0.0f, 10.0f);
+				ImGui::DragFloat("##dragPosY", &body.colRelativePos.y, 0.01f, -100.0f, 100.0f);
 				ImGui::SameLine();
-				ImGui::DragFloat("##dragPosZ", &body.colRelativePos.z, 0.01f, 0.0f, 10.0f);
+				ImGui::DragFloat("##dragPosZ", &body.colRelativePos.z, 0.01f, -100.0f, 100.0f);
 
 				ImGui::Text("R:");
 				ImGui::SameLine();
-				ImGui::DragFloat("##dragRotX", &body.colRot.x, 1.0f, 0.0f, 359.0f); body.colRot.x = glm::radians(body.colRot.x);
+				body.colRot.x = glm::degrees(body.colRot.x);
+				ImGui::DragFloat("##dragRotX", &body.colRot.x, 1.0f, 0.0f, 359.0f, "%.2f"); 
+				body.colRot.x = glm::radians(body.colRot.x);
 				ImGui::SameLine();
-				ImGui::DragFloat("##dragRotY", &body.colRot.y, 1.0f, 0.0f, 359.0f); body.colRot.y = glm::radians(body.colRot.y);
+				body.colRot.y = glm::degrees(body.colRot.y);
+				ImGui::DragFloat("##dragRotY", &body.colRot.y, 1.0f, 0.0f, 359.0f, "%.2f"); 
+				body.colRot.y = glm::radians(body.colRot.y);
 				ImGui::SameLine();
-				ImGui::DragFloat("##dragRotZ", &body.colRot.z, 1.0f, 0.0f, 359.0f); body.colRot.z = glm::radians(body.colRot.z);
+				body.colRot.z = glm::degrees(body.colRot.z);
+				ImGui::DragFloat("##dragRotZ", &body.colRot.z, 1.0f, 0.0f, 359.0f, "%.2f"); 
+				body.colRot.z = glm::radians(body.colRot.z);
 				
 				ImGui::Text("S:");
 				ImGui::SameLine();
-				ImGui::DragFloat("##dragScaleX", &body.colScale.x, 0.01f, 0.01f, 10.0f);
+				ImGui::DragFloat("##dragScaleX", &body.colScale.x, 0.01f, 0.01f, 100.0f);
 				ImGui::SameLine();						  
-				ImGui::DragFloat("##dragScaleY", &body.colScale.y, 0.01f, 0.01f, 10.0f);
+				ImGui::DragFloat("##dragScaleY", &body.colScale.y, 0.01f, 0.01f, 100.0f);
 				ImGui::SameLine();						  
-				ImGui::DragFloat("##dragScaleZ", &body.colScale.z, 0.01f, 0.01f, 10.0f);
+				ImGui::DragFloat("##dragScaleZ", &body.colScale.z, 0.01f, 0.01f, 100.0f);
 				
 				ImGui::PopItemWidth();
 			}
@@ -513,27 +536,27 @@ void GUI::showGameobjectsTab(){
 			ImGui::PushItemWidth(70);
 			ImGui::Text("P:");
 			ImGui::SameLine();
-			ImGui::InputFloat("##objInputPosX", &obj->getPosition().x, 0.0f, 1);
+			ImGui::InputFloat("##objInputPosX", &obj->getPosition().x, 0.0f, 0.0f, 2);
 			ImGui::SameLine();
-			ImGui::InputFloat("##objInputPosY", &obj->getPosition().y, 0.0f, 1);
+			ImGui::InputFloat("##objInputPosY", &obj->getPosition().y, 0.0f, 0.0f, 2);
 			ImGui::SameLine();
-			ImGui::InputFloat("##objInputPosZ", &obj->getPosition().z, 0.0f, 1);
+			ImGui::InputFloat("##objInputPosZ", &obj->getPosition().z, 0.0f, 0.0f, 2);
 
 			ImGui::Text("R:");
 			ImGui::SameLine();
-			ImGui::InputFloat("##objInputRotX", &obj->getRotation().x, 0.0f, 1);
+			ImGui::InputFloat("##objInputRotX", &obj->getRotation().x, 0.0f, 0.0f, 2);
 			ImGui::SameLine();
-			ImGui::InputFloat("##objInputRotY", &obj->getRotation().y, 0.0f, 1);
+			ImGui::InputFloat("##objInputRotY", &obj->getRotation().y, 0.0f, 0.0f, 2);
 			ImGui::SameLine();
-			ImGui::InputFloat("##objInputRotZ", &obj->getRotation().z, 0.0f, 1);
+			ImGui::InputFloat("##objInputRotZ", &obj->getRotation().z, 0.0f, 0.0f, 2);
 
 			ImGui::Text("S:");
 			ImGui::SameLine();
-			ImGui::InputFloat("##objInputScaleX", &obj->getScale().x, 0.0f, 1);
+			ImGui::InputFloat("##objInputScaleX", &obj->getScale().x, 0.0f, 0.0f, 2);
 			ImGui::SameLine();
-			ImGui::InputFloat("##objInputScaleY", &obj->getScale().y, 0.0f, 1);
+			ImGui::InputFloat("##objInputScaleY", &obj->getScale().y, 0.0f, 0.0f, 2);
 			ImGui::SameLine();
-			ImGui::InputFloat("##objInputScaleZ", &obj->getScale().z, 0.0f, 1);
+			ImGui::InputFloat("##objInputScaleZ", &obj->getScale().z, 0.0f, 0.0f, 2);
 
 			ImGui::PopItemWidth();
 		}
@@ -547,77 +570,159 @@ void GUI::showLightsTab(){
 	ImGui::PushItemWidth(-1);
 	ImGui::Text("Lights in scene:");
 	ImGui::ListBox("##lightsList", &placedLightEntryItem, VectorOfLightsGetter, (void*)(&app->m_lights), (int)(app->m_lights.size()), 10);
-	//placement settings
-	if(placedLightEntryItem == 1){
-		if(app->m_currentlySelectedObject)
-			app->m_currentlySelectedObject->setSelected(false);
-		app->m_currentlySelectedObject = nullptr;
-		app->m_currentlySelectedLight = nullptr;
-		placedGameobjectEntryItem = -1;
-	}
-	else if(placedLightEntryItem >= 0){
-		if(app->m_currentlySelectedObject)
-			app->m_currentlySelectedObject->setSelected(false);
-		app->m_currentlySelectedObject = nullptr;
-		app->m_currentlySelectedLight = nullptr;
-		placedGameobjectEntryItem = -1;
-		for(auto entry : app->m_billboardLightsMap){
-			if(entry.second == app->m_lights[placedLightEntryItem]){
-				app->m_currentlySelectedObject = entry.first;
-				app->m_currentlySelectedObject->setSelected(true);
-				app->m_currentlySelectedLight = app->m_lights[placedLightEntryItem];
-				break;
+	
+	//lights settings
+	ImGui::Separator();
+	ImGui::BeginChild("gmaeobjectTransoforms", ImVec2(-1, -1), false);
+	{
+		if(placedLightEntryItem >= 0){
+			ImGui::Text("Properties");
+			ImGui::PushItemWidth(65);
+			if(app->m_currentlySelectedObject)
+				app->m_currentlySelectedObject->setSelected(false);
+			app->m_currentlySelectedObject = nullptr;
+			app->m_currentlySelectedLight = nullptr;
+			placedGameobjectEntryItem = -1;
+			for(auto entry : app->m_billboardLightsMap){
+				if(entry.second == app->m_lights[placedLightEntryItem]){
+					app->m_currentlySelectedObject = entry.first;
+					app->m_currentlySelectedObject->setSelected(true);
+					app->m_currentlySelectedLight = app->m_lights[placedLightEntryItem];
+					break;
+				}
 			}
+			if(placedLightEntryItem == 0){
+				//directional light
+				renderer::DirLight* dl = static_cast<renderer::DirLight*>(app->m_lights[0]);
+				ImGui::Text("Amb :");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragAmbR", &dl->ambient.r, 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragAmbG", &dl->ambient.g, 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragAmbB", &dl->ambient.b, 0.01f, 0.0f, 1.0f, "%.2f");
+
+				ImGui::Text("Diff:");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragDiffR", &dl->diffuse.r, 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragDiffG", &dl->diffuse.g, 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragDiffB", &dl->diffuse.b, 0.01f, 0.0f, 1.0f, "%.2f");
+
+				ImGui::Text("Spec:");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragSpecR", &dl->specular.r, 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragSpecG", &dl->specular.g, 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragSpecB", &dl->specular.b, 0.01f, 0.0f, 1.0f, "%.2f");
+
+				ImGui::Text("Dir :");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragDirX", &app->m_currentlySelectedObject->getPosition().x, 0.01f, FLT_MIN, FLT_MAX, "%.2f");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragDirY", &app->m_currentlySelectedObject->getPosition().y, 0.01f, FLT_MIN, FLT_MAX, "%.2f");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragDirZ", &app->m_currentlySelectedObject->getPosition().z, 0.01f, FLT_MIN, FLT_MAX, "%.2f");
+			}
+			else if(placedLightEntryItem == 1){
+				//spot light - doesnt have a billboard mapped to it
+				if(app->m_currentlySelectedObject)
+					app->m_currentlySelectedObject->setSelected(false);
+				app->m_currentlySelectedObject = nullptr;
+				app->m_currentlySelectedLight = nullptr;
+				placedGameobjectEntryItem = -1;
+
+				renderer::SpotLight* sl = static_cast<renderer::SpotLight*>(app->m_lights[1]);
+				ImGui::Text("Amb :");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragAmbR", &sl->ambient.r, 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragAmbG", &sl->ambient.g, 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragAmbB", &sl->ambient.b, 0.01f, 0.0f, 1.0f, "%.2f");
+
+				ImGui::Text("Diff:");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragDiffR", &sl->diffuse.r, 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragDiffG", &sl->diffuse.g, 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragDiffB", &sl->diffuse.b, 0.01f, 0.0f, 1.0f, "%.2f");
+
+				ImGui::Text("Spec:");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragSpecR", &sl->specular.r, 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragSpecG", &sl->specular.g, 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragSpecB", &sl->specular.b, 0.01f, 0.0f, 1.0f, "%.2f");
+
+				ImGui::Text("Att :");
+				ImGui::SameLine();
+				ImGui::InputFloat("##lightInputAttX", &sl->attenuation.x, 0.0f, 0.0f, 2);
+				ImGui::SameLine();
+				ImGui::InputFloat("##lightInputAttY", &sl->attenuation.y, 0.0f, 0.0f, 2);
+				ImGui::SameLine();
+				ImGui::InputFloat("##lightInputAttZ", &sl->attenuation.z, 0.0f, 0.0f, 2);
+
+				ImGui::Text("      Cut off: "); ImGui::SameLine();
+				float coneAngle = glm::degrees(glm::acos(sl->cutOff));
+				ImGui::DragFloat("##lightInputCutOff", &coneAngle, 0.01f, 0.0f, 20.0f, "%.2f");
+				sl->cutOff = glm::cos(glm::radians(coneAngle));
+				ImGui::Text("Outer Cut off: "); ImGui::SameLine();
+				coneAngle = glm::degrees(glm::acos(sl->outerCutOff));
+				ImGui::DragFloat("##lightInputOuterCutOff", &coneAngle, 0.01f, 0.0f, 30.0f, "%.2f");
+				sl->outerCutOff = glm::cos(glm::radians(coneAngle));
+			}
+			else if(placedLightEntryItem > 1){
+				//point lights
+				renderer::PointLight* pl = static_cast<renderer::PointLight*>(app->m_lights[placedLightEntryItem]);
+				ImGui::Text("Amb :");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragAmbR", &pl->ambient.r, 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragAmbG", &pl->ambient.g, 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragAmbB", &pl->ambient.b, 0.01f, 0.0f, 1.0f, "%.2f");
+
+				ImGui::Text("Diff:");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragDiffR", &pl->diffuse.r, 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragDiffG", &pl->diffuse.g, 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragDiffB", &pl->diffuse.b, 0.01f, 0.0f, 1.0f, "%.2f");
+
+				ImGui::Text("Spec:");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragSpecR", &pl->specular.r, 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragSpecG", &pl->specular.g, 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragSpecB", &pl->specular.b, 0.01f, 0.0f, 1.0f, "%.2f");
+
+				ImGui::Text("Pos :");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragDirX", &app->m_currentlySelectedObject->getPosition().x, 0.01f, FLT_MIN, FLT_MAX, "%.2f");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragDirY", &app->m_currentlySelectedObject->getPosition().y, 0.01f, FLT_MIN, FLT_MAX, "%.2f");
+				ImGui::SameLine();
+				ImGui::DragFloat("##lightDragDirZ", &app->m_currentlySelectedObject->getPosition().z, 0.01f, FLT_MIN, FLT_MAX, "%.2f");
+			
+				ImGui::Text("Att :");
+				ImGui::SameLine();
+				ImGui::InputFloat("##lightInputAttX", &pl->attenuation.x, 0.0f, 0.0f, 2);
+				ImGui::SameLine();
+				ImGui::InputFloat("##lightInputAttY", &pl->attenuation.y, 0.0f, 0.0f, 2);
+				ImGui::SameLine();
+				ImGui::InputFloat("##lightInputAttZ", &pl->attenuation.z, 0.0f, 0.0f, 2);
+			}
+			ImGui::PopItemWidth();
 		}
-
-		//app->m_currentlySelectedObject = app->m_objectsInScene[placedGameobjectEntryItem];
-		//app->m_currentlySelectedObject->setSelected(true);
-		
-		ImGui::Text("bun");
-		//if(app->m_currentlySelectedObject)
-		//	app->m_currentlySelectedObject->setSelected(false);
-		//app->m_currentlySelectedObject = app->m_objectsInScene[placedGameobjectEntryItem];
-		//app->m_currentlySelectedObject->setSelected(true);
-		////object info
-		//memset(m_name, '\0', OBJECT_NAME_SIZE);
-		//strncat_s(m_name, app->m_objectsInScene[placedGameobjectEntryItem]->getInEditorName().c_str(), OBJECT_NAME_SIZE);
-		//ImGui::InputText("##gameobjectName", m_name, OBJECT_NAME_SIZE);
-		//app->m_objectsInScene[placedGameobjectEntryItem]->setInEditorName(m_name);
-
-		//ImGui::Separator();
-		//ImGui::Text("Transforms");
-		//GameObject* obj = app->m_objectsInScene[placedGameobjectEntryItem];
-		//ImGui::BeginChild("gmaeobjectTransoforms", ImVec2(-1, 65), false);
-		//{
-		//	ImGui::PushItemWidth(70);
-		//	ImGui::Text("P:");
-		//	ImGui::SameLine();
-		//	ImGui::InputFloat("##objInputPosX", &obj->getPosition().x, 0.0f, 1);
-		//	ImGui::SameLine();
-		//	ImGui::InputFloat("##objInputPosY", &obj->getPosition().y, 0.0f, 1);
-		//	ImGui::SameLine();
-		//	ImGui::InputFloat("##objInputPosZ", &obj->getPosition().z, 0.0f, 1);
-
-		//	ImGui::Text("R:");
-		//	ImGui::SameLine();
-		//	ImGui::InputFloat("##objInputRotX", &obj->getRotation().x, 0.0f, 1);
-		//	ImGui::SameLine();
-		//	ImGui::InputFloat("##objInputRotY", &obj->getRotation().y, 0.0f, 1);
-		//	ImGui::SameLine();
-		//	ImGui::InputFloat("##objInputRotZ", &obj->getRotation().z, 0.0f, 1);
-
-		//	ImGui::Text("S:");
-		//	ImGui::SameLine();
-		//	ImGui::InputFloat("##objInputScaleX", &obj->getScale().x, 0.0f, 1);
-		//	ImGui::SameLine();
-		//	ImGui::InputFloat("##objInputScaleY", &obj->getScale().y, 0.0f, 1);
-		//	ImGui::SameLine();
-		//	ImGui::InputFloat("##objInputScaleZ", &obj->getScale().z, 0.0f, 1);
-
-		//	ImGui::PopItemWidth();
-		//}
-		//ImGui::EndChild();
 	}
+	ImGui::EndChild();
 	ImGui::PopItemWidth();
 }
 

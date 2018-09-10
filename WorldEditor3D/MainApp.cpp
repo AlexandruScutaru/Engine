@@ -520,6 +520,48 @@ void MainApp::addNewObject(const std::string & file){
 	object = nullptr;
 }
 
+void MainApp::addPointLight(){
+	glm::vec3 pos = m_player.getCamera()->getPos() + m_player.getCamera()->getFront() * 4.0f;
+	m_lights.push_back(new renderer::PointLight(
+		glm::vec3(0.3f, 0.24f, 0.14f),
+		glm::vec3(0.7f, 0.42f, 0.26f),
+		glm::vec3(0.5f, 0.5f, 0.5f),
+		pos,
+		glm::vec3(1.0f, 0.09f, 0.032f))
+	);
+	std::string file = "billboard_pointLight";
+	GameObject* object = new GameObject(utilities::ResourceManager::loadModel(file));
+	object->setPosition(pos);
+	m_billboardsForLights.push_back(object);
+	m_gameObjectsMap[object->getCode()] = object;
+	m_billboardLightsMap[object] = m_lights.back();
+}
+
+void MainApp::duplicatePointLight(int index){
+	renderer::PointLight *pl = new renderer::PointLight(*static_cast<renderer::PointLight*>(m_lights[index]));
+	m_lights.push_back(pl);
+	std::string file = "billboard_pointLight";
+	GameObject* object = new GameObject(utilities::ResourceManager::loadModel(file));
+	object->setPosition(pl->position);
+	m_billboardsForLights.push_back(object);
+	m_gameObjectsMap[object->getCode()] = object;
+	m_billboardLightsMap[object] = m_lights.back();
+}
+
+void MainApp::removePointLight(int index){
+	m_gameObjectsMap.erase(m_currentlySelectedObject->getCode());
+	m_billboardLightsMap.erase(m_currentlySelectedObject);
+	for(std::vector<GameObject*>::iterator it = m_billboardsForLights.begin(); it < m_billboardsForLights.end(); it++){
+		if(*it == m_currentlySelectedObject){
+			m_billboardsForLights.erase(it);
+			break;
+		}
+	}
+	m_currentlySelectedObject = nullptr;
+	m_lights.erase(m_lights.begin() + index);
+	m_currentlySelectedLight = nullptr;
+}
+
 void MainApp::removeSelectedObject(int index){
 	m_objectsInScene.erase(m_objectsInScene.begin() + index);
 	m_currentlySelectedObject = nullptr;

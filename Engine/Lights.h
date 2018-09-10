@@ -20,6 +20,13 @@ namespace renderer{
 			specular = spec;
 			casterType = type;
 		}
+		Light(const Light& other){
+			ambient = other.ambient;
+			diffuse = other.diffuse;
+			specular = other.specular;
+			casterType = other.casterType;
+		}
+
 		glm::vec3 ambient;
 		glm::vec3 diffuse;
 		glm::vec3 specular;
@@ -34,6 +41,11 @@ namespace renderer{
 			Light(amb, diff, spec, Caster::DIRECTIONAL),
 			direction(dir)
 		{}
+		DirLight(const DirLight& other) :
+			Light(other)
+		{
+			direction = other.direction;
+		}
 		
 		glm::vec3 direction;
 		
@@ -46,6 +58,12 @@ namespace renderer{
 			position(pos),
 			attenuation(att)
 		{}
+		PointLight(const PointLight& other) :
+			Light(other)
+		{
+			position = other.position;
+			attenuation = other.attenuation;
+		}
 
 		glm::vec3 position;
 		glm::vec3 attenuation;
@@ -61,6 +79,15 @@ namespace renderer{
 			cutOff(cut),
 			outerCutOff(outerCut)
 		{}
+		SpotLight(const SpotLight& other) :
+			Light(other)
+		{
+			direction = other.direction;
+			position = other.position;
+			attenuation = other.attenuation;
+			cutOff = other.cutOff;
+			outerCutOff = other.outerCutOff;
+		}
 		
 		glm::vec3 direction;
 		glm::vec3 position;

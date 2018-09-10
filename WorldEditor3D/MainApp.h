@@ -60,6 +60,9 @@ private:
 	void openCreatedObject(const std::string& object);
 	void pixelPick(glm::vec2& coords);
 	void addNewObject(const std::string& file);
+	void addPointLight();
+	void duplicatePointLight(int index);
+	void removePointLight(int index);
 	void removeSelectedObject(int index);
 	void duplicateSelectedObject(int index);
 
