@@ -3,6 +3,7 @@
 #include <climits>
 #include <dirent/dirent.h>
 #include <cfloat>
+#include "Utilities.h"
 
 bool VectorOfStringGetter(void* data, int n, const char** out_text);
 bool VectorOfObjectsGetter(void* data, int n, const char** out_text);
@@ -20,6 +21,7 @@ GUI::GUI(MainApp* app) :
 	b_placementTab(true),
 	b_showOpenFileDialog(false),
 	b_showSaveFileDialog(false),
+	b_showGridWindow(false),
 	placedGameobjectEntryItem(-1),
 	placedLightEntryItem(-1),
 	collisionBodyEntryItem(-1),
@@ -45,6 +47,7 @@ void GUI::updateImGuiWindows(){
 	showEditorWindow();
 	if(b_showOpenFileDialog) showOpenFileDialog();
 	if(b_showSaveFileDialog) showSaveFileDialog();
+	if(b_showGridWindow)     showGridSettingsWindow();
 }
 
 void GUI::showMainMenu(){
@@ -73,6 +76,10 @@ void GUI::showMainMenu(){
 			ImGui::EndMenu();
 		}
 		if(ImGui::BeginMenu("Edit")){
+			if(ImGui::MenuItem("Grid")){
+				b_showGridWindow = true;
+				//showGridSettingsWindow();
+			}
 			ImGui::EndMenu();
 		}
 		ImGui::EndMainMenuBar();
@@ -189,31 +196,9 @@ void GUI::showToolbar(){
 	ImGui::PopStyleColor();
 
 	///separator
-	ImGui::SameLine();
-	td = *utilities::ResourceManager::getTexture("res/gui/sep.png");
-	ImGui::Image((ImTextureID)td.id, ImVec2(3, 27), ImVec2(0, 0), ImVec2(1, -1));
-
-	///Grid Size selection
-	ImGui::SameLine();
-	ImGui::Text("Grid size:");
-	ImGui::SameLine();
-	static int it = 0;
-	ImGui::PushItemWidth(60);
-	ImGui::Combo("##incStepCombo", &it, " 0.01 \0 0.10 \0 1.00 \0\0", 3);
-	switch(it){
-	case 0:
-		app->m_gizmos.gridStep = 0.01f;
-		break;
-	case 1:
-		app->m_gizmos.gridStep = 0.1f;
-		break;
-	case 2:
-		app->m_gizmos.gridStep = 1.0f;
-		break;
-	default:
-		break;
-	}
-	ImGui::PopItemWidth();
+	//ImGui::SameLine();
+	//td = *utilities::ResourceManager::getTexture("res/gui/sep.png");
+	//ImGui::Image((ImTextureID)td.id, ImVec2(3, 27), ImVec2(0, 0), ImVec2(1, -1));
 
 	ImGui::End();
 }
@@ -747,6 +732,52 @@ void GUI::showLightsTab(){
 	}
 	ImGui::EndChild();
 	ImGui::PopItemWidth();
+}
+
+void GUI::showGridSettingsWindow(){
+	ImGui::SetNextWindowSize(ImVec2(200, 6.0f * ImGui::GetFrameHeightWithSpacing()), ImGuiSetCond_Always);
+	ImGui::Begin("Grid Settings", &b_showGridWindow,
+				 ImGuiWindowFlags_NoResize |
+				 ImGuiWindowFlags_NoCollapse
+	);
+
+	ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.4f);
+	///Show grid
+	bool showGrid = Grid::isEnabled();
+	ImGui::Checkbox("Show Grid", &showGrid);
+	Grid::setEnabled(showGrid);
+	ImGui::Separator();
+	///Grid Step selection
+	static int it = 0;
+	ImGui::Combo("Grid Step", &it, " 0.16 \0 0.32 \0 0.64 \0 1.28 \0 2.56 \0\0", 5);
+	switch(it){
+	case 0:
+		Grid::setStep(0.16f);
+		break;
+	case 1:
+		Grid::setStep(0.32f);
+		break;
+	case 2:
+		Grid::setStep(0.64f);
+		break;
+	case 3:
+		Grid::setStep(1.28f);
+		break;
+	case 4:
+		Grid::setStep(2.56f);
+		break;
+	default:
+		break;
+	}
+	ImGui::Separator();
+	///Dec/Inc Grid height
+	ImGui::Text("%.3f Grid Height", Grid::getHeight());
+	if(ImGui::Button("Decrease")) Grid::decHeight();
+	ImGui::SameLine();
+	if(ImGui::Button("Increase")) Grid::incHeight();
+
+	ImGui::PopItemWidth();
+	ImGui::End();
 }
 
 

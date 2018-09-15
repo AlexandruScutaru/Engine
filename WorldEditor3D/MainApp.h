@@ -16,7 +16,7 @@
 #include "GameObjectShader.h"
 #include "BasicColorShader.h"
 #include "BillboardShader.h"
-
+#include "Grid.h"
 #include "GameObject.h"
 #include "TranformGizmos.h"
 #include "Player.h"
@@ -73,6 +73,7 @@ private:
 	void prePixelPickDraw();
 	void drawTransformGizmos();
 	void drawLines();
+	void drawGrid();
 
 	renderer::Window m_window; //the app window
 	utilities::InputManager m_inputManager;
@@ -108,6 +109,7 @@ private:
 	BillboardShader  m_billboardShader;
 
 	GLuint m_lineVAO;
+
 	//gui stuff
 	GUI m_gui;
 };

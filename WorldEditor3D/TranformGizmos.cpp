@@ -7,8 +7,10 @@
 #include <iostream>
 #include <Engine/Camera.h>
 #include <math.h>
+#include "Grid.h"
 
 #define DEGREES_PER_SECOND 10.0f
+
 
 static void translateX	(Actor* pActor, utilities::InputManager& input, renderer::Camera* camera, float dt);
 static void translateY	(Actor* pActor, utilities::InputManager& input, renderer::Camera* camera, float dt);
@@ -30,9 +32,7 @@ static void rotateY		(Actor* pActor, utilities::InputManager& input, renderer::C
 static void rotateZ		(Actor* pActor, utilities::InputManager& input, renderer::Camera* camera, float dt);
 
 
-TranformGizmos::TranformGizmos() :
-	gridStep(0.01f)
-{}
+TranformGizmos::TranformGizmos(){}
 
 TranformGizmos::~TranformGizmos(){
 	for(auto gizmo : m_gizmosTranslate)
@@ -181,9 +181,9 @@ void TranformGizmos::updateGizmo(renderer::Camera* camera, utilities::InputManag
 	if(m_currentlyActivated && input.isKeyDown(SDL_BUTTON_LEFT)){
 		m_gizmoFunctionality[m_currentlyActivated](*m_pSelectedActor, input, camera, deltaTime);
 	} else if(m_currentlyActivated && m_gizmoMode == GizmoMode::TRANSLATE && !input.isKeyPressed(SDL_BUTTON_LEFT)){
-		(*m_pSelectedActor)->getPosition().x = std::round((*m_pSelectedActor)->getPosition().x / gridStep) * gridStep;
-		(*m_pSelectedActor)->getPosition().y = std::round((*m_pSelectedActor)->getPosition().y / gridStep) * gridStep;
-		(*m_pSelectedActor)->getPosition().z = std::round((*m_pSelectedActor)->getPosition().z / gridStep) * gridStep;
+		(*m_pSelectedActor)->getPosition().x = std::round((*m_pSelectedActor)->getPosition().x / Grid::getStep()) * Grid::getStep();
+		(*m_pSelectedActor)->getPosition().y = std::round((*m_pSelectedActor)->getPosition().y / Grid::getStep()) * Grid::getStep();
+		(*m_pSelectedActor)->getPosition().z = std::round((*m_pSelectedActor)->getPosition().z / Grid::getStep()) * Grid::getStep();
 		m_currentlyActivated = 0;
 	}
 }

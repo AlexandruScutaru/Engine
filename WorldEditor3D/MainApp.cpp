@@ -93,8 +93,8 @@ void MainApp::initLevel(){
 		float z;
 	} vertex_t;
 	vertex_t line[2] = {
-		{-150.0f, 0.0f, 0.0f},
-		{150.0f, 0.0f, 0.0f}
+		{-100.0f, 0.0f, 0.0f},
+		{100.0f, 0.0f, 0.0f}
 	};
 	GLuint vbo;
 
@@ -201,9 +201,9 @@ void MainApp::drawGame(){
 		bDrawColBodies = true;
 	drawGameObjects(bDrawColBodies);
 	drawLines();
+	if(Grid::isEnabled()) drawGrid();
 	drawTransformGizmos();
 	
-
 	ImGui::Render();
 	//sdl: swap buffers
 	m_window.swapBuffer();
@@ -833,13 +833,13 @@ void MainApp::drawLines(){
 	m_basicColorShader.loadProjectionMatrix(renderer::Renderer::GetProjectionMatrix());
 	glm::mat4 model;
 	///directional lines
-	model = glm::translate(model, glm::vec3(0.0f));
 	//x
+	model = glm::translate(model, glm::vec3(0.0f));
 	m_basicColorShader.loadColor(glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(1.0f));
+	model = glm::scale(model, glm::vec3(2.0f));
 	m_basicColorShader.loadModelMatrix(model);
 	glDrawArrays(GL_LINES, 0, 2);
 	//y
@@ -849,7 +849,7 @@ void MainApp::drawLines(){
 	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(1.0f));
+	model = glm::scale(model, glm::vec3(2.0f));
 	m_basicColorShader.loadModelMatrix(model);
 	glDrawArrays(GL_LINES, 0, 2);
 	//z
@@ -859,11 +859,9 @@ void MainApp::drawLines(){
 	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(1.0f));
+	model = glm::scale(model, glm::vec3(2.0f));
 	m_basicColorShader.loadModelMatrix(model);
 	glDrawArrays(GL_LINES, 0, 2);
-
-	///TODO: GRID with player/camera/viewer position in centre
 
 	///tell opengl to draw filled polygons
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -872,4 +870,74 @@ void MainApp::drawLines(){
 	///stop using this shader
 	m_basicColorShader.unuse();
 
+}
+
+void MainApp::drawGrid(){
+	///bind the line VAO
+	glBindVertexArray(m_lineVAO);
+	///tell opengl to draw wireframe
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	///load appropiate uniforms
+	m_basicColorShader.use();
+	m_basicColorShader.loadViewMatrix(m_player.getCamera()->getViewMatrix());
+	m_basicColorShader.loadProjectionMatrix(renderer::Renderer::GetProjectionMatrix());
+	m_basicColorShader.loadColor(glm::vec3(0.3f, 0.3f, 0.3f));
+
+	glm::vec3 gridPosition;
+	gridPosition.x = std::round(m_player.getPosition().x / Grid::getStep()) * Grid::getStep();
+	gridPosition.y = Grid::getHeight();
+	gridPosition.z = std::round(m_player.getPosition().z / Grid::getStep()) * Grid::getStep();
+
+	float scaleFactor = 0.069;
+	int ord = 0;
+	while(Grid::getStep() * ord <= 7.0f){
+		glm::mat4 model;
+		model = glm::translate(model, glm::vec3(gridPosition.x, Grid::getHeight(), gridPosition.z + Grid::getStep() * ord));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(scaleFactor));
+		m_basicColorShader.loadModelMatrix(model);
+		glDrawArrays(GL_LINES, 0, 2);
+
+		model = glm::mat4();
+		model = glm::translate(model, glm::vec3(gridPosition.x, Grid::getHeight(), gridPosition.z - Grid::getStep() * ord));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(scaleFactor));
+		m_basicColorShader.loadModelMatrix(model);
+		glDrawArrays(GL_LINES, 0, 2);
+
+		ord++;
+	}
+	ord = 0;
+	while(Grid::getStep() * ord <= 7.0f){
+		glm::mat4 model;
+		model = glm::translate(model, glm::vec3(gridPosition.x + Grid::getStep() * ord, Grid::getHeight(), gridPosition.z));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(scaleFactor));
+		m_basicColorShader.loadModelMatrix(model);
+		glDrawArrays(GL_LINES, 0, 2);
+
+		model = glm::mat4();
+		model = glm::translate(model, glm::vec3(gridPosition.x - Grid::getStep() * ord, Grid::getHeight(), gridPosition.z));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(scaleFactor));
+		m_basicColorShader.loadModelMatrix(model);
+		glDrawArrays(GL_LINES, 0, 2);
+
+		ord++;
+	}
+
+	///tell opengl to draw filled polygons
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	///unbind line VAO
+	glBindVertexArray(0);
+	///stop using this shader
+	m_basicColorShader.unuse();
 }

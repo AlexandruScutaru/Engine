@@ -50,11 +50,13 @@ public:
 	void updateDirContents(std::vector<std::string>& dir);
 	void showGameobjectsTab();
 	void showLightsTab();
+	void showGridSettingsWindow();
 
 	bool b_creationTab;
 	bool b_placementTab;
 	bool b_showOpenFileDialog;
 	bool b_showSaveFileDialog;
+	bool b_showGridWindow;
 
 	char m_name[OBJECT_NAME_SIZE];
 	int fdEntryItem;

@@ -6,8 +6,4 @@
 #include <JSON/json.hpp>
 using json = nlohmann::json;
 
-
 Utilities::Utilities(){}
-
-
-
