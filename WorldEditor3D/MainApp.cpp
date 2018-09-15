@@ -85,6 +85,28 @@ void MainApp::initLevel(){
 	m_billboardsForLights.push_back(object);
 	m_gameObjectsMap[object->getCode()] = object;
 	m_billboardLightsMap[object] = m_lights.back();
+
+	//init line VAO
+	typedef struct vertex{
+		float x;
+		float y;
+		float z;
+	} vertex_t;
+	vertex_t line[2] = {
+		{-150.0f, 0.0f, 0.0f},
+		{150.0f, 0.0f, 0.0f}
+	};
+	GLuint vbo;
+
+	glGenVertexArrays(1, &m_lineVAO);
+	glGenBuffers(1, &vbo);
+
+	glBindVertexArray(m_lineVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * 2, line, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	glEnableVertexAttribArray(0);
+	glBindVertexArray(0);
 }
 
 void MainApp::loop(){
@@ -178,7 +200,9 @@ void MainApp::drawGame(){
 	if(m_gui.b_creationTab)
 		bDrawColBodies = true;
 	drawGameObjects(bDrawColBodies);
+	drawLines();
 	drawTransformGizmos();
+	
 
 	ImGui::Render();
 	//sdl: swap buffers
@@ -796,4 +820,56 @@ void MainApp::drawTransformGizmos(){
 		glDrawElements(GL_TRIANGLES, td->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
 	}
 	m_basicColorShader.unuse();
+}
+
+void MainApp::drawLines(){
+	///bind the line VAO
+	glBindVertexArray(m_lineVAO);
+	///tell opengl to draw wireframe
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	///load appropiate uniforms
+	m_basicColorShader.use();
+	m_basicColorShader.loadViewMatrix(m_player.getCamera()->getViewMatrix());
+	m_basicColorShader.loadProjectionMatrix(renderer::Renderer::GetProjectionMatrix());
+	glm::mat4 model;
+	///directional lines
+	model = glm::translate(model, glm::vec3(0.0f));
+	//x
+	m_basicColorShader.loadColor(glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(1.0f));
+	m_basicColorShader.loadModelMatrix(model);
+	glDrawArrays(GL_LINES, 0, 2);
+	//y
+	model = glm::mat4();
+	model = glm::translate(model, glm::vec3(0.0f));
+	m_basicColorShader.loadColor(glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(1.0f));
+	m_basicColorShader.loadModelMatrix(model);
+	glDrawArrays(GL_LINES, 0, 2);
+	//z
+	model = glm::mat4();
+	model = glm::translate(model, glm::vec3(0.0f));
+	m_basicColorShader.loadColor(glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(1.0f));
+	m_basicColorShader.loadModelMatrix(model);
+	glDrawArrays(GL_LINES, 0, 2);
+
+	///TODO: GRID with player/camera/viewer position in centre
+
+	///tell opengl to draw filled polygons
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	///unbind line VAO
+	glBindVertexArray(0);
+	///stop using this shader
+	m_basicColorShader.unuse();
+
 }

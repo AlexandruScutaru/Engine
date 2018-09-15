@@ -561,11 +561,17 @@ void GUI::showGameobjectsTab(){
 
 			ImGui::Text("R:");
 			ImGui::SameLine();
+			obj->getRotation().x = glm::degrees(obj->getRotation().x);
 			ImGui::InputFloat("##objInputRotX", &obj->getRotation().x, 0.0f, 0.0f, 2);
+			obj->getRotation().x = glm::radians(obj->getRotation().x);
 			ImGui::SameLine();
+			obj->getRotation().y = glm::degrees(obj->getRotation().y);
 			ImGui::InputFloat("##objInputRotY", &obj->getRotation().y, 0.0f, 0.0f, 2);
+			obj->getRotation().y = glm::radians(obj->getRotation().y);
 			ImGui::SameLine();
+			obj->getRotation().z = glm::degrees(obj->getRotation().z);
 			ImGui::InputFloat("##objInputRotZ", &obj->getRotation().z, 0.0f, 0.0f, 2);
+			obj->getRotation().z = glm::radians(obj->getRotation().z);
 
 			ImGui::Text("S:");
 			ImGui::SameLine();

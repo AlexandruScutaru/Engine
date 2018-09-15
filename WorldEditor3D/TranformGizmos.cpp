@@ -8,6 +8,8 @@
 #include <Engine/Camera.h>
 #include <math.h>
 
+#define DEGREES_PER_SECOND 10.0f
+
 static void translateX	(Actor* pActor, utilities::InputManager& input, renderer::Camera* camera, float dt);
 static void translateY	(Actor* pActor, utilities::InputManager& input, renderer::Camera* camera, float dt);
 static void translateZ	(Actor* pActor, utilities::InputManager& input, renderer::Camera* camera, float dt);
@@ -178,7 +180,7 @@ const glm::vec3& TranformGizmos::getPosition(){
 void TranformGizmos::updateGizmo(renderer::Camera* camera, utilities::InputManager& input, float deltaTime){
 	if(m_currentlyActivated && input.isKeyDown(SDL_BUTTON_LEFT)){
 		m_gizmoFunctionality[m_currentlyActivated](*m_pSelectedActor, input, camera, deltaTime);
-	} else if(m_currentlyActivated && !input.isKeyPressed(SDL_BUTTON_LEFT)){
+	} else if(m_currentlyActivated && m_gizmoMode == GizmoMode::TRANSLATE && !input.isKeyPressed(SDL_BUTTON_LEFT)){
 		(*m_pSelectedActor)->getPosition().x = std::round((*m_pSelectedActor)->getPosition().x / gridStep) * gridStep;
 		(*m_pSelectedActor)->getPosition().y = std::round((*m_pSelectedActor)->getPosition().y / gridStep) * gridStep;
 		(*m_pSelectedActor)->getPosition().z = std::round((*m_pSelectedActor)->getPosition().z / gridStep) * gridStep;
@@ -365,20 +367,32 @@ void scaleXYZ(Actor* pActor, utilities::InputManager & input, renderer::Camera* 
 
 void rotateX(Actor* pActor, utilities::InputManager & input, renderer::Camera* camera, float dt){
 	float dotRX = glm::dot(glm::vec3(1.0f, 0.0f, 0.0f), camera->getRight());
-	if(dotRX >= 0.0f)
-		pActor->getRotation().x += input.getMouseDY() * dt;
-	else
-		pActor->getRotation().x -= input.getMouseDY() * dt;
+	if(dotRX >= 0.0f){
+		pActor->getRotation().x = glm::degrees(pActor->getRotation().x);
+		pActor->getRotation().x += input.getMouseDY() * DEGREES_PER_SECOND * dt;
+		pActor->getRotation().x = glm::radians(pActor->getRotation().x);
+	} else{
+		pActor->getRotation().x = glm::degrees(pActor->getRotation().x);
+		pActor->getRotation().x -= input.getMouseDY() * DEGREES_PER_SECOND * dt;
+		pActor->getRotation().x = glm::radians(pActor->getRotation().x);
+	}
 }
 
 void rotateY(Actor* pActor, utilities::InputManager & input, renderer::Camera* camera, float dt){
-	pActor->getRotation().y += input.getMouseDX() * dt;
+	pActor->getRotation().y = glm::degrees(pActor->getRotation().y);
+	pActor->getRotation().y += input.getMouseDX() * DEGREES_PER_SECOND * dt;
+	pActor->getRotation().y = glm::radians(pActor->getRotation().y);
 }
 
 void rotateZ(Actor* pActor, utilities::InputManager & input, renderer::Camera* camera, float dt){
 	float dotRZ = glm::dot(glm::vec3(0.0f, 0.0f, 1.0f), camera->getRight());
-	if(dotRZ >= 0.0f)
-		pActor->getRotation().z += input.getMouseDY() * dt;
-	else
-		pActor->getRotation().z -= input.getMouseDY() * dt;
+	if(dotRZ >= 0.0f){
+		pActor->getRotation().z = glm::degrees(pActor->getRotation().z);
+		pActor->getRotation().z += input.getMouseDY() * DEGREES_PER_SECOND * dt;
+		pActor->getRotation().z = glm::radians(pActor->getRotation().z);
+	} else{
+		pActor->getRotation().z = glm::degrees(pActor->getRotation().z);
+		pActor->getRotation().z -= input.getMouseDY() * DEGREES_PER_SECOND * dt;
+		pActor->getRotation().z = glm::radians(pActor->getRotation().z);
+	}
 }

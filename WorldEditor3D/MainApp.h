@@ -72,6 +72,7 @@ private:
 	void drawCollisionBodies(std::vector<renderer::CollisionBody*>& colBodies);
 	void prePixelPickDraw();
 	void drawTransformGizmos();
+	void drawLines();
 
 	renderer::Window m_window; //the app window
 	utilities::InputManager m_inputManager;
@@ -106,6 +107,7 @@ private:
 	BasicColorShader m_basicColorShader;
 	BillboardShader  m_billboardShader;
 
+	GLuint m_lineVAO;
 	//gui stuff
 	GUI m_gui;
 };
