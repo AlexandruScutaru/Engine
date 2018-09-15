@@ -73,49 +73,14 @@ void MainApp::initLevel(){
 	/// lighting, game objects etc
 	//set default data for the creatingEntiy object during the process of creating a new gameobject
 	m_creationTabGameObject =  GameObject(utilities::ResourceManager::loadModel("default"));
-
-	m_creationTabLight = renderer::DirLight(glm::vec3(0.5f, 0.5f, 0.5f),
-											glm::vec3(0.4f, 0.4f, 0.4f),
-											glm::vec3(0.5f, 0.5f, 0.5f),
-											glm::vec3(0.0f, 0.0f, 0.0f)
-	);
+	m_creationTabLight = renderer::DirLight();
 	
-	/// initial lighting	
-	//directional light
-	m_lights.push_back(new renderer::DirLight(glm::vec3(0.2f, 0.24f, 0.24f),
-											  glm::vec3(0.2f, 0.22f, 0.26f),
-											  glm::vec3(0.2f, 0.2f,  0.2f),
-											  glm::vec3(20.0f, 5.0f, 10.0f))
-	);
-	std::string file = "billboard_dirLight";
-	GameObject* object;
-	object = new GameObject(utilities::ResourceManager::loadModel(file));
-	glm::vec3 pos = static_cast<renderer::DirLight*>(m_lights[0])->direction;
-	object->setPosition(pos);
-	m_billboardsForLights.push_back(object);
-	m_gameObjectsMap[object->getCode()] = object;
-	m_billboardLightsMap[object] = m_lights[0];
-
-	m_lights.push_back(new renderer::SpotLight(glm::vec3(0.0f, 0.0f, 0.0f),
-									  glm::vec3(0.8f, 0.8f, 0.0f),
-									  glm::vec3(0.8f, 0.8f, 0.0f),
-									  m_player.getCamera()->getFront(),
-									  m_player.getCamera()->getPos(),
-									  glm::vec3(1.0f, 0.09f, 0.032f),
-									  glm::cos(glm::radians(14.5f)),
-									  glm::cos(glm::radians(20.0f)))
-	);
+	addDefaultLighting();
 	
-	m_lights.push_back(new renderer::PointLight(
-		glm::vec3(0.3f, 0.24f, 0.14f),
-		glm::vec3(0.7f, 0.42f, 0.26f),
-		glm::vec3(0.5f, 0.5f, 0.5f),
-		glm::vec3(-1.0f, 0.5f, -4.0f),
-		glm::vec3(1.0f, 0.09f, 0.032f))
-	);
-	file = "billboard_pointLight";
-	object = new GameObject(utilities::ResourceManager::loadModel(file));
-	pos = static_cast<renderer::PointLight*>(m_lights.back())->position;
+	m_lights.push_back(new renderer::PointLight());
+	std::string file = "billboard_pointLight";
+	GameObject* object  = new GameObject(utilities::ResourceManager::loadModel(file));
+	glm::vec3 pos  = static_cast<renderer::PointLight*>(m_lights.back())->position;
 	object->setPosition(pos);
 	m_billboardsForLights.push_back(object);
 	m_gameObjectsMap[object->getCode()] = object;
@@ -218,6 +183,22 @@ void MainApp::drawGame(){
 	ImGui::Render();
 	//sdl: swap buffers
 	m_window.swapBuffer();
+}
+
+void MainApp::addDefaultLighting(){
+	/// initial lighting	
+	//directional light
+	m_lights.push_back(new renderer::DirLight());
+	std::string file = "billboard_dirLight";
+	GameObject* object;
+	object = new GameObject(utilities::ResourceManager::loadModel(file));
+	glm::vec3 pos = static_cast<renderer::DirLight*>(m_lights[0])->direction;
+	object->setPosition(pos);
+	m_billboardsForLights.push_back(object);
+	m_gameObjectsMap[object->getCode()] = object;
+	m_billboardLightsMap[object] = m_lights[0];
+	//spot light
+	m_lights.push_back(new renderer::SpotLight(m_player.getCamera()->getFront(), m_player.getCamera()->getPos()));
 }
 
 void MainApp::resetData(){

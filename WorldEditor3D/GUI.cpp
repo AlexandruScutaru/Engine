@@ -52,6 +52,7 @@ void GUI::showMainMenu(){
 		if(ImGui::BeginMenu("File")){
 			if(ImGui::MenuItem("New")) {
 				app->resetData();
+				app->addDefaultLighting();
 			}
 			if(ImGui::MenuItem("Open")) {
 				b_showOpenFileDialog = true;
@@ -388,27 +389,43 @@ void GUI::showPlacementTab(){
 }
 
 void GUI::showOpenFileDialog(){
-	ImGui::SetNextWindowSize(ImVec2(300, 11.2f * ImGui::GetFrameHeightWithSpacing()), ImGuiSetCond_Always);
+	ImGui::SetNextWindowSize(ImVec2(500, 11.2f * ImGui::GetFrameHeightWithSpacing()), ImGuiSetCond_Always);
 	ImGui::SetNextWindowFocus();
 	ImGui::Begin("Open file", &b_showOpenFileDialog,
 				 ImGuiWindowFlags_NoResize |
 				 ImGuiWindowFlags_NoCollapse
 	);
-	ImGui::PushItemWidth(-1);
 
-	ImGui::Text("Available files:");
-	ImGui::ListBox("##", &fdEntryItem, VectorOfStringGetter, (void*)(&dirContents), (int)(dirContents.size()), 10);
-	ImGui::Text("\t\t\t");
-	ImGui::SameLine();
-	if(ImGui::Button("Open")){
-		b_showOpenFileDialog = false;
-		openButtonPressed();
+	ImGui::BeginChild("##fileSelecting", ImVec2(ImGui::GetWindowContentRegionWidth() * 0.6f, 0), false);
+	{
+		ImGui::PushItemWidth(-1);
+		ImGui::Text("Available files:");
+		ImGui::ListBox("##", &fdEntryItem, VectorOfStringGetter, (void*)(&dirContents), (int)(dirContents.size()), 10);
+		
+		//ImGui::Text("\t\t\t\t\t");
+		//ImGui::SameLine();
+		if(ImGui::Button("Open")){
+			b_showOpenFileDialog = false;
+			openButtonPressed();
+		}
+		ImGui::SameLine();
+		if(ImGui::Button("Cancel")){
+			b_showOpenFileDialog = false;
+		}
+
+		ImGui::PopItemWidth();
 	}
+	ImGui::EndChild();
 	ImGui::SameLine();
-	if(ImGui::Button("Cancel")){
-		b_showOpenFileDialog = false;
+	ImGui::BeginChild("##Preview", ImVec2(0, ImGui::GetWindowHeight()/2), false);
+	{
+		ImGui::PushItemWidth(-1);
+		ImGui::Text("placeholder");
+		//ImGui::Image()
+		ImGui::PopItemWidth();
 	}
-	ImGui::PopItemWidth();
+	ImGui::EndChild();
+
 	ImGui::End();
 }
 

@@ -52,7 +52,8 @@ private:
 	void processInput(); //handles input processing
 	void update(float deltaTime); //updates based on deltatime
 	void drawGame(); //draws on screen
-	
+	void addDefaultLighting();
+
 	void resetData();
 	void openMap(const std::string& file);
 	void saveMap(const std::string& file);
