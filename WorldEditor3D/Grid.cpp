@@ -4,6 +4,8 @@
 float Grid::m_gridStep = 0.16f;
 float Grid::m_gridHeight = 0.0f;
 bool  Grid::m_showGrid = false;
+bool  Grid::m_snapToGrid = false;
+
 
 Grid::Grid(){}
 
@@ -27,6 +29,10 @@ void Grid::setEnabled(bool value){
 	m_showGrid = value;
 }
 
+void Grid::setSnapEnabled(bool value){
+	m_snapToGrid = value;
+}
+
 float Grid::getHeight(){
 	return m_gridHeight;
 }
@@ -37,4 +43,8 @@ float Grid::getStep(){
 
 bool Grid::isEnabled(){
 	return m_showGrid;
+}
+
+bool Grid::isSnapEnabled(){
+	return m_snapToGrid;
 }

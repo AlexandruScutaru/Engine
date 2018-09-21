@@ -5,6 +5,8 @@
 #include <iostream>
 #include <fstream>
 #include "Utilities.h"
+#include <algorithm>
+
 
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
@@ -13,12 +15,10 @@
 
 ///TODO:
 	//investigate object rename issue
-	//fix clear data lighting issues
 
 MainApp::MainApp():
 	m_appState(AppState::EDIT),
 	m_gui(this),
-	m_currentlySelectedObject(nullptr),
 	m_currentlySelectedLight(nullptr)
 {
 	initSystems();
@@ -68,7 +68,8 @@ void MainApp::initLevel(){
 	m_basicColorShader.initShader("shaders/basic");
 	m_billboardShader.initShader("shaders/billboard");
 
-	m_gizmos.init((Actor**)(&m_currentlySelectedObject));
+	//m_gizmos.init((Actor**)(&m_currentlySelectedObject));
+	m_gizmos.init((std::vector<Actor*>*)(&m_selectedObjsVect));
 
 	/// lighting, game objects etc
 	//set default data for the creatingEntiy object during the process of creating a new gameobject
@@ -76,15 +77,6 @@ void MainApp::initLevel(){
 	m_creationTabLight = renderer::DirLight();
 	
 	addDefaultLighting();
-	
-	m_lights.push_back(new renderer::PointLight());
-	std::string file = "billboard_pointLight";
-	GameObject* object  = new GameObject(utilities::ResourceManager::loadModel(file));
-	glm::vec3 pos  = static_cast<renderer::PointLight*>(m_lights.back())->position;
-	object->setPosition(pos);
-	m_billboardsForLights.push_back(object);
-	m_gameObjectsMap[object->getCode()] = object;
-	m_billboardLightsMap[object] = m_lights.back();
 
 	//init line VAO
 	typedef struct vertex{
@@ -116,9 +108,12 @@ void MainApp::loop(){
 		processInput();
 
 		update(deltaTime);
-		m_gui.updateImGuiWindows();
-		
 		drawGame();
+		m_gui.updateImGuiWindows();
+		ImGui::Render();
+
+		//sdl: swap buffers
+		m_window.swapBuffer();
 		
 		m_fpsLimiter.end();
 	}
@@ -158,6 +153,7 @@ void MainApp::processInput(){
 			case SDL_WINDOWEVENT_RESIZED:
 				renderer::Window::setW(e.window.data1);
 				renderer::Window::setH(e.window.data2);
+				renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
 				break;
 			}
 		}
@@ -180,11 +176,11 @@ void MainApp::update(float deltaTime){
 	static_cast<renderer::SpotLight*>(m_lights[1])->position = m_player.getCamera()->getPos();
 	static_cast<renderer::SpotLight*>(m_lights[1])->direction = m_player.getCamera()->getFront();
 
-	if(m_currentlySelectedObject && m_currentlySelectedLight){
+	if(m_selectedObjsVect.size() > 0 && m_currentlySelectedLight){
 		if(m_currentlySelectedLight->casterType == renderer::Caster::DIRECTIONAL){
-			static_cast<renderer::DirLight*>(m_currentlySelectedLight)->direction = m_currentlySelectedObject->getPosition();
+			static_cast<renderer::DirLight*>(m_currentlySelectedLight)->direction = m_selectedObjsVect[0]->getPosition();
 		}else if(m_currentlySelectedLight->casterType == renderer::Caster::POINT){
-			(static_cast<renderer::PointLight*>(m_currentlySelectedLight))->position = m_currentlySelectedObject->getPosition();
+			(static_cast<renderer::PointLight*>(m_currentlySelectedLight))->position = m_selectedObjsVect[0]->getPosition();
 		}
 	}
 
@@ -192,8 +188,8 @@ void MainApp::update(float deltaTime){
 }
 
 void MainApp::drawGame(){
-	glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
-	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
+	//glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
+	//renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	bool bDrawColBodies = false;
@@ -203,10 +199,6 @@ void MainApp::drawGame(){
 	drawLines();
 	if(Grid::isEnabled()) drawGrid();
 	drawTransformGizmos();
-	
-	ImGui::Render();
-	//sdl: swap buffers
-	m_window.swapBuffer();
 }
 
 void MainApp::addDefaultLighting(){
@@ -227,7 +219,7 @@ void MainApp::addDefaultLighting(){
 
 void MainApp::resetData(){
 	m_gui = GUI(this);
-	m_currentlySelectedObject = nullptr;
+	m_selectedObjsVect.clear();
 	m_currentlySelectedLight = nullptr;
 	
 	m_billboardLightsMap.clear();
@@ -249,6 +241,7 @@ void MainApp::resetData(){
 
 void MainApp::openMap(const std::string& file){
 	std::string path = m_gui.currentPath + file;
+
 	resetData();
 
 	std::ifstream in(path);
@@ -467,17 +460,17 @@ void MainApp::pixelPick(glm::vec2& coords){
 		m_gizmos.setActivated(val);
 	} else {
 		m_gizmos.setActivated(0);
-		if(m_currentlySelectedObject)
-			m_currentlySelectedObject->setSelected(false);
-
 		if(val){
 			GameObject* obj = m_gameObjectsMap[val];
 			auto it = m_billboardLightsMap.find(obj);
 			if(it != m_billboardLightsMap.end()){ 
 				//clicked on a billboard for light
 				m_currentlySelectedLight = it->second;
-				m_currentlySelectedObject = obj;
-				m_currentlySelectedObject->setSelected(true);
+				for(auto& obj : m_selectedObjsVect)
+					if(obj) obj->setSelected(false);
+				m_selectedObjsVect.clear();
+				m_selectedObjsVect.push_back(obj);
+				m_selectedObjsVect[0]->setSelected(true);
 
 				for(size_t i = 0; i < m_lights.size(); ++i){
 					if(m_lights[i] == m_currentlySelectedLight){
@@ -487,41 +480,70 @@ void MainApp::pixelPick(glm::vec2& coords){
 				m_gui.placedGameobjectEntryItem = -1;
 			} else{ 
 				//clicked on a gameobject
-				m_currentlySelectedObject = obj;
-				m_currentlySelectedObject->setSelected(true);
-				for(size_t i = 0; i < m_objectsInScene.size(); ++i){
-					if(m_objectsInScene[i] == obj){
-						m_gui.placedGameobjectEntryItem = i;
+				if(m_inputManager.isKeyDown(SDLK_LCTRL)){
+					auto it = std::find(m_selectedObjsVect.begin(), m_selectedObjsVect.end(), obj);
+					if(it == m_selectedObjsVect.end())
+						m_selectedObjsVect.push_back(obj);
+					obj->setSelected(true);
+					m_gui.placedGameobjectEntryItem = -1;
+				} else if(m_inputManager.isKeyDown(SDLK_LSHIFT)){
+					auto it = std::find(m_selectedObjsVect.begin(), m_selectedObjsVect.end(), obj);
+					if(it != m_selectedObjsVect.end()){
+						(*it)->setSelected(false);
+						m_selectedObjsVect.erase(it);
+					}
+					m_gui.placedGameobjectEntryItem = -1;
+				} else{
+					for(auto& obj : m_selectedObjsVect)
+						if(obj) obj->setSelected(false);
+					m_selectedObjsVect.clear();
+					m_selectedObjsVect.push_back(obj);
+					obj->setSelected(true);
+					auto it = std::find(m_objectsInScene.begin(), m_objectsInScene.end(), obj);
+					for(size_t i = 0; i < m_objectsInScene.size(); ++i){
+						if(m_objectsInScene[i] == obj){
+							m_gui.placedGameobjectEntryItem = i;
+						}
 					}
 				}
 				m_gui.placedLightEntryItem = -1;
 				m_currentlySelectedLight = nullptr;
 			}
 		} else{
-			m_currentlySelectedObject = nullptr;
+			for(auto& obj : m_selectedObjsVect)
+				if(obj) obj->setSelected(false);
+			m_selectedObjsVect.clear();
 			m_currentlySelectedLight = nullptr;
 			m_gui.placedGameobjectEntryItem = -1;
 			m_gui.placedLightEntryItem = -1;
+			if(!m_inputManager.isKeyPressed(SDLK_LCTRL) || !m_inputManager.isKeyPressed(SDLK_LSHIFT)){
+				for(auto& obj : m_selectedObjsVect)
+					if(obj) obj->setSelected(false);
+				m_selectedObjsVect.clear();
+			}
 		}
-		
 	}
 }
 
-void MainApp::addNewObject(const std::string & file){
+void MainApp::addNewObject(const std::string& file){
 	GameObject* object;
 	object = new GameObject(utilities::ResourceManager::loadModel(file));
 	object->setName(file);
 	object->setInEditorName(file);
 
 	glm::vec3 pos = m_player.getCamera()->getPos() + m_player.getCamera()->getFront() * 4.0f;
+	pos.y = Grid::getHeight();
 	object->setPosition(pos);
 	m_objectsInScene.push_back(object);
 	m_gameObjectsMap[object->getCode()] = object;
 	
-	if(m_currentlySelectedObject)
-		m_currentlySelectedObject->setSelected(false);
-	m_currentlySelectedObject = object;
-	m_currentlySelectedObject->setSelected(true);
+	for(auto& obj : m_selectedObjsVect)
+		if(obj) obj->setSelected(false);
+	m_selectedObjsVect.clear();
+
+	object->setSelected(true);
+	m_selectedObjsVect.push_back(object);
+
 	object = nullptr;
 }
 
@@ -554,33 +576,45 @@ void MainApp::duplicatePointLight(int index){
 }
 
 void MainApp::removePointLight(int index){
-	m_gameObjectsMap.erase(m_currentlySelectedObject->getCode());
-	m_billboardLightsMap.erase(m_currentlySelectedObject);
-	for(std::vector<GameObject*>::iterator it = m_billboardsForLights.begin(); it < m_billboardsForLights.end(); it++){
-		if(*it == m_currentlySelectedObject){
-			m_billboardsForLights.erase(it);
-			break;
-		}
-	}
-	m_currentlySelectedObject = nullptr;
+	if(m_selectedObjsVect.size() != 1)
+		return;
+	m_gameObjectsMap.erase(m_selectedObjsVect[0]->getCode());
+	m_billboardLightsMap.erase(m_selectedObjsVect[0]);
+
+	auto it = std::find(m_billboardsForLights.begin(), m_billboardsForLights.end(), m_selectedObjsVect[0]);
+	if(it != m_billboardsForLights.end())
+		m_billboardsForLights.erase(it);
+
+	m_selectedObjsVect.clear();
 	m_lights.erase(m_lights.begin() + index);
 	m_currentlySelectedLight = nullptr;
 }
 
-void MainApp::removeSelectedObject(int index){
-	m_objectsInScene.erase(m_objectsInScene.begin() + index);
-	m_currentlySelectedObject = nullptr;
+void MainApp::removeSelectedObjects(){
+	for(auto& obj : m_selectedObjsVect){
+		auto it = std::find(m_objectsInScene.begin(), m_objectsInScene.end(), obj);
+		if(it != m_objectsInScene.end()){
+			m_gameObjectsMap.erase(obj->getCode());
+			m_objectsInScene.erase(it);
+		}
+	}
+	m_selectedObjsVect.clear();
 }
 
-void MainApp::duplicateSelectedObject(int index){
+void MainApp::duplicateSelectedObjects(){
 	GameObject* object;
-	object = new GameObject(*m_objectsInScene[index]);
-	m_objectsInScene.push_back(object);
-	m_gameObjectsMap[object->getCode()] = object;
-	//if(m_currentlySelectedObject)
-	//	m_currentlySelectedObject->setSelected(false);
-	//m_currentlySelectedObject = object;
-	//m_currentlySelectedObject->setSelected(true);
+	std::vector<GameObject*> backUp = m_selectedObjsVect;
+	for(auto obj : m_selectedObjsVect)
+		if(obj) obj->setSelected(false);
+	m_selectedObjsVect.clear();
+
+	for(auto& obj : backUp){
+		object = new GameObject(*obj);
+		m_objectsInScene.push_back(object);
+		m_gameObjectsMap[object->getCode()] = object;
+		obj->setSelected(true);
+		m_selectedObjsVect.push_back(obj);
+	}
 	object = nullptr;
 }
 
@@ -615,7 +649,6 @@ void MainApp::drawGameObjects(bool bDrawColbodies){
 
 	//get textured model batches
 	auto batches = Utilities::BatchRenderables<GameObject>(m_objects_ToDraw);
-	//std::cout << batches.size() << std::endl;
 	for(auto const& batch : batches){
 		if(batch.first->isBillboard())
 			continue;
@@ -869,7 +902,6 @@ void MainApp::drawLines(){
 	glBindVertexArray(0);
 	///stop using this shader
 	m_basicColorShader.unuse();
-
 }
 
 void MainApp::drawGrid(){
@@ -888,7 +920,7 @@ void MainApp::drawGrid(){
 	gridPosition.y = Grid::getHeight();
 	gridPosition.z = std::round(m_player.getPosition().z / Grid::getStep()) * Grid::getStep();
 
-	float scaleFactor = 0.069;
+	float scaleFactor = 0.069f;
 	int ord = 0;
 	while(Grid::getStep() * ord <= 7.0f){
 		glm::mat4 model;

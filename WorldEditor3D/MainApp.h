@@ -53,7 +53,7 @@ private:
 	void update(float deltaTime); //updates based on deltatime
 	void drawGame(); //draws on screen
 	void addDefaultLighting();
-
+	
 	void resetData();
 	void openMap(const std::string& file);
 	void saveMap(const std::string& file);
@@ -64,8 +64,8 @@ private:
 	void addPointLight();
 	void duplicatePointLight(int index);
 	void removePointLight(int index);
-	void removeSelectedObject(int index);
-	void duplicateSelectedObject(int index);
+	void removeSelectedObjects();
+	void duplicateSelectedObjects();
 
 	void updateToDrawVector();
 	void drawGameObjects(bool drawCollisionBodies);
@@ -78,11 +78,11 @@ private:
 	renderer::Window m_window; //the app window
 	utilities::InputManager m_inputManager;
 	utilities::FpsLimiter m_fpsLimiter;
-	//renderer::MasterRenderer m_masterRenderer;
+	
 	TranformGizmos m_gizmos;
-	GameObject* m_currentlySelectedObject;
+	
+	std::vector<GameObject*> m_selectedObjsVect;
 	renderer::Light* m_currentlySelectedLight;
-
 	
 	AppState m_appState;
 

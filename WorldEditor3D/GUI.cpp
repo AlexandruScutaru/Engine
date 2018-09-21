@@ -78,7 +78,6 @@ void GUI::showMainMenu(){
 		if(ImGui::BeginMenu("Edit")){
 			if(ImGui::MenuItem("Grid")){
 				b_showGridWindow = true;
-				//showGridSettingsWindow();
 			}
 			ImGui::EndMenu();
 		}
@@ -102,14 +101,14 @@ void GUI::showToolbar(){
 	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 
 	//add point light
-	td = *utilities::ResourceManager::getTexture("res/gui/add-pointLight.png");
+	td = *utilities::ResourceManager::getTexture("res/editor/add-pointLight.png");
 	if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1) && b_placementTab){
 		app->addPointLight();
 	}
 
 	//add gameobject
 	ImGui::SameLine();
-	td = *utilities::ResourceManager::getTexture("res/gui/add-gameobject.png");
+	td = *utilities::ResourceManager::getTexture("res/editor/add-gameobject.png");
 	if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1) && b_placementTab){
 		b_showOpenFileDialog = true;
 		currentPath = "res/gameobjects/";
@@ -118,41 +117,42 @@ void GUI::showToolbar(){
 	}
 	//duplicate gameobject
 	ImGui::SameLine();
-	td = *utilities::ResourceManager::getTexture("res/gui/duplicate.png");
+	td = *utilities::ResourceManager::getTexture("res/editor/duplicate.png");
 	if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1) && b_placementTab){
-		if(placedGameobjectEntryItem >= 0){
-			//object selected
-			app->duplicateSelectedObject(placedGameobjectEntryItem);
-		} else if(placedLightEntryItem > 1){
+		if(placedLightEntryItem > 1){
 			//point light selected
 			app->duplicatePointLight(placedLightEntryItem);
 		}
+		else if(app->m_selectedObjsVect.size() > 0){
+			//object selected
+			app->duplicateSelectedObjects();
+		} 
 	}
 	//remove gameobject
 	ImGui::SameLine();
-	td = *utilities::ResourceManager::getTexture("res/gui/remove.png");
+	td = *utilities::ResourceManager::getTexture("res/editor/remove.png");
 	if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1) && b_placementTab){
-		if(placedGameobjectEntryItem >= 0){
-			//remove object
-			app->removeSelectedObject(placedGameobjectEntryItem);
-			placedGameobjectEntryItem = -1;
-		} else if(placedLightEntryItem > 1){
+		if(placedLightEntryItem > 1){
 			//remove point light
 			app->removePointLight(placedLightEntryItem);
 			placedLightEntryItem = -1;
+		} else if(app->m_selectedObjsVect.size() > 0){
+			//remove object
+			app->removeSelectedObjects();
+			placedGameobjectEntryItem = -1;
 		}
 	}
 
 	ImGui::PopStyleColor();
 	///separator
 	ImGui::SameLine();
-	td = *utilities::ResourceManager::getTexture("res/gui/sep.png");
+	td = *utilities::ResourceManager::getTexture("res/editor/sep.png");
 	ImGui::Image((ImTextureID)td.id, ImVec2(3, 27), ImVec2(0, 0), ImVec2(1, -1));
 
 	///transform gizmo mode selectors
 	//none - select only
 	ImGui::SameLine();
-	td = *utilities::ResourceManager::getTexture("res/gui/select.png");
+	td = *utilities::ResourceManager::getTexture("res/editor/select.png");
 	if(app->m_gizmos.getGizmoMode() == (int)GizmoMode::NONE)
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(200, 200, 200, 255));
 	else
@@ -163,7 +163,7 @@ void GUI::showToolbar(){
 	ImGui::PopStyleColor();
 	//translate
 	ImGui::SameLine();
-	td = *utilities::ResourceManager::getTexture("res/gui/move.png");
+	td = *utilities::ResourceManager::getTexture("res/editor/move.png");
 	if(app->m_gizmos.getGizmoMode() == (int)GizmoMode::TRANSLATE)
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(200, 200, 200, 255));
 	else
@@ -174,7 +174,7 @@ void GUI::showToolbar(){
 	ImGui::PopStyleColor();
 	//rotate
 	ImGui::SameLine();
-	td = *utilities::ResourceManager::getTexture("res/gui/rotate.png");
+	td = *utilities::ResourceManager::getTexture("res/editor/rotate.png");
 	if(app->m_gizmos.getGizmoMode() == (int)GizmoMode::ROTATE)
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(200, 200, 200, 255));
 	else
@@ -185,7 +185,7 @@ void GUI::showToolbar(){
 	ImGui::PopStyleColor();
 	//scale
 	ImGui::SameLine();
-	td = *utilities::ResourceManager::getTexture("res/gui/scale.png");
+	td = *utilities::ResourceManager::getTexture("res/editor/scale.png");
 	if(app->m_gizmos.getGizmoMode() == (int)GizmoMode::SCALE)
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(200, 200, 200, 255));
 	else
@@ -197,7 +197,7 @@ void GUI::showToolbar(){
 
 	///separator
 	//ImGui::SameLine();
-	//td = *utilities::ResourceManager::getTexture("res/gui/sep.png");
+	//td = *utilities::ResourceManager::getTexture("res/editor/sep.png");
 	//ImGui::Image((ImTextureID)td.id, ImVec2(3, 27), ImVec2(0, 0), ImVec2(1, -1));
 
 	ImGui::End();
@@ -387,8 +387,6 @@ void GUI::showOpenFileDialog(){
 		ImGui::Text("Available files:");
 		ImGui::ListBox("##", &fdEntryItem, VectorOfStringGetter, (void*)(&dirContents), (int)(dirContents.size()), 10);
 		
-		//ImGui::Text("\t\t\t\t\t");
-		//ImGui::SameLine();
 		if(ImGui::Button("Open")){
 			b_showOpenFileDialog = false;
 			openButtonPressed();
@@ -406,7 +404,6 @@ void GUI::showOpenFileDialog(){
 	{
 		ImGui::PushItemWidth(-1);
 		ImGui::Text("placeholder");
-		//ImGui::Image()
 		ImGui::PopItemWidth();
 	}
 	ImGui::EndChild();
@@ -435,15 +432,14 @@ void GUI::showSaveFileDialog(){
 	ImGui::Text("Name:");
 	ImGui::SameLine();
 	std::string filename;
-	static char buf[32] = "";
-	ImGui::InputText("##filename", buf, 32);
+	static char buf[OBJECT_NAME_SIZE] = "";
+	ImGui::InputText("##filename", buf, OBJECT_NAME_SIZE);
 	ImGui::Text("\t\t\t");
 	ImGui::SameLine();
 	if(ImGui::Button("Save as")){
 		bool exists = false;
 		for(auto dir : dirContents){
 			if(dir.compare(std::string(buf)) == 0){
-				//exists = true;
 				break;
 			}
 		}
@@ -455,7 +451,7 @@ void GUI::showSaveFileDialog(){
 				app->saveMap(buf);
 			}
 		}
-		memset(buf, '\0', 32);
+		memset(buf, '\0', OBJECT_NAME_SIZE);
 	}
 	ImGui::SameLine();
 	if(ImGui::Button("Cancel")){
@@ -517,13 +513,14 @@ void GUI::showGameobjectsTab(){
 	ImGui::ListBox("##gameobjectsList", &placedGameobjectEntryItem, VectorOfObjectsGetter, (void*)(&app->m_objectsInScene), (int)(app->m_objectsInScene.size()), 10);
 	//placement settings
 	if(placedGameobjectEntryItem >= 0){
-		if(app->m_currentlySelectedObject)
-			app->m_currentlySelectedObject->setSelected(false);
+		for(auto& obj : app->m_selectedObjsVect)
+			if(obj) obj->setSelected(false);
+		app->m_selectedObjsVect.clear();
 		app->m_currentlySelectedLight = nullptr;
 		placedLightEntryItem = -1;
 
-		app->m_currentlySelectedObject = app->m_objectsInScene[placedGameobjectEntryItem];
-		app->m_currentlySelectedObject->setSelected(true);
+		app->m_selectedObjsVect.push_back(app->m_objectsInScene[placedGameobjectEntryItem]);
+		app->m_selectedObjsVect[0]->setSelected(true);
 		//object info
 		memset(m_name, '\0', OBJECT_NAME_SIZE);
 		strncat_s(m_name, app->m_objectsInScene[placedGameobjectEntryItem]->getInEditorName().c_str(), OBJECT_NAME_SIZE);
@@ -581,20 +578,21 @@ void GUI::showLightsTab(){
 	
 	//lights settings
 	ImGui::Separator();
-	ImGui::BeginChild("gmaeobjectTransoforms", ImVec2(-1, -1), false);
+	ImGui::BeginChild("gameobjectTransforms", ImVec2(-1, -1), false);
 	{
 		if(placedLightEntryItem >= 0){
 			ImGui::Text("Properties");
 			ImGui::PushItemWidth(65);
-			if(app->m_currentlySelectedObject)
-				app->m_currentlySelectedObject->setSelected(false);
-			app->m_currentlySelectedObject = nullptr;
+			for(auto& obj : app->m_selectedObjsVect)
+				if(obj) obj->setSelected(false);
+			app->m_selectedObjsVect.clear();
+
 			app->m_currentlySelectedLight = nullptr;
 			placedGameobjectEntryItem = -1;
 			for(auto entry : app->m_billboardLightsMap){
 				if(entry.second == app->m_lights[placedLightEntryItem]){
-					app->m_currentlySelectedObject = entry.first;
-					app->m_currentlySelectedObject->setSelected(true);
+					app->m_selectedObjsVect.push_back(entry.first);
+					app->m_selectedObjsVect[0]->setSelected(true);
 					app->m_currentlySelectedLight = app->m_lights[placedLightEntryItem];
 					break;
 				}
@@ -628,17 +626,17 @@ void GUI::showLightsTab(){
 
 				ImGui::Text("Dir :");
 				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragDirX", &app->m_currentlySelectedObject->getPosition().x, 0.01f, FLT_MIN, FLT_MAX, "%.2f");
+				ImGui::DragFloat("##lightDragDirX", &app->m_selectedObjsVect[0]->getPosition().x, 0.01f, -FLT_MAX, FLT_MAX, "%.2f");
 				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragDirY", &app->m_currentlySelectedObject->getPosition().y, 0.01f, FLT_MIN, FLT_MAX, "%.2f");
+				ImGui::DragFloat("##lightDragDirY", &app->m_selectedObjsVect[0]->getPosition().y, 0.01f, -FLT_MAX, FLT_MAX, "%.2f");
 				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragDirZ", &app->m_currentlySelectedObject->getPosition().z, 0.01f, FLT_MIN, FLT_MAX, "%.2f");
+				ImGui::DragFloat("##lightDragDirZ", &app->m_selectedObjsVect[0]->getPosition().z, 0.01f, -FLT_MAX, FLT_MAX, "%.2f");
 			}
 			else if(placedLightEntryItem == 1){
 				//spot light - doesnt have a billboard mapped to it
-				if(app->m_currentlySelectedObject)
-					app->m_currentlySelectedObject->setSelected(false);
-				app->m_currentlySelectedObject = nullptr;
+				for(auto& obj : app->m_selectedObjsVect)
+					if(obj) obj->setSelected(false);
+				app->m_selectedObjsVect.clear();
 				app->m_currentlySelectedLight = nullptr;
 				placedGameobjectEntryItem = -1;
 
@@ -713,11 +711,11 @@ void GUI::showLightsTab(){
 
 				ImGui::Text("Pos :");
 				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragDirX", &app->m_currentlySelectedObject->getPosition().x, 0.01f, FLT_MIN, FLT_MAX, "%.2f");
+				ImGui::DragFloat("##lightDragDirX", &app->m_selectedObjsVect[0]->getPosition().x, 0.01f, -FLT_MAX, FLT_MAX, "%.2f");
 				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragDirY", &app->m_currentlySelectedObject->getPosition().y, 0.01f, FLT_MIN, FLT_MAX, "%.2f");
+				ImGui::DragFloat("##lightDragDirY", &app->m_selectedObjsVect[0]->getPosition().y, 0.01f, -FLT_MAX, FLT_MAX, "%.2f");
 				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragDirZ", &app->m_currentlySelectedObject->getPosition().z, 0.01f, FLT_MIN, FLT_MAX, "%.2f");
+				ImGui::DragFloat("##lightDragDirZ", &app->m_selectedObjsVect[0]->getPosition().z, 0.01f, -FLT_MAX, FLT_MAX, "%.2f");
 			
 				ImGui::Text("Att :");
 				ImGui::SameLine();
@@ -735,7 +733,7 @@ void GUI::showLightsTab(){
 }
 
 void GUI::showGridSettingsWindow(){
-	ImGui::SetNextWindowSize(ImVec2(200, 6.0f * ImGui::GetFrameHeightWithSpacing()), ImGuiSetCond_Always);
+	ImGui::SetNextWindowSize(ImVec2(200, 6.5f * ImGui::GetFrameHeightWithSpacing()), ImGuiSetCond_Always);
 	ImGui::Begin("Grid Settings", &b_showGridWindow,
 				 ImGuiWindowFlags_NoResize |
 				 ImGuiWindowFlags_NoCollapse
@@ -743,10 +741,14 @@ void GUI::showGridSettingsWindow(){
 
 	ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.4f);
 	///Show grid
-	bool showGrid = Grid::isEnabled();
-	ImGui::Checkbox("Show Grid", &showGrid);
-	Grid::setEnabled(showGrid);
+	bool boolVal = Grid::isEnabled();
+	ImGui::Checkbox("Show Grid", &boolVal);
+	Grid::setEnabled(boolVal);
 	ImGui::Separator();
+	///Grid snapping
+	boolVal = Grid::isSnapEnabled();
+	ImGui::Checkbox("Snap to Grid", &boolVal);
+	Grid::setSnapEnabled(boolVal);
 	///Grid Step selection
 	static int it = 0;
 	ImGui::Combo("Grid Step", &it, " 0.16 \0 0.32 \0 0.64 \0 1.28 \0 2.56 \0\0", 5);

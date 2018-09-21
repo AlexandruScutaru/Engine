@@ -51,9 +51,9 @@ TranformGizmos::~TranformGizmos(){
 }
 
 
-void TranformGizmos::init(Actor** obj){
+void TranformGizmos::init(std::vector<Actor*>* obj){
 	m_currentlyActivated = 0;
-	m_pSelectedActor = obj;
+	m_pSelectedVect = obj;
 	m_gizmoMode = GizmoMode::TRANSLATE;
 	GameObject* object;
 
@@ -151,7 +151,7 @@ void TranformGizmos::init(Actor** obj){
 }
 
 bool TranformGizmos::canBeShown(){
-	if(*m_pSelectedActor && m_gizmoMode != GizmoMode::NONE)
+	if((*m_pSelectedVect).size() > 0 && m_gizmoMode != GizmoMode::NONE)
 		return true;
 	return false;
 }
@@ -174,16 +174,21 @@ const std::vector<Gizmo>* TranformGizmos::getGizmos(){
 }
 
 const glm::vec3& TranformGizmos::getPosition(){
-	return (*m_pSelectedActor)->getPosition();
+	return ((*m_pSelectedVect).back())->getPosition();
 }
 
 void TranformGizmos::updateGizmo(renderer::Camera* camera, utilities::InputManager& input, float deltaTime){
 	if(m_currentlyActivated && input.isKeyDown(SDL_BUTTON_LEFT)){
-		m_gizmoFunctionality[m_currentlyActivated](*m_pSelectedActor, input, camera, deltaTime);
+		for(auto& obj: *m_pSelectedVect)
+			m_gizmoFunctionality[m_currentlyActivated](obj, input, camera, deltaTime);
 	} else if(m_currentlyActivated && m_gizmoMode == GizmoMode::TRANSLATE && !input.isKeyPressed(SDL_BUTTON_LEFT)){
-		(*m_pSelectedActor)->getPosition().x = std::round((*m_pSelectedActor)->getPosition().x / Grid::getStep()) * Grid::getStep();
-		(*m_pSelectedActor)->getPosition().y = std::round((*m_pSelectedActor)->getPosition().y / Grid::getStep()) * Grid::getStep();
-		(*m_pSelectedActor)->getPosition().z = std::round((*m_pSelectedActor)->getPosition().z / Grid::getStep()) * Grid::getStep();
+		if(Grid::isSnapEnabled()){
+			for(auto& obj : *m_pSelectedVect){
+				obj->getPosition().x = std::round((obj)->getPosition().x / Grid::getStep()) * Grid::getStep();
+				obj->getPosition().y = std::round((obj)->getPosition().y / Grid::getStep()) * Grid::getStep();
+				obj->getPosition().z = std::round((obj)->getPosition().z / Grid::getStep()) * Grid::getStep();
+			}
+		}
 		m_currentlyActivated = 0;
 	}
 }
@@ -210,11 +215,6 @@ void translateX(Actor* pActor, utilities::InputManager& input, renderer::Camera*
 		pActor->getPosition().x += input.getMouseDX()*dt; //right
 	else
 		pActor->getPosition().x -= input.getMouseDX()*dt; //left
-
-	float inc = 1.0f;
-
-	//pActor->getPosition().x = std::round(pActor->getPosition().x / inc) * inc;
-	//pActor->getPosition().y = std::round(pActor->getPosition().y / inc) * inc;
 }
 
 void translateY(Actor* pActor, utilities::InputManager & input, renderer::Camera* camera, float dt){

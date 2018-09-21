@@ -9,10 +9,10 @@
 #include <vector>
 #include <string>
 
-#define OBJECT_NAME_SIZE 32
+#define OBJECT_NAME_SIZE 64
 #define TOOLBAR_HEIGHT 36
 #define MAIN_MENU_HEIGHT 18
-#define EDITOR_WINDOW_WIDTH 300
+#define EDITOR_WINDOW_WIDTH 350
 
 class MainApp;
 namespace renderer{

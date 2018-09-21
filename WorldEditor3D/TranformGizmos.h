@@ -37,12 +37,12 @@ public:
 	TranformGizmos();
 	~TranformGizmos();
 		
-	void init(Actor** obj);
+	void init(std::vector<Actor*>* obj);
 	bool canBeShown();
 	void updateGizmo(renderer::Camera* camera, utilities::InputManager& input, float deltaTime);
 	bool wasClicked(int val);
 		
-	void setSelectedActor(Actor** obj){ m_pSelectedActor = obj; }
+	void setSelectedActor(std::vector<Actor*>* obj){ m_pSelectedVect = obj; }
 	void setGizmoMode(int mode){ m_gizmoMode = (GizmoMode)mode; }
 	void setActivated(int val){ m_currentlyActivated = val; }
 		
@@ -52,7 +52,7 @@ public:
 	int getActivated(){ return m_currentlyActivated; }
 
 private:
-	Actor** m_pSelectedActor;
+	std::vector<Actor*>*  m_pSelectedVect;
 	GizmoMode m_gizmoMode;
 	std::vector<Gizmo> m_gizmosTranslate;
 	std::vector<Gizmo> m_gizmosScale;
