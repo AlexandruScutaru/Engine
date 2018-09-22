@@ -196,9 +196,27 @@ void GUI::showToolbar(){
 	ImGui::PopStyleColor();
 
 	///separator
-	//ImGui::SameLine();
-	//td = *utilities::ResourceManager::getTexture("res/editor/sep.png");
-	//ImGui::Image((ImTextureID)td.id, ImVec2(3, 27), ImVec2(0, 0), ImVec2(1, -1));
+	ImGui::SameLine();
+	td = *utilities::ResourceManager::getTexture("res/editor/sep.png");
+	ImGui::Image((ImTextureID)td.id, ImVec2(3, 27), ImVec2(0, 0), ImVec2(1, -1));
+
+	///center camera
+	ImGui::SameLine();
+	td = *utilities::ResourceManager::getTexture("res/editor/center.png");
+	if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1) && b_placementTab){
+		glm::vec3 pos(0.0f);
+		if(placedLightEntryItem > 1 || placedLightEntryItem == 0){
+			//light selected
+			pos = app->m_selectedObjsVect[0]->getPosition();
+		} else if(app->m_selectedObjsVect.size() > 0){
+			//object selected
+			pos = app->m_selectedObjsVect.back()->getPosition();	
+		}
+		
+		pos += glm::vec3(0.0f, 0.64f, 2 * 0.64f);
+		app->m_player.setPosition(pos);
+		app->m_player.setRotation(glm::vec3(-35.0f, -90.0f, 0.0f));
+	}
 
 	ImGui::End();
 }
