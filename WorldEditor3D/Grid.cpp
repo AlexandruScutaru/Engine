@@ -11,18 +11,18 @@ Grid::Grid(){}
 
 
 void Grid::setStep(float step){
-	int val = step * 100;
-	if((val != 0) && ((val & (val - 1)) == 0)){
+	//int val = step * 100;
+	//if((val != 0) && ((val & (val - 1)) == 0)){
 		m_gridStep = step;
-	}
+	//}
 }
 
 void Grid::incHeight(){
-	m_gridHeight += 2.56f;
+	m_gridHeight += m_gridStep;
 }
 
 void Grid::decHeight(){
-	m_gridHeight -= 2.56f;
+	m_gridHeight -= m_gridStep;
 }
 
 void Grid::setEnabled(bool value){

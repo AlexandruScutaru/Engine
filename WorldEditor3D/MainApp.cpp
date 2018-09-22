@@ -68,7 +68,6 @@ void MainApp::initLevel(){
 	m_basicColorShader.initShader("shaders/basic");
 	m_billboardShader.initShader("shaders/billboard");
 
-	//m_gizmos.init((Actor**)(&m_currentlySelectedObject));
 	m_gizmos.init((std::vector<Actor*>*)(&m_selectedObjsVect));
 
 	/// lighting, game objects etc
@@ -104,17 +103,15 @@ void MainApp::initLevel(){
 void MainApp::loop(){
 	while(m_appState == AppState::EDIT){
 		float deltaTime = m_fpsLimiter.begin();
-	
 		processInput();
-
 		update(deltaTime);
+
 		drawGame();
 		m_gui.updateImGuiWindows();
 		ImGui::Render();
 
 		//sdl: swap buffers
 		m_window.swapBuffer();
-		
 		m_fpsLimiter.end();
 	}
 }
@@ -153,7 +150,6 @@ void MainApp::processInput(){
 			case SDL_WINDOWEVENT_RESIZED:
 				renderer::Window::setW(e.window.data1);
 				renderer::Window::setH(e.window.data2);
-				renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
 				break;
 			}
 		}
@@ -188,8 +184,8 @@ void MainApp::update(float deltaTime){
 }
 
 void MainApp::drawGame(){
-	//glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
-	//renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
+	glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
+	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	bool bDrawColBodies = false;
@@ -480,13 +476,13 @@ void MainApp::pixelPick(glm::vec2& coords){
 				m_gui.placedGameobjectEntryItem = -1;
 			} else{ 
 				//clicked on a gameobject
-				if(m_inputManager.isKeyDown(SDLK_LCTRL)){
+				if(m_inputManager.isKeyDown(SDLK_LCTRL) && m_gui.placedLightEntryItem == -1){
 					auto it = std::find(m_selectedObjsVect.begin(), m_selectedObjsVect.end(), obj);
 					if(it == m_selectedObjsVect.end())
 						m_selectedObjsVect.push_back(obj);
 					obj->setSelected(true);
 					m_gui.placedGameobjectEntryItem = -1;
-				} else if(m_inputManager.isKeyDown(SDLK_LSHIFT)){
+				} else if(m_inputManager.isKeyDown(SDLK_LSHIFT) && m_gui.placedLightEntryItem == -1){
 					auto it = std::find(m_selectedObjsVect.begin(), m_selectedObjsVect.end(), obj);
 					if(it != m_selectedObjsVect.end()){
 						(*it)->setSelected(false);
