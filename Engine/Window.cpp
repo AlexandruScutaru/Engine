@@ -110,7 +110,7 @@ namespace renderer{
 		SDL_GL_SetSwapInterval(1);
 
 		//trap and get relative coords from the mouse
-		//SDL_SetRelativeMouseMode(SDL_TRUE);
+		SDL_SetRelativeMouseMode(SDL_TRUE);
 		
 		LOG_INFO("window creation succeeded");
 	}

@@ -10,6 +10,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WorldEditor3D", "WorldEdito
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Engine", "Engine\Engine.vcxproj", "{C088F93A-204D-4CAF-8E9E-BD6E71417DDC}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Game", "Game\Game.vcxproj", "{4CC1F895-1DE9-4CA8-A032-B004A51B6AEB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C088F93A-204D-4CAF-8E9E-BD6E71417DDC} = {C088F93A-204D-4CAF-8E9E-BD6E71417DDC}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -34,6 +39,14 @@ Global
 		{C088F93A-204D-4CAF-8E9E-BD6E71417DDC}.Release|x64.Build.0 = Release|x64
 		{C088F93A-204D-4CAF-8E9E-BD6E71417DDC}.Release|x86.ActiveCfg = Release|Win32
 		{C088F93A-204D-4CAF-8E9E-BD6E71417DDC}.Release|x86.Build.0 = Release|Win32
+		{4CC1F895-1DE9-4CA8-A032-B004A51B6AEB}.Debug|x64.ActiveCfg = Debug|x64
+		{4CC1F895-1DE9-4CA8-A032-B004A51B6AEB}.Debug|x64.Build.0 = Debug|x64
+		{4CC1F895-1DE9-4CA8-A032-B004A51B6AEB}.Debug|x86.ActiveCfg = Debug|Win32
+		{4CC1F895-1DE9-4CA8-A032-B004A51B6AEB}.Debug|x86.Build.0 = Debug|Win32
+		{4CC1F895-1DE9-4CA8-A032-B004A51B6AEB}.Release|x64.ActiveCfg = Release|x64
+		{4CC1F895-1DE9-4CA8-A032-B004A51B6AEB}.Release|x64.Build.0 = Release|x64
+		{4CC1F895-1DE9-4CA8-A032-B004A51B6AEB}.Release|x86.ActiveCfg = Release|Win32
+		{4CC1F895-1DE9-4CA8-A032-B004A51B6AEB}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
