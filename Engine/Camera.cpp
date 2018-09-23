@@ -1,12 +1,8 @@
 #include "Camera.h"
 
-#include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
-#include <SDL/SDL.h>
-
 
 namespace renderer{
-	//Camera::Camera(){}
 
 	Camera::Camera(glm::vec3& position, glm::vec3& up, float pitch, float yaw, float fov) :
 		m_front(glm::vec3(0.0f, 0.0f, -1.0f)),

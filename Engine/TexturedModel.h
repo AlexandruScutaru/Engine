@@ -1,11 +1,12 @@
 #ifndef TEXTURED_MODEL_H
 #define TEXTURED_MODEL_H
 
-#include "ModelDataStructs.h"
 #include "Material.h"
 #include <GLM/glm.hpp>
 
 namespace renderer{
+	
+	struct MeshData;
 
 	class TexturedModel{
 		public:

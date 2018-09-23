@@ -5,6 +5,7 @@
 
 
 namespace renderer{
+
 	enum Caster{
 		DIRECTIONAL,
 		POINT,

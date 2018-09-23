@@ -64,9 +64,9 @@ void MainApp::initSystems(){
 }
 
 void MainApp::initLevel(){
-	m_gameObjectsShader.initShader("shaders/entity");
-	m_basicColorShader.initShader("shaders/basic");
-	m_billboardShader.initShader("shaders/billboard");
+	m_gameObjectsShader.initShader("res/shaders/entity");
+	m_basicColorShader.initShader("res/shaders/basic");
+	m_billboardShader.initShader("res/shaders/billboard");
 
 	m_gizmos.init((std::vector<Actor*>*)(&m_selectedObjsVect));
 

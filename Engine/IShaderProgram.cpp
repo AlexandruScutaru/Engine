@@ -1,4 +1,5 @@
 #include "IShaderProgram.h"
+#include "Logger.h"
 #include <fstream>
 #include <iostream>
 #include <cstdlib>
@@ -15,26 +16,27 @@ namespace renderer{
 	}
 
 
-	void IShaderProgram::init(const std::string& fileName){
+	void IShaderProgram::init(const std::string& fileName, bool hasGeometry){
 		//create the shader program
 		m_program = glCreateProgram();
 
 		//create and attach the shaders
-		GLuint vS, fS; // , gS;
+		GLuint vS=0, gS=0, fS=0;
 		vS = createShader(loadShader(fileName + ".vs"), GL_VERTEX_SHADER);
 		fS = createShader(loadShader(fileName + ".fs"), GL_FRAGMENT_SHADER);
+		
 		//add the shaders to the program
 		glAttachShader(m_program, vS);
 		glAttachShader(m_program, fS);
+
 		//check if we need to also add a geometry shader
-		/*if(geometryPath != nullptr){
-			gS = createShader(loadShader(geometryPath), GL_GEOMETRY_SHADER);
+		if(hasGeometry){
+			gS = createShader(loadShader(fileName + ".gs"), GL_GEOMETRY_SHADER);
 			glAttachShader(m_program, gS);
-		}*/
+		}
 
 		//link the shaders
 		glLinkProgram(m_program);
-
 		//check for errors
 		//parameters
 			//1st: the program or the shader we are cheking for errors on
@@ -43,16 +45,15 @@ namespace renderer{
 				//true => we need error cheking on program
 				//false => we need error cheking on individual shader
 			//4th: message to be concatenated with the error
-		checkShaderError(m_program, GL_LINK_STATUS, true, "Error! Program linking failed: \n");
-
-		//validate the shaders
+		checkShaderError(m_program, GL_LINK_STATUS, true, "error! shader program link failed:\n");
+		//validate
 		glValidateProgram(m_program);
-		checkShaderError(m_program, GL_VALIDATE_STATUS, true, "Error! Program is invalid: \n");
+		checkShaderError(m_program, GL_VALIDATE_STATUS, true, "error! shader program validate failed:\n");
 
 		//remove the shaders as they are attached to the program
 		glDeleteShader(vS);
 		glDeleteShader(fS);
-		//glDeleteShader(gS);
+		if(hasGeometry) glDeleteShader(gS);
 
 		use();
 		getAllUniformLocations();
@@ -106,13 +107,13 @@ namespace renderer{
 	GLint IShaderProgram::getUniformLocation(const std::string& name){
 		GLint location = -1;
 		if(-1 == (location = glGetUniformLocation(m_program, name.c_str()))){
-			std::cout << "Uniform location: '" << name << "'  error!\n" << std::endl;
+			LOG_ERROR_TRACEABLE("glGetUniformLocation '{}' error!", name);
 			exit(EXIT_FAILURE);
 		}
 		return location;
 	}
 
-	void IShaderProgram::checkShaderError(GLuint shader, GLuint flag, bool isProgram, const std::string & errorMessage){
+	void IShaderProgram::checkShaderError(GLuint shader, GLuint flag, bool isProgram, const std::string& errorMessage){
 		GLint success = 0;
 		GLchar error[1024] = {0};
 
@@ -127,7 +128,7 @@ namespace renderer{
 			else
 				glGetShaderInfoLog(shader, sizeof(error), nullptr, error);
 
-			std::cout << errorMessage << error << std::endl;
+			LOG_ERROR_TRACEABLE("{} {}", errorMessage, error);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -142,15 +143,14 @@ namespace renderer{
 			// open files
 			file.open(fileName);
 			std::stringstream shaderStream;
-			// read file's buffer contents into streams
+			// read file's buffer contents into stream
 			shaderStream << file.rdbuf();
 			// close file handlers
 			file.close();
 			// convert stream into string
 			shaderText = shaderStream.str();
-
 		} catch(std::ifstream::failure e){
-			std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ: '" + fileName +"'" << std::endl;
+			LOG_ERROR_TRACEABLE("couldn't read file '{}'", fileName);
 			exit(EXIT_FAILURE);
 		}
 
@@ -159,8 +159,23 @@ namespace renderer{
 
 	GLuint IShaderProgram::createShader(const std::string& text, GLuint shaderType){
 		GLuint shader = glCreateShader(shaderType);
+		std::string shaderName = "";
 		if(shader == 0){
-			std::cout << "Error: Shader creation error!" << std::endl;
+			switch(shaderType){
+				case GL_VERTEX_SHADER:
+					shaderName = "vertex";
+					break;
+				case GL_GEOMETRY_SHADER:
+					shaderName = "geometry";
+					break;
+				case GL_FRAGMENT_SHADER:
+					shaderName = "fragment";
+					break;
+				default:
+					shaderName = "unknown";
+					break;
+			}
+			LOG_ERROR_TRACEABLE("glCreateShader '{}' error", shaderName);
 			exit(EXIT_FAILURE);
 		}
 
@@ -182,12 +197,21 @@ namespace renderer{
 		glShaderSource(shader, 1, shaderSourceStrings, shaderSourceStringsLengths);
 		glCompileShader(shader);
 
-		if(shaderType == GL_VERTEX_SHADER)
-			checkShaderError(shader, GL_COMPILE_STATUS, false, "Error! Vertex shader compilation failed: \n");
-		else if(shaderType == GL_FRAGMENT_SHADER)
-			checkShaderError(shader, GL_COMPILE_STATUS, false, "Error! Fragment shader compilation failed: \n");
-		else
-			checkShaderError(shader, GL_COMPILE_STATUS, false, "Error! Geometry shader compilation failed: \n");
+		switch(shaderType){
+		case GL_VERTEX_SHADER:
+			shaderName = "vertex";
+			break;
+		case GL_GEOMETRY_SHADER:
+			shaderName = "geometry";
+			break;
+		case GL_FRAGMENT_SHADER:
+			shaderName = "fragment";
+			break;
+		default:
+			shaderName = "unknown";
+			break;
+		}
+		checkShaderError(shader, GL_COMPILE_STATUS, false, "error! " + shaderName + " shader compilation failed:\n");
 
 		return shader;
 	}

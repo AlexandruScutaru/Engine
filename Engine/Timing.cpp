@@ -2,7 +2,6 @@
 
 #include <SDL/SDL.h>
 
-
 #define MS_PER_S 1000.0f
 
 

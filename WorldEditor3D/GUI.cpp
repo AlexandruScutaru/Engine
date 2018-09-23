@@ -4,6 +4,7 @@
 #include <dirent/dirent.h>
 #include <cfloat>
 #include "Utilities.h"
+#include <Engine/CollisionBody.h>
 
 bool VectorOfStringGetter(void* data, int n, const char** out_text);
 bool VectorOfObjectsGetter(void* data, int n, const char** out_text);
@@ -300,7 +301,7 @@ void GUI::showCreationTab(){
 		
 		ImGui::ListBox("##collisionBodiesListBox", &collisionBodyEntryItem, VectorOfShapesGetter, (void*)(&collisionBodies), (int)(collisionBodies.size()), 5);
 		
-		static int collisionBodyIndex = utilities::ResourceManager::CollisionShapes::SHAPE_CUBE;
+		static int collisionBodyIndex = renderer::CollisionShapes::SHAPE_CUBE;
 		ImGui::Combo("##collisionBodyShape", &collisionBodyIndex, "Cube\0Sphere\0Cilinder\0Cone\0Capsule\0\0");
 		if(ImGui::Button("Add##collisionShape")){
 			std::string shape = std::string(utilities::ResourceManager::IndexToShape(collisionBodyIndex));

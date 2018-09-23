@@ -1,6 +1,9 @@
 #include "Window.h"
+#include "Logger.h"
+
 #include <iostream>
 #include <cstdlib>
+
 
 namespace renderer{
 
@@ -16,13 +19,18 @@ namespace renderer{
 		SDL_Quit();
 	}
 
-	int Window::create(const std::string& name, int w, int h, unsigned int currentFlags){
+	void Window::create(const std::string& name, int w, int h, unsigned int currentFlags){
 		m_width = w;
 		m_height = h;
 
 		//initialize SDL VIDEO system
-		SDL_Init(SDL_INIT_VIDEO);
-
+		if(SDL_Init(SDL_INIT_VIDEO) < 0){
+			LOG_ERROR_TRACEABLE("SDL_Init::SDL_INIT_VIDEO failed with error: '{}'!", SDL_GetError());
+			exit(EXIT_FAILURE);
+		} else{
+			LOG_INFO("SDL_Init::SDL_INIT_VIDEO succeeded");
+		}
+ 
 		//creates "at least" 2^8 shades of the chosen color 
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
@@ -57,21 +65,29 @@ namespace renderer{
 			flags |= SDL_WINDOW_RESIZABLE;
 
 		//create a SDL window
-		m_sdlWindow = SDL_CreateWindow(name.c_str(),
-									   SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-									   w, h, flags
+		m_sdlWindow = SDL_CreateWindow(
+			name.c_str(),
+			SDL_WINDOWPOS_CENTERED, 
+			SDL_WINDOWPOS_CENTERED,
+			w, 
+			h, 
+			flags
 		);
 		if(m_sdlWindow == nullptr){
-			std::cout << "SDL_CreateWindow::SDL Window could not be created!\n";
+			LOG_ERROR_TRACEABLE("SDL_CreateWindow failed with error: '{}'!", SDL_GetError());
 			exit(EXIT_FAILURE);
+		} else{
+			LOG_INFO("SDL_CreateWindow succeeded");
 		}
 
-		//tells SDL to create a contex from the window
+		//tells SDL to create a context from the window
 		//now we can use openGL and the GPU to draw on the window
 		m_glContext = SDL_GL_CreateContext(m_sdlWindow);
 		if(m_glContext == nullptr){
-			std::cout << "SDL_GL_CreateContext::SDL_GL Context could not be created!\n";
+			LOG_ERROR_TRACEABLE("SDL_GL_CreateContext from window failed with error: '{}'!", SDL_GetError());
 			exit(EXIT_FAILURE);
+		} else{
+			LOG_INFO("SDL_GL_CreateContext succeeded");
 		}
 
 		//initialize glew
@@ -79,21 +95,24 @@ namespace renderer{
 		//searches operating system for every OpenGL function that is supported :-??
 		GLenum status = glewInit();
 		if(status != GLEW_OK){
-			std::cout << "glewInit::glew init failed!";
+			LOG_ERROR_TRACEABLE("glewInit failed with error: {} '{}'!", status, glewGetErrorString(status));
 			exit(EXIT_FAILURE);
+		} else{
+			LOG_INFO("glewInit succeeded");
 		}
+
 		glEnable(GL_DEPTH_TEST);
 
 		//Check the OpenGL version
-		std::printf("OpenGL version : %s\n", glGetString(GL_VERSION));
+		LOG_INFO("OpenGL version: {}", glGetString(GL_VERSION));
 
 		//set V-Sync (0 = off | 1 = on)
 		SDL_GL_SetSwapInterval(1);
 
 		//trap and get relative coords from the mouse
 		//SDL_SetRelativeMouseMode(SDL_TRUE);
-
-		return 0;
+		
+		LOG_INFO("window creation succeeded");
 	}
 
 	void Window::swapBuffer(){

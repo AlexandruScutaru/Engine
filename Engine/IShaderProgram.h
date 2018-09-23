@@ -14,7 +14,7 @@ namespace renderer{
 		IShaderProgram();
 		virtual ~IShaderProgram();
 
-		void init(const std::string& fileName);
+		void init(const std::string& fileName, bool hasGeometry = false);
 		void use();
 		void unuse();
 

@@ -4,7 +4,7 @@
 #include "TexturedModel.h"
 
 #include <vector>
-#include <map>
+#include <unordered_map>
 
 namespace utilities{
 
@@ -19,20 +19,13 @@ namespace utilities{
 		static void Init();
 		static void ClearData();
 
-		enum CollisionShapes{
-			SHAPE_CUBE = 0,
-			SHAPE_SPHERE,
-			SHAPE_CILINDER,
-			SHAPE_CONE,
-			SHAPE_CAPSULE
-		};
-
 	private:
 		ResourceManager(){}
 
-		static std::map<std::string, renderer::TextureData> m_texturesMap;
-		static std::map<std::string, renderer::MeshData> m_meshesMap;
-		static std::map<std::string, renderer::TexturedModel> m_modelsMap;
+		static std::unordered_map<std::string, renderer::TextureData> m_texturesMap;
+		static std::unordered_map<std::string, renderer::MeshData> m_meshesMap;
+		static std::unordered_map<std::string, renderer::TexturedModel> m_modelsMap;
+
 	};
 
 }

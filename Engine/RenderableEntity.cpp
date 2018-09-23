@@ -1,5 +1,4 @@
 #include "RenderableEntity.h"
-#include <climits>
 
 
 namespace renderer{

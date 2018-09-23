@@ -13,10 +13,8 @@ namespace utilities{
 	InputManager::~InputManager(){}
 
 
-	//saves the previous states of the keys
 	void InputManager::update(){
 		for(auto& it : m_keyMap){
-			//_previousKeyMap[it.first] = _keyMap[it.second];
 			m_previousKeyMap[it.first] = it.second;
 		}
 		m_relMouseCoords = glm::vec2(0.0f);
@@ -24,7 +22,6 @@ namespace utilities{
 	}
 
 	void InputManager::pressKey(unsigned int keyID){
-		// if keyID doesn't already exist in _keyMap, it will be added
 		m_keyMap[keyID] = true;
 	}
 
@@ -33,16 +30,11 @@ namespace utilities{
 	}
 
 	bool InputManager::isKeyDown(unsigned int keyID){
-		// We dont want to use the associative array approach here
-		// because we don't want to create a key if it doesnt exist.
-		// So we do it manually
 		auto it = m_keyMap.find(keyID);
 		if(it != m_keyMap.end()){
 			return it->second;
-		} else {
-			// Didn't find the key
-			return false;
 		}
+		return false;
 	}
 
 	bool InputManager::isKeyPressed(unsigned int keyID){
@@ -82,10 +74,8 @@ namespace utilities{
 		auto it = m_previousKeyMap.find(keyID);
 		if(it != m_previousKeyMap.end()){
 			return it->second;
-		} else {
-			// Didn't find the key
-			return false;
 		}
+		return false;
 	}
 
 }

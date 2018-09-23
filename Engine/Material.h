@@ -24,6 +24,7 @@ namespace renderer{
 		TextureData* m_diffuse;
 		TextureData* m_specular;
 		float		 m_shininess;
+
 	};
 
 }

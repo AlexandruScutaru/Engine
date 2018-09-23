@@ -1,4 +1,5 @@
 #include "TextureLoader.h"
+#include "Logger.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image/stb_image.h>
@@ -24,7 +25,7 @@ namespace utilities{
 		unsigned char* imageData = stbi_load(fileName.c_str(), &data.w, &data.h, &numComponents, 4);
 
 		if(imageData == nullptr){
-			std::cout << "stbi_load::Failed loading texture: " << fileName << std::endl;
+			LOG_ERROR_TRACEABLE("stbi_load:: failed loading texture '{}'", fileName);
 			exit(EXIT_FAILURE);
 		}
 
@@ -94,7 +95,7 @@ namespace utilities{
 
 			unsigned char* imageData = stbi_load(fileNames[i].c_str(), &width, &height, &numComponents, 4);
 			if(imageData == nullptr){
-				std::cout << "stbi_load::Failed loading texture: " << fileNames[i] << std::endl;
+				LOG_ERROR_TRACEABLE("stbi_load:: failed loading texture '{}'", fileNames[i]);
 				exit(EXIT_FAILURE);
 			}
 

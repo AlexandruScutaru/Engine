@@ -4,6 +4,7 @@
 #include <GLM/glm.hpp>
 
 namespace renderer{
+
 	class TexturedModel;
 
 	class Renderer{

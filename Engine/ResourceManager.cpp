@@ -1,17 +1,19 @@
 #include "ResourceManager.h"
 #include "TextureLoader.h"
 #include "ModelLoader.h"
+#include "CollisionBody.h"
 
 #include <fstream>
 
 #include <JSON/json.hpp>
 using json = nlohmann::json;
+using namespace renderer;
 
 namespace utilities{
 
-	std::map<std::string, renderer::TextureData> ResourceManager::m_texturesMap;
-	std::map<std::string, renderer::MeshData> ResourceManager::m_meshesMap;
-	std::map<std::string, renderer::TexturedModel> ResourceManager::m_modelsMap;
+	std::unordered_map<std::string, renderer::TextureData> ResourceManager::m_texturesMap;
+	std::unordered_map<std::string, renderer::MeshData> ResourceManager::m_meshesMap;
+	std::unordered_map<std::string, renderer::TexturedModel> ResourceManager::m_modelsMap;
 
 
 	renderer::MeshData* ResourceManager::getMesh(const std::string& path){
@@ -58,15 +60,8 @@ namespace utilities{
 			in.close();
 
 			renderer::Material mat(getTexture("res/textures/" + obj["diff"].get<std::string>()),
-						 getTexture("res/textures/" + obj["spec"].get<std::string>()));
+						           getTexture("res/textures/" + obj["spec"].get<std::string>()));
 			renderer::MeshData* mesh = getMesh("res/models/" + obj["mesh"].get<std::string>());
-			//std::vector<float> vec;
-			//vec = obj["boxPos"].get<std::vector<float>>();
-			//glm::vec3 pos = glm::vec3(vec[0], vec[1], vec[2]);
-			//vec = obj["boxRot"].get<std::vector<float>>();
-			//glm::vec3 rot = glm::vec3(vec[0], vec[1], vec[2]); 
-			//vec = obj["boxScale"].get<std::vector<float>>();
-			//glm::vec3 scale = glm::vec3(vec[0], vec[1], vec[2]);
 			bool billboard = obj["billboard"].get<bool>();
 
 			renderer::TexturedModel model = renderer::TexturedModel(mesh, mat, billboard);
@@ -97,9 +92,7 @@ namespace utilities{
 			glDeleteTextures(1, &(textureData.second.id));
 		}
 		m_texturesMap.clear();
-
 		m_modelsMap.clear();
-
 	}
 
 	char* ResourceManager::IndexToShape(int index){

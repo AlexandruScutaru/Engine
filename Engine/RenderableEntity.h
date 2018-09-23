@@ -1,14 +1,12 @@
 #ifndef RENDERABLEENTITY_H
 #define RENDERABLEENTITY_H
 
-#include <string>
-#include <vector>
-
 #include <GLM/glm.hpp>
-#include "TexturedModel.h"
 
 
 namespace renderer{
+
+	class TexturedModel;
 
 	class RenderableEntity{
 	public:
@@ -20,7 +18,6 @@ namespace renderer{
 
 		void setTexturedModel(TexturedModel* model){ m_model = model; }
 		TexturedModel* getTexturedModel(){ return m_model; }
-
 
 	protected:
 		TexturedModel* m_model;

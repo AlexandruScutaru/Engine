@@ -4,6 +4,7 @@
 #include "CollisionBody.h"
 #include <vector>
 
+
 namespace renderer{
 
 	class CollidableEntity{
@@ -20,6 +21,7 @@ namespace renderer{
 		std::vector<renderer::CollisionBody> m_colBodies;
 
 	};
+
 }
 
 #endif // !COLLIDABLE_ENTITY_h

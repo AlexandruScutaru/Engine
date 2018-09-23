@@ -23,7 +23,7 @@ namespace renderer{
 		Window();
 		~Window();
 
-		int create(const std::string& name, int w, int h, unsigned int currentFlags = 0);
+		void create(const std::string& name, int w, int h, unsigned int currentFlags = 0);
 		void swapBuffer();
 
 		static void setW(int w) { m_width = w; }

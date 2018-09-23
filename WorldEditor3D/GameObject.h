@@ -3,6 +3,8 @@
 
 #include <Engine/RenderableEntity.h>
 #include <Engine/CollidableEntity.h>
+#include <Engine/TexturedModel.h>
+
 #include "Actor.h"
 
 
