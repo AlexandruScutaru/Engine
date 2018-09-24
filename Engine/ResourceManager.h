@@ -14,7 +14,7 @@ namespace utilities{
 		static renderer::TextureData* getTexture(const std::string& path);
 		static renderer::TexturedModel* loadModel(const std::string& file);
 		static renderer::TexturedModel* loadModel(int shape);
-		static char* IndexToShape(int index);
+		static const char* IndexToShape(int index);
 
 		static void Init();
 		static void ClearData();

@@ -43,7 +43,7 @@ void MainApp::run(){
 
 void MainApp::initSystems(){
 	m_window.create(WINDOW_TITLE, SCREEN_WIDTH, SCREEN_HEIGHT, renderer::WindowFlags::RESIZABLE);
-	
+	renderer::Window::setMouseTrapping(SDL_TRUE);
 	renderer::Renderer::Init();
 	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
 	utilities::ResourceManager::Init();

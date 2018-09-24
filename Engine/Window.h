@@ -28,11 +28,13 @@ namespace renderer{
 
 		static void setW(int w) { m_width = w; }
 		static void setH(int h) { m_height = h; }
+		//trap and get relative coords from the mouse
+		static void setMouseTrapping(SDL_bool value);
 
 		SDL_Window* getWindow(){ return m_sdlWindow; }
 		static int getW() { return m_width; }
 		static int getH(){ return m_height; }
-
+		
 	private:
 		static int m_width;
 		static int m_height;

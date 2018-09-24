@@ -109,8 +109,7 @@ namespace renderer{
 		//set V-Sync (0 = off | 1 = on)
 		SDL_GL_SetSwapInterval(1);
 
-		//trap and get relative coords from the mouse
-		SDL_SetRelativeMouseMode(SDL_TRUE);
+		setMouseTrapping(SDL_FALSE);
 		
 		LOG_INFO("window creation succeeded");
 	}
@@ -118,6 +117,10 @@ namespace renderer{
 	void Window::swapBuffer(){
 		//Swap our buffer and draw everything to the screen!
 		SDL_GL_SwapWindow(m_sdlWindow);
+	}
+
+	void Window::setMouseTrapping(SDL_bool value){
+		SDL_SetRelativeMouseMode(value);
 	}
 
 }
