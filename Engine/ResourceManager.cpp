@@ -95,29 +95,21 @@ namespace utilities{
 		m_modelsMap.clear();
 	}
 
-	char* ResourceManager::IndexToShape(int index){
-		char* shape;
-		switch(index){
+	
+	const char *ResourceManager::IndexToShape(int index) {
+		switch (index) {
 		case CollisionShapes::SHAPE_CUBE:
-			shape = "cube";
-			break;
+			return "cube";
 		case CollisionShapes::SHAPE_SPHERE:
-			shape = "sphere";
-			break;
+			return "sphere";
 		case CollisionShapes::SHAPE_CILINDER:
-			shape = "cilinder";
-			break;
+			return "cilinder";
 		case CollisionShapes::SHAPE_CONE:
-			shape = "cone";
-			break;
+			return "cone";
 		case CollisionShapes::SHAPE_CAPSULE:
-			shape = "capsule";
-			break;
-		default:
-			shape = "";
-			break;
+			return "capsule";
 		}
-		return shape;
+		return "";
 	}
 
 }
