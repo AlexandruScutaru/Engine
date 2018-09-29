@@ -30,6 +30,7 @@ namespace renderer{
 		static void setH(int h) { m_height = h; }
 		//trap and get relative coords from the mouse
 		static void setMouseTrapping(SDL_bool value);
+		static void setVSync(bool value);
 
 		SDL_Window* getWindow(){ return m_sdlWindow; }
 		static int getW() { return m_width; }

@@ -148,8 +148,10 @@
     <ClCompile Include="Actor.cpp" />
     <ClCompile Include="BasicColorShader.cpp" />
     <ClCompile Include="BillboardShader.cpp" />
+    <ClCompile Include="Config.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GameObjectShader.cpp" />
+    <ClCompile Include="Logger.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainApp.cpp" />
     <ClCompile Include="Player.cpp" />
@@ -159,11 +161,21 @@
     <ClInclude Include="Actor.h" />
     <ClInclude Include="BasicColorShader.h" />
     <ClInclude Include="BillboardShader.h" />
+    <ClInclude Include="Config.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GameObjectShader.h" />
+    <ClInclude Include="Logger.h" />
     <ClInclude Include="MainApp.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Utilities.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\shaders\basic.fs" />
+    <None Include="res\shaders\basic.vs" />
+    <None Include="res\shaders\billboard.fs" />
+    <None Include="res\shaders\billboard.vs" />
+    <None Include="res\shaders\entity.fs" />
+    <None Include="res\shaders\entity.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

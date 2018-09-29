@@ -1,0 +1,19 @@
+{
+	"logger":{
+		"log_file" : "logs/editor_log.txt",
+		"log_file_size" : 5242880,
+		"no_log_files" : 1,
+		"level" : "trace"
+	},
+	"window":{
+		"title" : "Map Editor",
+		"width" : 900,
+		"height" : 540,
+		"trap_mouse" : false,
+		"window_mode" : 8
+	},
+	"editor":{
+		"vsync" : true,
+		"max_fps" : 120
+	}
+}

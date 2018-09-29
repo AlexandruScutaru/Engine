@@ -19,16 +19,22 @@ public:
 
 	glm::vec3& getPosition(){ return m_pos; }
 	glm::vec3& getRotation(){ return m_rot; }
-	glm::vec3& getScale(){ return m_scale; }
+	glm::vec3& getScale(){    return m_scale; }
+
 	int getCode(){ return m_code; }
 
+
+	glm::vec3 m_currPos;
+	glm::vec3 m_currRot;
+	glm::vec3 m_currScale;
+
 protected:
-	int m_code;
 	glm::vec3 m_pos;
 	glm::vec3 m_rot;
 	glm::vec3 m_scale;
-
+	int m_code;
 	static int objectCount;
+
 };
 
 #endif // !ACTOR_H

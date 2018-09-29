@@ -36,6 +36,10 @@ public:
 	void backup();
 	void restore();
 
+	glm::vec3 m_currPos;
+	glm::vec3 m_currRot;
+	glm::vec3 m_currScale;
+
 private:
 	void updateCamera();
 

@@ -42,6 +42,12 @@
     <ClCompile Include="Utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Config.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Logger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor.h">
@@ -68,5 +74,31 @@
     <ClInclude Include="Utilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Logger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\shaders\basic.fs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\shaders\basic.vs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\shaders\billboard.fs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\shaders\billboard.vs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\shaders\entity.fs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\shaders\entity.vs">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

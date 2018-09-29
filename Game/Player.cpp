@@ -14,6 +14,9 @@ Player::Player() :
 	m_pos(glm::vec3(0.0f)),
 	m_rot(glm::vec3(0.0f, -90.0f, 0.0f)),
 	m_scale(glm::vec3(1.0f)),
+	m_currPos(glm::vec3(0.0f)),
+	m_currRot(glm::vec3(0.0f, -90.0f, 0.0f)),
+	m_currScale(glm::vec3(1.0f)),
 	movementSpeed(3.5f)
 {
 	backup();
@@ -27,6 +30,9 @@ Player::Player(glm::vec3 & pos, glm::vec3 & rot, glm::vec3 & scale):
 	m_pos(pos),
 	m_rot(rot),
 	m_scale(scale),
+	m_currPos(pos),
+	m_currRot(rot),
+	m_currScale(scale),
 	movementSpeed(3.5f)
 {
 	backup();
@@ -44,26 +50,26 @@ void Player::update(utilities::InputManager& inputManager, float deltaTime){
 	float cameraSpeed = movementSpeed * deltaTime;
 
 	if(inputManager.isKeyDown(SDLK_w))
-		m_pos += cameraSpeed * m_camera->getFront();
+		m_currPos += cameraSpeed * m_camera->getFront();
 	else if(inputManager.isKeyDown(SDLK_s))
-		m_pos -= cameraSpeed * m_camera->getFront();
+		m_currPos -= cameraSpeed * m_camera->getFront();
 
 	if(inputManager.isKeyDown(SDLK_a))
-		m_pos -= glm::normalize(glm::cross(m_camera->getFront(), m_camera->getUp())) * cameraSpeed;
+		m_currPos -= glm::normalize(glm::cross(m_camera->getFront(), m_camera->getUp())) * cameraSpeed;
 	else if(inputManager.isKeyDown(SDLK_d))
-		m_pos += glm::normalize(glm::cross(m_camera->getFront(), m_camera->getUp())) * cameraSpeed;
+		m_currPos += glm::normalize(glm::cross(m_camera->getFront(), m_camera->getUp())) * cameraSpeed;
 
 	if(inputManager.isKeyDown(SDLK_q))
-		m_pos -= cameraSpeed *  m_camera->getUp();
+		m_currPos -= cameraSpeed *  m_camera->getUp();
 	else if(inputManager.isKeyDown(SDLK_e))
-		m_pos += cameraSpeed *  m_camera->getUp();
+		m_currPos += cameraSpeed *  m_camera->getUp();
 
 	if(inputManager.isKeyPressed(SDLK_f))
 		m_flashLightOn = !m_flashLightOn;
 
 	//camera rotation
-	m_rot.x -= (inputManager.getRelMouseCoords().y * LOOK_SENSITIVITY);
-	m_rot.y += (inputManager.getRelMouseCoords().x * LOOK_SENSITIVITY);
+	m_currRot.x -= (inputManager.getRelMouseCoords().y * LOOK_SENSITIVITY);
+	m_currRot.y += (inputManager.getRelMouseCoords().x * LOOK_SENSITIVITY);
 
 	if(inputManager.getMouseWheel() == 1){
 		movementSpeed += 0.2f;
@@ -76,7 +82,10 @@ void Player::update(utilities::InputManager& inputManager, float deltaTime){
 			movementSpeed = 1.0f;
 	}
 
-	updateCamera();
+	//updateCamera();
+	m_camera->setPos(m_currPos + m_cameraOffset);
+	m_camera->setPitch(m_currRot.x);
+	m_camera->setYaw(m_currRot.y);
 	m_camera->updateCameraVectors();
 }
 

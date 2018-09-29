@@ -27,7 +27,7 @@ namespace utilities{
 			file.open(filename, std::fstream::app);
 			file.close();
 
-			rotFileLogger = spdlog::rotating_logger_st(ENGINE_FILE_LOGGER_NAME, filename, max_size, number);
+			rotFileLogger = spdlog::rotating_logger_st(EDITOR_FILE_LOGGER_NAME, filename, max_size, number);
 		} catch(const spdlog::spdlog_ex& ex){
 			std::cout << "logger init failed: " << ex.what() << std::endl;
 			exit(EXIT_FAILURE);

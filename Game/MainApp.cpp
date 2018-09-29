@@ -1,20 +1,13 @@
 #include "MainApp.h"
+#include "Config.h"
 
-//#include <dirent/dirent.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <fstream>
 #include "Utilities.h"
 #include <algorithm>
+#include <cmath>
 
-
-#define SCREEN_WIDTH 1280
-#define SCREEN_HEIGHT 720
-#define WINDOW_TITLE "Game"
-#define MAX_FPS 120
-
-///TODO:
-	//investigate object rename issue
 
 MainApp::MainApp():
 	m_appState(AppState::EDIT)
@@ -42,13 +35,14 @@ void MainApp::run(){
 }
 
 void MainApp::initSystems(){
-	m_window.create(WINDOW_TITLE, SCREEN_WIDTH, SCREEN_HEIGHT, renderer::WindowFlags::RESIZABLE);
-	renderer::Window::setMouseTrapping(SDL_TRUE);
+	m_window.create(CONFIG.window_cfg.title, CONFIG.window_cfg.width, CONFIG.window_cfg.height, CONFIG.window_cfg.window_mode);
+	renderer::Window::setMouseTrapping(CONFIG.window_cfg.trap_mouse ? SDL_TRUE : SDL_FALSE);
+	renderer::Window::setVSync(CONFIG.vsync);
+	m_fpsLimiter.setMaxFPS(CONFIG.max_graphics_fps);
+
 	renderer::Renderer::Init();
 	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
 	utilities::ResourceManager::Init();
-
-	m_fpsLimiter.setMaxFPS(MAX_FPS);
 }
 
 void MainApp::initLevel(){
@@ -57,19 +51,66 @@ void MainApp::initLevel(){
 	m_billboardShader.initShader("res/shaders/billboard");
 
 	openMap("res/maps/map");
+	crate = new GameObject(utilities::ResourceManager::loadModel("crate"));
+	crate->setPosition(glm::vec3(0.0f, 6.0f, 0.0f));
+	crate->m_currPos = glm::vec3(0.0f, 6.0f, 0.0f);
+	crate->setRotation(glm::vec3(0.0f));
+	crate->setScale(glm::vec3(1.0f));
+	crate->setIsStatic(false);
+	m_objectsInScene.push_back(crate);
+	m_gameObjectsMap[crate->getCode()] = crate;
 }
 
 void MainApp::loop(){
-	while(m_appState == AppState::EDIT){
-		float deltaTime = m_fpsLimiter.begin();
-		processInput();
-		
-		update(deltaTime);
+	const float PHYSICS_STEP = 1.0f / (float)CONFIG.max_physics_fps;
+	float accumulator = 0.0f;
+	float interpolation = 0.0f;
+	
+	float crateSpeed = 0.5f;
+	glm::vec3 cratePrevState = crate->m_currPos = crate->getPosition();
+	
+	Uint32 physicsSteps = 0;
+	Uint32 fps = 0;
+	utilities::Timer fpsTimer;
+	fpsTimer.start();
 
-		drawGame();
-		
-		//sdl: swap buffers
+	float currentTime = SDL_GetTicks() / 1000.0f;
+	while(m_appState == AppState::EDIT){
+		m_fpsLimiter.begin();
+
+		float newTime = SDL_GetTicks() / 1000.0f;
+		float frameTime = newTime - currentTime;
+		if(frameTime > 0.25f)
+			frameTime = 0.25f;
+		currentTime = newTime;
+	
+		accumulator += frameTime;
+	
+		while(accumulator >= PHYSICS_STEP){
+			cratePrevState = crate->m_currPos;
+			processInput();
+			crate->m_currPos = glm::vec3(0.0f, PHYSICS_STEP * crateSpeed + crate->m_currPos.y, 0.0f);
+			//update physics and other gameplay here
+			update(PHYSICS_STEP);
+			accumulator -= PHYSICS_STEP;
+			physicsSteps++;
+		}
+	
+		interpolation = accumulator / PHYSICS_STEP;
+		crate->setPosition(crate->m_currPos * interpolation + cratePrevState * (1.0f - interpolation));
+		//render game using the interpolation
+		drawGame(interpolation);
 		m_window.swapBuffer();
+	
+		//fps calculation
+		fps++;
+		if(fpsTimer.getTicks() >= 1000){
+			std::cout << "Fps: " << fps << " | Physics Steps: " << physicsSteps << std::endl;
+			fps = 0;
+			physicsSteps = 0;
+			fpsTimer.start();
+		}
+	
 		m_fpsLimiter.end();
 	}
 }
@@ -92,6 +133,8 @@ void MainApp::processInput(){
 			break;
 		case SDL_KEYDOWN:
 			m_inputManager.pressKey(e.key.keysym.sym);
+			if(e.key.keysym.sym == SDLK_ESCAPE)
+				m_appState = AppState::EXIT;
 			break;
 		case SDL_KEYUP:
 			m_inputManager.releaseKey(e.key.keysym.sym);
@@ -115,14 +158,21 @@ void MainApp::processInput(){
 
 void MainApp::update(float deltaTime){
 	m_player.update(m_inputManager, deltaTime);
+	
+	///object rotation
+	//glm::mat4 rotationMat(1);
+	//rotationMat = glm::rotate(rotationMat, 10.0f*deltaTime, glm::vec3(0.0, 1.0, 0.0));
+	//crate->m_currPos = glm::vec3(rotationMat * glm::vec4(crate->m_currPos, 1.0));
+	//crate->m_currPos = glm::vec3(0.0f, deltaTime + crate->m_currPos.y, 0.0f);
 
 	static_cast<renderer::SpotLight*>(m_lights[1])->position = m_player.getCamera()->getPos();
 	static_cast<renderer::SpotLight*>(m_lights[1])->direction = m_player.getCamera()->getFront();
 
-	updateToDrawVector();
 }
 
-void MainApp::drawGame(){
+void MainApp::drawGame(float interpolation){
+	updateToDrawVector();
+
 	glViewport(0, 0, renderer::Window::getW(), renderer::Window::getH());
 	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

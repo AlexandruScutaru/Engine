@@ -67,7 +67,7 @@ namespace renderer{
 		//create a SDL window
 		m_sdlWindow = SDL_CreateWindow(
 			name.c_str(),
-			SDL_WINDOWPOS_CENTERED, 
+			SDL_WINDOWPOS_CENTERED,
 			SDL_WINDOWPOS_CENTERED,
 			w, 
 			h, 
@@ -106,9 +106,7 @@ namespace renderer{
 		//Check the OpenGL version
 		LOG_INFO("OpenGL version: {}", glGetString(GL_VERSION));
 
-		//set V-Sync (0 = off | 1 = on)
-		SDL_GL_SetSwapInterval(1);
-
+		setVSync(true);
 		setMouseTrapping(SDL_FALSE);
 		
 		LOG_INFO("window creation succeeded");
@@ -121,6 +119,11 @@ namespace renderer{
 
 	void Window::setMouseTrapping(SDL_bool value){
 		SDL_SetRelativeMouseMode(value);
+	}
+
+	void Window::setVSync(bool value){
+		//set V-Sync (0 = off | 1 = on)
+		SDL_GL_SetSwapInterval((int)value);
 	}
 
 }

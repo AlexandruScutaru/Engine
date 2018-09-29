@@ -48,7 +48,7 @@ private:
 	void loop(); //main app loop
 	void processInput(); //handles input processing
 	void update(float deltaTime); //updates based on deltatime
-	void drawGame(); //draws on screen
+	void drawGame(float interpolation); //draws on screen
 	
 	void resetData();
 	void openMap(const std::string& file);
@@ -69,7 +69,7 @@ private:
 	//this vector is to be filled with objects to draw 
 	//i hope at aleat a frustum culling will be implemented
 	std::vector<GameObject*> m_objects_ToDraw;
-
+	GameObject* crate;
 	// lighting
 	std::vector<renderer::Light*> m_lights;
 	Player m_player;

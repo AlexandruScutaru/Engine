@@ -1,17 +1,12 @@
 #include "MainApp.h"
+#include "Config.h"
+#include "Utilities.h"
 
 #include <dirent/dirent.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <fstream>
-#include "Utilities.h"
 #include <algorithm>
-
-
-#define SCREEN_WIDTH 1280
-#define SCREEN_HEIGHT 720
-#define WINDOW_TITLE "Map Editor"
-#define MAX_FPS 120
 
 ///TODO:
 	//investigate object rename issue
@@ -50,7 +45,10 @@ void MainApp::run(){
 }
 
 void MainApp::initSystems(){
-	m_window.create(WINDOW_TITLE, SCREEN_WIDTH, SCREEN_HEIGHT, renderer::WindowFlags::RESIZABLE);
+	m_window.create(CONFIG.window_cfg.title, CONFIG.window_cfg.width, CONFIG.window_cfg.height, CONFIG.window_cfg.window_mode);
+	renderer::Window::setMouseTrapping(CONFIG.window_cfg.trap_mouse ? SDL_TRUE : SDL_FALSE);
+	renderer::Window::setVSync(CONFIG.vsync);
+	m_fpsLimiter.setMaxFPS(CONFIG.max_fps);
 	
 	//Setup ImGui
 	ImGui_ImplSdlGL3_Init(m_window.getWindow());
@@ -59,8 +57,6 @@ void MainApp::initSystems(){
 	renderer::Renderer::Init();
 	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
 	utilities::ResourceManager::Init();
-
-	m_fpsLimiter.setMaxFPS(MAX_FPS);
 }
 
 void MainApp::initLevel(){
