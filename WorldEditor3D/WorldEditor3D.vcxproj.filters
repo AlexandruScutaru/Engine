@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Resource Files\shaders">
+      <UniqueIdentifier>{ec080ae7-898c-48c6-a410-6a9b4e0a0afc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\configs">
+      <UniqueIdentifier>{172fd3fc-b976-4f20-83d4-561d11541df6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -106,29 +112,35 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\entity.fs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="shaders\entity.vs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="shaders\billboard.fs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="shaders\billboard.vs">
-      <Filter>Resource Files</Filter>
+    <None Include="shaders\selection.vs">
+      <Filter>Resource Files\shaders</Filter>
     </None>
     <None Include="shaders\basic.fs">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\shaders</Filter>
     </None>
     <None Include="shaders\basic.vs">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="shaders\billboard.fs">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="shaders\billboard.vs">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="shaders\entity.fs">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="shaders\entity.vs">
+      <Filter>Resource Files\shaders</Filter>
     </None>
     <None Include="shaders\selection.fs">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\shaders</Filter>
     </None>
-    <None Include="shaders\selection.vs">
-      <Filter>Resource Files</Filter>
+    <None Include="config_editor.json">
+      <Filter>Resource Files\configs</Filter>
+    </None>
+    <None Include="config_engine.json">
+      <Filter>Resource Files\configs</Filter>
     </None>
   </ItemGroup>
 </Project>

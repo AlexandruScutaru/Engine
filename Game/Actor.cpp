@@ -5,14 +5,14 @@ int Actor::objectCount = 0;
 
 Actor::Actor() :
 	m_pos(glm::vec3(0.0f)),
-	m_rot(glm::vec3(0.0f)),
+	m_rot(glm::quat()),
 	m_scale(glm::vec3(1.0f)) 
 {
 	objectCount++;
 	m_code = objectCount;
 }
 
-Actor::Actor(glm::vec3 & pos, glm::vec3 & rot, glm::vec3 & scale) :
+Actor::Actor(glm::vec3 & pos, glm::quat & rot, glm::vec3 & scale) :
 	m_pos(pos),
 	m_rot(rot),
 	m_scale(scale)

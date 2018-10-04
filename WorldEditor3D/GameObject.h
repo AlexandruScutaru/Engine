@@ -4,6 +4,7 @@
 #include <Engine/RenderableEntity.h>
 #include <Engine/CollidableEntity.h>
 #include <Engine/TexturedModel.h>
+#include <Engine/PhysicsBody.h>
 
 #include "Actor.h"
 
@@ -28,12 +29,12 @@ public:
 	void setMeshName(const std::string& mesh){ m_meshName = mesh; }
 	void setIsBillboard(bool isBillboard){ m_model->setBillboard(isBillboard); }
 	
-	void setIsStatic(bool isStatic){ m_isStatic = isStatic; }
+	void setBodyType(physics::BodyType type){ m_bodyType = type; }
 	void setName(const std::string& name){ m_name = name; }
 	void setInEditorName(const std::string& inEditorName){ m_inEditorName = inEditorName; }
 	void setSelected(bool selected){ m_selected = selected; }
 
-	bool isStatic(){ return m_isStatic; }
+	physics::BodyType getBodyType(){ return m_bodyType; }
 	bool isSelected(){ return m_selected; }
 	bool isBillboard(){ return m_model->isBillboard(); }
 	bool& isBillboardRef(){ return m_model->isBillboardRef(); }
@@ -43,6 +44,15 @@ public:
 	const std::string& getSpecName(){ return m_specName; }
 	const std::string& getMeshName(){ return m_meshName; }
 
+	physics::BodyType m_bodyType;
+	bool m_gravityEnabled;
+	bool m_allowedToSleep;
+	float m_bounciness;
+	float m_frictionCoefficient;
+	float m_rollingResistance;
+	float m_linearDamping;
+	float m_angularDamping;
+
 private:
 	std::string m_name;
 	std::string m_inEditorName;
@@ -50,7 +60,6 @@ private:
 	std::string m_specName;
 	std::string m_meshName;
 
-	bool m_isStatic;
 	bool m_selected;
 
 };

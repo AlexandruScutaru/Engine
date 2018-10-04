@@ -20,11 +20,14 @@ namespace renderer{
 			colRot = glm::vec3(0.0f);
 			colScale = glm::vec3(1.0f);
 			shape = 0;
+			mass = 1.0f;
 		}
 		int shape;
 		glm::vec3 colRelativePos;
 		glm::vec3 colRot;
 		glm::vec3 colScale;
+		float mass;
+
 	};
 
 }

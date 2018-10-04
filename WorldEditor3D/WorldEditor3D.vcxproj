@@ -181,6 +181,8 @@
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="config_editor.json" />
+    <None Include="config_engine.json" />
     <None Include="shaders\basic.fs" />
     <None Include="shaders\basic.vs" />
     <None Include="shaders\entity.fs" />

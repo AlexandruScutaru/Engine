@@ -11,6 +11,7 @@
 #include <Engine/Timing.h>
 #include <Engine/InputManager.h>
 #include <Engine/ResourceManager.h>
+#include <Engine/PhysicsWorld.h>
 
 #include "GameObjectShader.h"
 #include "BasicColorShader.h"
@@ -21,7 +22,6 @@
 #include <GLM/glm.hpp>
 
 #include <vector>
-#include <map>
 
 #include <JSON/json.hpp>
 using json = nlohmann::json;
@@ -51,8 +51,6 @@ private:
 	void drawGame(float interpolation); //draws on screen
 	
 	void resetData();
-	void openMap(const std::string& file);
-	void saveMap(const std::string& file);
 
 	void updateToDrawVector();
 	void drawGameObjects();
@@ -60,23 +58,20 @@ private:
 	renderer::Window m_window; //the app window
 	utilities::InputManager m_inputManager;
 	utilities::FpsLimiter m_fpsLimiter;
-	
-	AppState m_appState;
 
-	//mapping all objects by a specific code to pixel select them in the editor
-	std::map<unsigned int, GameObject*> m_gameObjectsMap;
 	std::vector<GameObject*> m_objectsInScene;
-	//this vector is to be filled with objects to draw 
-	//i hope at aleat a frustum culling will be implemented
 	std::vector<GameObject*> m_objects_ToDraw;
-	GameObject* crate;
-	// lighting
 	std::vector<renderer::Light*> m_lights;
+	//GameObject* crate;
+	
 	Player m_player;
+	AppState m_appState;
 
 	GameObjectShader m_gameObjectsShader;
 	BasicColorShader m_basicColorShader;
 	BillboardShader  m_billboardShader;
+
+	physics::PhysicsWorld m_dynamicWorld;
 
 };
 

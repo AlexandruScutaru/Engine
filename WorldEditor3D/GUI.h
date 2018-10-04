@@ -63,10 +63,13 @@ public:
 	int placedGameobjectEntryItem;
 	int placedLightEntryItem;
 	int collisionBodyEntryItem;
+
 	FD_Mode fdMode;
 	std::string currentPath;
 	std::vector<std::string> dirContents;
 	std::vector<int> collisionBodies;
+
+	friend class MainApp;
 
 private:
 	float m_moveInc;

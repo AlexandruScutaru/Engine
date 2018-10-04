@@ -246,7 +246,7 @@ void MainApp::openMap(const std::string& file){
 		json obj = it.value();
 		std::string obj_name = obj["name"].get<std::string>();
 		std::string obj_inEditorName = obj["inEditorName"].get<std::string>();
-
+		physics::BodyType type = static_cast<physics::BodyType>(obj["bodyType"].get<int>());
 		std::vector<float> p = obj["pos"].get<std::vector<float>>();
 		glm::vec3 pos = glm::vec3(p[0], p[1], p[2]);
 		std::vector<float> r = obj["rot"].get<std::vector<float>>();
@@ -254,15 +254,13 @@ void MainApp::openMap(const std::string& file){
 		std::vector<float> s = obj["scale"].get<std::vector<float>>();
 		glm::vec3 scale = glm::vec3(s[0], s[1], s[2]);
 
-		bool isStatic = obj["static"].get<bool>();
-
 		object = new GameObject(utilities::ResourceManager::loadModel(obj_name));
 		object->setName(obj_name);
 		object->setInEditorName(obj_inEditorName);
 		object->setPosition(pos);
 		object->setRotation(rot);
 		object->setScale(scale);
-		object->setIsStatic(isStatic);
+		object->m_bodyType = type;
 
 		m_objectsInScene.push_back(object);
 		m_gameObjectsMap[object->getCode()] = object;
@@ -345,7 +343,7 @@ void MainApp::saveMap(const std::string& file){
 			{"pos", {obj->getPosition().x, obj->getPosition().y, obj->getPosition().z}},
 			{"rot", {obj->getRotation().x, obj->getRotation().y, obj->getRotation().z}},
 			{"scale", {obj->getScale().x, obj->getScale().y, obj->getScale().z}},
-			{"static", obj->isStatic()}
+			{"bodyType", (int)obj->m_bodyType},
 		};
 		map["gameobjects"].push_back(entry);
 	}
@@ -389,14 +387,22 @@ void MainApp::saveCreatedObject(char* buf){
 		{"diff", m_creationTabGameObject.getDiffName()},
 		{"spec", m_creationTabGameObject.getSpecName()},
 		{"mesh", m_creationTabGameObject.getMeshName()},
-		{"billboard", m_creationTabGameObject.isBillboard()}
+		{"billboard", m_creationTabGameObject.isBillboard()},
+		{"gravity", m_creationTabGameObject.m_gravityEnabled},
+		{"sleep", m_creationTabGameObject.m_allowedToSleep},
+		{"bounciness", m_creationTabGameObject.m_bounciness},
+		{"friction", m_creationTabGameObject.m_frictionCoefficient},
+		{"rollingResist", m_creationTabGameObject.m_rollingResistance},
+		{"linearDamp", m_creationTabGameObject.m_linearDamping},
+		{"angularDamp", m_creationTabGameObject.m_angularDamping}
 	};
 	for(renderer::CollisionBody body : m_creationTabGameObject.getColBodies()){
 		json col = {
 			{"shape", body.shape},
 			{"pos", {body.colRelativePos.x, body.colRelativePos.y, body.colRelativePos.z}},
 			{"rot", {body.colRot.x, body.colRot.y, body.colRot.z}},
-			{"scale", {body.colScale.x, body.colScale.y, body.colScale.z}}
+			{"scale", {body.colScale.x, body.colScale.y, body.colScale.z}},
+			{"mass", body.mass}
 		};
 		entry["collision"].push_back(col);
 	}
@@ -412,15 +418,28 @@ void MainApp::openCreatedObject(const std::string& object){
 	std::ifstream in(path);
 	json obj;
 	in >> obj;
+	in.close();
 
+	m_creationTabGameObject.clearColBodies();
+	m_gui.collisionBodies.clear();
+	m_gui.collisionBodyEntryItem = -1;
 	m_creationTabGameObject.setDiffName(obj["diff"].get<std::string>());
 	m_creationTabGameObject.setSpecName(obj["spec"].get<std::string>());
 	m_creationTabGameObject.setMeshName(obj["mesh"].get<std::string>());
 	m_creationTabGameObject.setIsBillboard(obj["billboard"].get<bool>());
+	m_creationTabGameObject.m_gravityEnabled = obj["gravity"].get<bool>();
+	m_creationTabGameObject.m_allowedToSleep = obj["sleep"].get<bool>();
+	m_creationTabGameObject.m_bounciness = obj["bounciness"].get<float>();
+	m_creationTabGameObject.m_frictionCoefficient = obj["friction"].get<float>();
+	m_creationTabGameObject.m_rollingResistance = obj["rollingResist"].get<float>();
+	m_creationTabGameObject.m_linearDamping = obj["linearDamp"].get<float>();
+	m_creationTabGameObject.m_angularDamping = obj["angularDamp"].get<float>();
+
 	for(auto it = obj["collision"].begin(); it != obj["collision"].end(); it++){
 		json col = it.value();
 		renderer::CollisionBody body;
 		body.shape = col["shape"].get<int>();
+		body.mass = col["mass"].get<float>();
 		std::vector<float> p = col["pos"].get<std::vector<float>>();
 		glm::vec3 pos = glm::vec3(p[0], p[1], p[2]);
 		std::vector<float> r = col["rot"].get<std::vector<float>>();
@@ -433,7 +452,6 @@ void MainApp::openCreatedObject(const std::string& object){
 		m_creationTabGameObject.addColBody(body);
 		m_gui.collisionBodies.push_back(body.shape);
 	}
-	in.close();
 
 	m_creationTabGameObject.getTexturedModel()->setMesh(utilities::ResourceManager::getMesh("res/models/" + m_creationTabGameObject.getMeshName()));
 	m_creationTabGameObject.getTexturedModel()->getMaterial().setDiffuseMap( utilities::ResourceManager::getTexture("res/textures/" + m_creationTabGameObject.getDiffName()));

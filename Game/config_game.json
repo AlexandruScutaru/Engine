@@ -7,8 +7,8 @@
 	},
 	"window":{
 		"title" : "game",
-		"width" : 900,
-		"height" : 540,
+		"width" : 1280,
+		"height" : 720,
 		"trap_mouse" : true,
 		"window_mode" : 0
 	},

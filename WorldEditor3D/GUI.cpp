@@ -5,6 +5,7 @@
 #include <cfloat>
 #include "Utilities.h"
 #include <Engine/CollisionBody.h>
+//#include <Engine/PhysicsBody.h>
 
 bool VectorOfStringGetter(void* data, int n, const char** out_text);
 bool VectorOfObjectsGetter(void* data, int n, const char** out_text);
@@ -265,7 +266,7 @@ void GUI::showCreationTab(){
 	ImGui::BeginChild("creation", ImVec2(-1.0f, -1.0f), true/*, ImGuiWindowFlags_NoScrollWithMouse*/);
 	{
 		ImGui::PushItemWidth(-1);
-		ImGui::Text("Object info");
+		ImGui::Text("Visual info");
 		static float radius;
 		if(ImGui::Button("Set diff")){
 			b_showOpenFileDialog = true;
@@ -291,12 +292,22 @@ void GUI::showCreationTab(){
 		}
 		ImGui::SameLine();
 		ImGui::Text(app->m_creationTabGameObject.getMeshName().c_str());
-		
-		ImGui::Separator();
-		ImGui::Text("\nObject type");
+
 		ImGui::Checkbox("Billboard", &(app->m_creationTabGameObject.isBillboardRef()));
 		
 		ImGui::Separator();
+		ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.45f);
+		ImGui::Text("\nPhysics info");
+		ImGui::Checkbox  ("Affected by gravity", &app->m_creationTabGameObject.m_gravityEnabled);
+		ImGui::Checkbox  ("Allowed to sleep", &app->m_creationTabGameObject.m_allowedToSleep);
+		ImGui::InputFloat("Bounciness", &app->m_creationTabGameObject.m_bounciness, 0.0f, 0.0f, 3);
+		ImGui::InputFloat("Friction Coefficient", &app->m_creationTabGameObject.m_frictionCoefficient, 0.0f, 0.0f, 3);
+		ImGui::InputFloat("Rolliing Resistance", &app->m_creationTabGameObject.m_rollingResistance, 0.0f, 0.0f, 3);
+		ImGui::InputFloat("Linear Damping", &app->m_creationTabGameObject.m_linearDamping, 0.0f, 0.0f, 3);
+		ImGui::InputFloat("Angular Damping", &app->m_creationTabGameObject.m_angularDamping, 0.0f, 0.0f, 3);
+
+		ImGui::Separator();
+		ImGui::PopItemWidth();
 		ImGui::Text("\nObject collision");
 		
 		ImGui::ListBox("##collisionBodiesListBox", &collisionBodyEntryItem, VectorOfShapesGetter, (void*)(&collisionBodies), (int)(collisionBodies.size()), 5);
@@ -319,8 +330,9 @@ void GUI::showCreationTab(){
 
 		if(collisionBodyEntryItem != -1){
 			renderer::CollisionBody& body = app->m_creationTabGameObject.getColBodies()[collisionBodyEntryItem];
-			ImGui::BeginChild("colls", ImVec2(-1, 65), false);
+			ImGui::BeginChild("colls", ImVec2(-1, 110), false);
 			{
+				ImGui::Text("Transforms");
 				ImGui::PushItemWidth(70);
 				ImGui::Text("P:");
 				ImGui::SameLine();
@@ -346,12 +358,27 @@ void GUI::showCreationTab(){
 				
 				ImGui::Text("S:");
 				ImGui::SameLine();
-				ImGui::DragFloat("##dragScaleX", &body.colScale.x, 0.01f, 0.01f, 100.0f);
-				ImGui::SameLine();						  
-				ImGui::DragFloat("##dragScaleY", &body.colScale.y, 0.01f, 0.01f, 100.0f);
-				ImGui::SameLine();						  
-				ImGui::DragFloat("##dragScaleZ", &body.colScale.z, 0.01f, 0.01f, 100.0f);
-				
+				if(body.shape == renderer::SHAPE_SPHERE){
+					ImGui::DragFloat("##dragScaleX", &body.colScale.x, 0.01f, 0.01f, 100.0f);
+					ImGui::SameLine();
+					ImGui::DragFloat("##dragScaleX", &body.colScale.y, 0.01f, 0.01f, 100.0f);
+					ImGui::SameLine();
+					ImGui::DragFloat("##dragScaleX", &body.colScale.z, 0.01f, 0.01f, 100.0f);
+				} else if(body.shape == renderer::SHAPE_CAPSULE){
+					ImGui::DragFloat("##dragScaleX", &body.colScale.x, 0.01f, 0.01f, 100.0f);
+					ImGui::SameLine();
+					ImGui::DragFloat("##dragScaleY", &body.colScale.y, 0.01f, 0.01f, 100.0f);
+					ImGui::SameLine();
+					ImGui::DragFloat("##dragScaleX", &body.colScale.z, 0.01f, 0.01f, 100.0f);
+				} else{
+					ImGui::DragFloat("##dragScaleX", &body.colScale.x, 0.01f, 0.01f, 100.0f);
+					ImGui::SameLine();
+					ImGui::DragFloat("##dragScaleY", &body.colScale.y, 0.01f, 0.01f, 100.0f);
+					ImGui::SameLine();
+					ImGui::DragFloat("##dragScaleZ", &body.colScale.z, 0.01f, 0.01f, 100.0f);
+				}
+				ImGui::Text("Mass:"); ImGui::SameLine();
+				ImGui::InputFloat("##mass", &body.mass, 0.0f, 0.0f, 3);
 				ImGui::PopItemWidth();
 			}
 			ImGui::EndChild();
@@ -546,6 +573,12 @@ void GUI::showGameobjectsTab(){
 		ImGui::InputText("##gameobjectName", m_name, OBJECT_NAME_SIZE);
 		app->m_objectsInScene[placedGameobjectEntryItem]->setInEditorName(m_name);
 		
+		ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5f);
+		int bodyTypeIndex = (int)app->m_objectsInScene[placedGameobjectEntryItem]->getBodyType();
+		ImGui::Combo("Body type", &bodyTypeIndex, "Static\0Kinematic\0Dynamic\0\0");
+		app->m_objectsInScene[placedGameobjectEntryItem]->setBodyType(static_cast<physics::BodyType>(bodyTypeIndex));
+		ImGui::PopItemWidth();
+
 		ImGui::Separator();
 		ImGui::Text("Transforms");
 		GameObject* obj = app->m_objectsInScene[placedGameobjectEntryItem];

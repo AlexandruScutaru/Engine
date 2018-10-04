@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Resource Files\shaders">
+      <UniqueIdentifier>{d1c0f64d-6d22-45cb-ab83-6c8c7389796c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\configs">
+      <UniqueIdentifier>{a46329bc-1019-4d88-af79-af8eb44a177e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -83,22 +89,28 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\basic.fs">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\shaders</Filter>
     </None>
     <None Include="res\shaders\basic.vs">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\shaders</Filter>
     </None>
     <None Include="res\shaders\billboard.fs">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\shaders</Filter>
     </None>
     <None Include="res\shaders\billboard.vs">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\shaders</Filter>
     </None>
     <None Include="res\shaders\entity.fs">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\shaders</Filter>
     </None>
     <None Include="res\shaders\entity.vs">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="config_engine.json">
+      <Filter>Resource Files\configs</Filter>
+    </None>
+    <None Include="config_game.json">
+      <Filter>Resource Files\configs</Filter>
     </None>
   </ItemGroup>
 </Project>
