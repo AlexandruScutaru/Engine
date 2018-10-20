@@ -17,7 +17,7 @@ public:
 	);
 	GameObject(renderer::TexturedModel* model,
 			   glm::vec3& pos = glm::vec3(0.0f),
-			   glm::vec3& rot = glm::vec3(0.0f),
+			   glm::quat& rot = glm::quat(),
 			   glm::vec3& scale = glm::vec3(1.0f),
 			   bool static_obj = false
 	);

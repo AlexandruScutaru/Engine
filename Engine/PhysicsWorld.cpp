@@ -28,11 +28,11 @@ namespace physics{
 		m_world.enableSleeping(val);
 	}
 
-	std::shared_ptr<physics::PhysicsBody> PhysicsWorld::createPhysicsBody(glm::vec3& pos, glm::vec3& rot){
+	std::shared_ptr<physics::PhysicsBody> PhysicsWorld::createPhysicsBody(glm::vec3& pos, glm::quat& rot){
 		rp3d::RigidBody* rigidBody = nullptr;
 		
 		rp3d::Vector3 position(pos.x, pos.y, pos.z);
-		rp3d::Quaternion orientation(rp3d::Vector3(rot.x, rot.y, rot.z));
+		rp3d::Quaternion orientation(rot.x, rot.y, rot.z, rot.w);
 		rp3d::Transform transform(position, orientation);
 
 		rigidBody = m_world.createRigidBody(transform);

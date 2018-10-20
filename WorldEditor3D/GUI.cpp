@@ -5,7 +5,8 @@
 #include <cfloat>
 #include "Utilities.h"
 #include <Engine/CollisionBody.h>
-//#include <Engine/PhysicsBody.h>
+#include <ImGUI/imgui_internal.h>
+
 
 bool VectorOfStringGetter(void* data, int n, const char** out_text);
 bool VectorOfObjectsGetter(void* data, int n, const char** out_text);
@@ -24,6 +25,8 @@ GUI::GUI(MainApp* app) :
 	b_showOpenFileDialog(false),
 	b_showSaveFileDialog(false),
 	b_showGridWindow(false),
+	b_showEditRotWindow(false),
+	m_justShown(false),
 	placedGameobjectEntryItem(-1),
 	placedLightEntryItem(-1),
 	collisionBodyEntryItem(-1),
@@ -50,6 +53,7 @@ void GUI::updateImGuiWindows(){
 	if(b_showOpenFileDialog) showOpenFileDialog();
 	if(b_showSaveFileDialog) showSaveFileDialog();
 	if(b_showGridWindow)     showGridSettingsWindow();
+	if(b_showEditRotWindow)  showRotationEditWindow();
 }
 
 void GUI::showMainMenu(){
@@ -341,21 +345,16 @@ void GUI::showCreationTab(){
 				ImGui::DragFloat("##dragPosY", &body.colRelativePos.y, 0.01f, -100.0f, 100.0f);
 				ImGui::SameLine();
 				ImGui::DragFloat("##dragPosZ", &body.colRelativePos.z, 0.01f, -100.0f, 100.0f);
-
+				
 				ImGui::Text("R:");
 				ImGui::SameLine();
-				body.colRot.x = glm::degrees(body.colRot.x);
-				ImGui::DragFloat("##dragRotX", &body.colRot.x, 1.0f, 0.0f, 359.0f, "%.2f"); 
-				body.colRot.x = glm::radians(body.colRot.x);
+				ImGui::DragFloat("##dragRotX", &body.colRotEuler.x, 1.0f, -359.0f, 359.0f, "%.2f");
 				ImGui::SameLine();
-				body.colRot.y = glm::degrees(body.colRot.y);
-				ImGui::DragFloat("##dragRotY", &body.colRot.y, 1.0f, 0.0f, 359.0f, "%.2f"); 
-				body.colRot.y = glm::radians(body.colRot.y);
+				ImGui::DragFloat("##dragRotY", &body.colRotEuler.y, 1.0f, -359.0f, 359.0f, "%.2f");
 				ImGui::SameLine();
-				body.colRot.z = glm::degrees(body.colRot.z);
-				ImGui::DragFloat("##dragRotZ", &body.colRot.z, 1.0f, 0.0f, 359.0f, "%.2f"); 
-				body.colRot.z = glm::radians(body.colRot.z);
-				
+				ImGui::DragFloat("##dragRotZ", &body.colRotEuler.z, 1.0f, -359.0f, 359.0f, "%.2f");
+				body.updateQuaternion();
+
 				ImGui::Text("S:");
 				ImGui::SameLine();
 				if(body.shape == renderer::SHAPE_SPHERE){
@@ -595,18 +594,26 @@ void GUI::showGameobjectsTab(){
 
 			ImGui::Text("R:");
 			ImGui::SameLine();
-			obj->getRotation().x = glm::degrees(obj->getRotation().x);
-			ImGui::InputFloat("##objInputRotX", &obj->getRotation().x, 0.0f, 0.0f, 2);
-			obj->getRotation().x = glm::radians(obj->getRotation().x);
-			ImGui::SameLine();
-			obj->getRotation().y = glm::degrees(obj->getRotation().y);
-			ImGui::InputFloat("##objInputRotY", &obj->getRotation().y, 0.0f, 0.0f, 2);
-			obj->getRotation().y = glm::radians(obj->getRotation().y);
-			ImGui::SameLine();
-			obj->getRotation().z = glm::degrees(obj->getRotation().z);
-			ImGui::InputFloat("##objInputRotZ", &obj->getRotation().z, 0.0f, 0.0f, 2);
-			obj->getRotation().z = glm::radians(obj->getRotation().z);
 
+			ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+			auto rot = glm::eulerAngles(obj->getRotation());
+			rot = glm::vec3(glm::degrees(rot.x), glm::degrees(rot.y), glm::degrees(rot.z));
+			ImGui::InputFloat("##objInputRotX", &rot.x, 0.0f, 0.0f, 2);
+			ImGui::SameLine();
+			ImGui::InputFloat("##objInputRotY", &rot.y, 0.0f, 0.0f, 2);
+			ImGui::SameLine();
+			ImGui::InputFloat("##objInputRotZ", &rot.z, 0.0f, 0.0f, 2);
+			ImGui::PopItemFlag();
+			ImGui::PopStyleVar();
+
+			ImGui::SameLine();
+			if(ImGui::Button("Edit")){
+				m_rot = glm::eulerAngles(obj->getRotation());
+				b_showEditRotWindow = true;
+				m_justShown = true;
+			}
+			
 			ImGui::Text("S:");
 			ImGui::SameLine();
 			ImGui::InputFloat("##objInputScaleX", &obj->getScale().x, 0.0f, 0.0f, 2);
@@ -832,6 +839,39 @@ void GUI::showGridSettingsWindow(){
 
 	ImGui::PopItemWidth();
 	ImGui::End();
+}
+
+void GUI::showRotationEditWindow(){
+	ImGui::SetNextWindowSize(ImVec2(300, 2.5f * ImGui::GetFrameHeightWithSpacing()), ImGuiSetCond_Always);
+	ImGui::Begin("Edit Rotation", &b_showEditRotWindow,
+				 ImGuiWindowFlags_NoResize |
+				 ImGuiWindowFlags_NoCollapse
+	);
+
+	GameObject* obj = app->m_objectsInScene[placedGameobjectEntryItem];
+	static glm::vec3 rotDg = glm::vec3(glm::degrees(m_rot.x), glm::degrees(m_rot.y), glm::degrees(m_rot.z));
+	if(m_justShown){
+		rotDg = glm::vec3(glm::degrees(m_rot.x), glm::degrees(m_rot.y), glm::degrees(m_rot.z));
+		m_justShown = false;
+	}
+	ImGui::PushItemWidth(70);
+
+	ImGui::InputFloat("##objInputRotX", &rotDg.x, 0.0f, 0.0f, 2);
+	ImGui::SameLine();
+	ImGui::InputFloat("##objInputRotY", &rotDg.y, 0.0f, 0.0f, 2);
+	ImGui::SameLine();
+	ImGui::InputFloat("##objInputRotZ", &rotDg.z, 0.0f, 0.0f, 2);
+	ImGui::SameLine();
+	if(ImGui::Button("set")){
+		m_rot = glm::vec3(glm::radians(rotDg.x), glm::radians(rotDg.y), glm::radians(rotDg.z));
+		obj->setRotation(glm::quat(m_rot));
+		b_showEditRotWindow = false;
+	}
+
+	if(!ImGui::IsWindowFocused())
+		b_showEditRotWindow = false;
+	ImGui::PopItemWidth();
+	ImGui::End();	
 }
 
 

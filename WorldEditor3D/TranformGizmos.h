@@ -48,9 +48,11 @@ public:
 		
 	const std::vector<Gizmo>* getGizmos();
 	const glm::vec3& getPosition();
+	glm::quat getRot();
 	int getGizmoMode(){ return (int)m_gizmoMode; }
 	int getActivated(){ return m_currentlyActivated; }
 
+	
 private:
 	std::vector<Actor*>*  m_pSelectedVect;
 	GizmoMode m_gizmoMode;

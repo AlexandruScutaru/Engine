@@ -208,13 +208,7 @@ void MainApp::drawGameObjects(){
 		for(auto const& gameObject : batch.second){
 			glm::mat4 modelMatrix;
 			modelMatrix = glm::translate(modelMatrix, gameObject->getPosition());
-
 			modelMatrix = modelMatrix * glm::toMat4(gameObject->getRotation());
-
-			//modelMatrix = glm::rotate(modelMatrix, gameObject->getRotation().x, glm::vec3(1.0f, 0.0f, 0.0f));
-			//modelMatrix = glm::rotate(modelMatrix, gameObject->getRotation().y, glm::vec3(0.0f, 1.0f, 0.0f));
-			//modelMatrix = glm::rotate(modelMatrix, gameObject->getRotation().z, glm::vec3(0.0f, 0.0f, 1.0f));
-			
 			modelMatrix = glm::scale(modelMatrix, gameObject->getScale());
 			m_gameObjectsShader.loadModelMatrix(modelMatrix);
 			

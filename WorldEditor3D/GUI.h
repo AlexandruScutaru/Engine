@@ -51,12 +51,14 @@ public:
 	void showGameobjectsTab();
 	void showLightsTab();
 	void showGridSettingsWindow();
+	void showRotationEditWindow();
 
 	bool b_creationTab;
 	bool b_placementTab;
 	bool b_showOpenFileDialog;
 	bool b_showSaveFileDialog;
 	bool b_showGridWindow;
+	bool b_showEditRotWindow;
 
 	char m_name[OBJECT_NAME_SIZE];
 	int fdEntryItem;
@@ -72,6 +74,8 @@ public:
 	friend class MainApp;
 
 private:
+	bool m_justShown;
+	glm::vec3 m_rot;
 	float m_moveInc;
 	MainApp* app;
 

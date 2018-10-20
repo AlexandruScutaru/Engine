@@ -15,7 +15,7 @@
 	"game":{
 		"vsync" : false,
 		"max_graphics_fps" : 120,
-		"max_physics_fps" : 30,
+		"max_physics_fps" : 60,
 		"max_frame_time" : 0.25
 	}
 }

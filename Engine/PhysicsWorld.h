@@ -21,7 +21,7 @@ namespace physics{
 		void enableSleeping(bool val);
 		void update(float timeStep);
 
-		std::shared_ptr<physics::PhysicsBody> createPhysicsBody(glm::vec3& pos, glm::vec3& rot);
+		std::shared_ptr<physics::PhysicsBody> createPhysicsBody(glm::vec3& pos, glm::quat& rot);
 
 	private:
 		rp3d::DynamicsWorld m_world;

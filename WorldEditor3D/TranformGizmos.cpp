@@ -8,6 +8,7 @@
 #include <Engine/Camera.h>
 #include <math.h>
 #include "Grid.h"
+#include <GLM/gtx/quaternion.hpp>
 
 #define DEGREES_PER_SECOND 10.0f
 
@@ -56,96 +57,131 @@ void TranformGizmos::init(std::vector<Actor*>* obj){
 	m_pSelectedVect = obj;
 	m_gizmoMode = GizmoMode::TRANSLATE;
 	GameObject* object;
+	glm::quat orientation = glm::quat();
 
 	///translate
 	//x translate gizmo
 	object = new GameObject(utilities::ResourceManager::loadModel("gizmo-t1a"));
-	object->setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
+	object->setRotation(glm::quat());
+
 	m_gizmosTranslate.push_back(Gizmo(object, glm::vec3(1.0f, 0.0f, 0.0f)));
 	m_gizmoFunctionality[object->getCode()] = translateX;
 	//xy translate gizmo
 	object = new GameObject(utilities::ResourceManager::loadModel("gizmo-2a"));
-	object->setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
+	object->setRotation(glm::quat());
+
 	m_gizmosTranslate.push_back(Gizmo(object, glm::vec3(0.0f, 0.0f, 1.0f)));
 	m_gizmoFunctionality[object->getCode()] = translateXY;
 
 	//y translate gizmo
 	object = new GameObject(utilities::ResourceManager::loadModel("gizmo-t1a"));
-	object->setRotation(glm::vec3(0.0f, 0.0f, glm::radians(90.0f)));
+	orientation = glm::quat();
+	orientation = glm::angleAxis(glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	object->setRotation(orientation);
+
 	m_gizmosTranslate.push_back(Gizmo(object, glm::vec3(0.0f, 1.0f, 0.0f)));
 	m_gizmoFunctionality[object->getCode()] = translateY;
 	//xz translate gizmo
 	object = new GameObject(utilities::ResourceManager::loadModel("gizmo-2a"));
-	object->setRotation(glm::vec3(glm::radians(90.0f), 0.0f, 0.0f));
+	orientation = glm::quat();
+	orientation = glm::angleAxis(glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	object->setRotation(orientation);
+
 	m_gizmosTranslate.push_back(Gizmo(object, glm::vec3(0.0f, 1.0f, 0.0f)));
 	m_gizmoFunctionality[object->getCode()] = translateXZ;
 
 	//z translate gizmo
 	object = new GameObject(utilities::ResourceManager::loadModel("gizmo-t1a"));
-	object->setRotation(glm::vec3(0.0f, glm::radians(-90.0f), 0.0f));
+	orientation = glm::quat();
+	orientation = glm::angleAxis(glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	object->setRotation(orientation);
+
 	m_gizmosTranslate.push_back(Gizmo(object, glm::vec3(0.0f, 0.0f, 1.0f)));
 	m_gizmoFunctionality[object->getCode()] = translateZ;
 
 	//yz translate gizmo
 	object = new GameObject(utilities::ResourceManager::loadModel("gizmo-2a"));
-	object->setRotation(glm::vec3(0.0f, glm::radians(-90.0f), 0.0f));
+	orientation = glm::quat();
+	orientation = glm::angleAxis(glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	object->setRotation(orientation);
+
 	m_gizmosTranslate.push_back(Gizmo(object, glm::vec3(1.0f, 0.0f, 0.0f)));
 	m_gizmoFunctionality[object->getCode()] = translateYZ;
 
 	///scale
 	//x scale gizmo
 	object = new GameObject(utilities::ResourceManager::loadModel("gizmo-s1a"));
-	object->setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
+	object->setRotation(glm::quat());
+
 	m_gizmosScale.push_back(Gizmo(object, glm::vec3(1.0f, 0.0f, 0.0f)));
 	m_gizmoFunctionality[object->getCode()] = scaleX;
 	//xy scale gizmo
 	object = new GameObject(utilities::ResourceManager::loadModel("gizmo-2a"));
-	object->setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
+	object->setRotation(glm::quat());
+
 	m_gizmosScale.push_back(Gizmo(object, glm::vec3(0.0f, 0.0f, 1.0f)));
 	m_gizmoFunctionality[object->getCode()] = scaleXY;
 
 	//y scale gizmo
 	object = new GameObject(utilities::ResourceManager::loadModel("gizmo-s1a"));
-	object->setRotation(glm::vec3(0.0f, 0.0f, glm::radians(90.0f)));
+	orientation = glm::quat();
+	orientation = glm::angleAxis(glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	object->setRotation(orientation);
+
 	m_gizmosScale.push_back(Gizmo(object, glm::vec3(0.0f, 1.0f, 0.0f)));
 	m_gizmoFunctionality[object->getCode()] = scaleY;
 	//xz scale gizmo
 	object = new GameObject(utilities::ResourceManager::loadModel("gizmo-2a"));
-	object->setRotation(glm::vec3(glm::radians(90.0f), 0.0f, 0.0f));
+	orientation = glm::quat();
+	orientation = glm::angleAxis(glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	object->setRotation(orientation);
+
 	m_gizmosScale.push_back(Gizmo(object, glm::vec3(0.0f, 1.0f, 0.0f)));
 	m_gizmoFunctionality[object->getCode()] = scaleXZ;
 
 	//z scale gizmo
 	object = new GameObject(utilities::ResourceManager::loadModel("gizmo-s1a"));
-	object->setRotation(glm::vec3(0.0f, glm::radians(-90.0f), 0.0f));
+	orientation = glm::quat();
+	orientation = glm::angleAxis(glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	object->setRotation(orientation);
+
 	m_gizmosScale.push_back(Gizmo(object, glm::vec3(0.0f, 0.0f, 1.0f)));
 	m_gizmoFunctionality[object->getCode()] = scaleZ;
 	//yz scale gizmo
 	object = new GameObject(utilities::ResourceManager::loadModel("gizmo-2a"));
-	object->setRotation(glm::vec3(0.0f, glm::radians(-90.0f), 0.0f));
+	orientation = glm::quat();
+	orientation = glm::angleAxis(glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	object->setRotation(orientation);
+
 	m_gizmosScale.push_back(Gizmo(object, glm::vec3(1.0f, 0.0f, 0.0f)));
 	m_gizmoFunctionality[object->getCode()] = scaleYZ;
 
 	//xyz scale gizmo
 	object = new GameObject(utilities::ResourceManager::loadModel("gizmo-s3a"));
-	object->setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
+	object->setRotation(glm::quat());
+
 	m_gizmosScale.push_back(Gizmo(object, glm::vec3(1.0f, 1.0f, 0.0f)));
 	m_gizmoFunctionality[object->getCode()] = scaleXYZ;
 
 	///rotate
 	//x roate gizmo
 	object = new GameObject(utilities::ResourceManager::loadModel("gizmo-r"));
-	object->setRotation(glm::vec3(0.0f, 0.0f, glm::radians(90.0f)));
+	orientation = glm::quat();
+	orientation = glm::angleAxis(glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	object->setRotation(orientation);
 	m_gizmosRotate.push_back(Gizmo(object, glm::vec3(1.0f, 0.0f, 0.0f)));
 	m_gizmoFunctionality[object->getCode()] = rotateX;
 	//y rotate gizmo
 	object = new GameObject(utilities::ResourceManager::loadModel("gizmo-r"));
-	object->setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
+	object->setRotation(glm::quat());
 	m_gizmosRotate.push_back(Gizmo(object, glm::vec3(0.0f, 1.0f, 0.0f)));
 	m_gizmoFunctionality[object->getCode()] = rotateY;
 	//z roate gizmo
 	object = new GameObject(utilities::ResourceManager::loadModel("gizmo-r"));
-	object->setRotation(glm::vec3(0.0f, glm::radians(90.0f), glm::radians(90.0f)));
+	orientation = glm::quat();
+	orientation = glm::angleAxis(glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	object->setRotation(orientation);
+
 	m_gizmosRotate.push_back(Gizmo(object, glm::vec3(0.0f, 0.0f, 1.0f)));
 	m_gizmoFunctionality[object->getCode()] = rotateZ;
 }
@@ -175,6 +211,10 @@ const std::vector<Gizmo>* TranformGizmos::getGizmos(){
 
 const glm::vec3& TranformGizmos::getPosition(){
 	return ((*m_pSelectedVect).back())->getPosition();
+}
+
+glm::quat TranformGizmos::getRot(){
+	return ((*m_pSelectedVect).back())->getRotation();
 }
 
 void TranformGizmos::updateGizmo(renderer::Camera* camera, utilities::InputManager& input, float deltaTime){
@@ -366,33 +406,13 @@ void scaleXYZ(Actor* pActor, utilities::InputManager & input, renderer::Camera* 
 }
 
 void rotateX(Actor* pActor, utilities::InputManager & input, renderer::Camera* camera, float dt){
-	float dotRX = glm::dot(glm::vec3(1.0f, 0.0f, 0.0f), camera->getRight());
-	if(dotRX >= 0.0f){
-		pActor->getRotation().x = glm::degrees(pActor->getRotation().x);
-		pActor->getRotation().x += input.getMouseDY() * DEGREES_PER_SECOND * dt;
-		pActor->getRotation().x = glm::radians(pActor->getRotation().x);
-	} else{
-		pActor->getRotation().x = glm::degrees(pActor->getRotation().x);
-		pActor->getRotation().x -= input.getMouseDY() * DEGREES_PER_SECOND * dt;
-		pActor->getRotation().x = glm::radians(pActor->getRotation().x);
-	}
+	pActor->setRotation(glm::rotate(pActor->getRotation(), glm::radians(input.getMouseDX() * DEGREES_PER_SECOND * dt), glm::vec3(1.0f, 0.0f, 0.0f)));
 }
 
 void rotateY(Actor* pActor, utilities::InputManager & input, renderer::Camera* camera, float dt){
-	pActor->getRotation().y = glm::degrees(pActor->getRotation().y);
-	pActor->getRotation().y += input.getMouseDX() * DEGREES_PER_SECOND * dt;
-	pActor->getRotation().y = glm::radians(pActor->getRotation().y);
+	pActor->setRotation(glm::rotate(pActor->getRotation(), glm::radians(input.getMouseDX() * DEGREES_PER_SECOND * dt), glm::vec3(0.0f, 1.0f, 0.0f)));
 }
 
 void rotateZ(Actor* pActor, utilities::InputManager & input, renderer::Camera* camera, float dt){
-	float dotRZ = glm::dot(glm::vec3(0.0f, 0.0f, 1.0f), camera->getRight());
-	if(dotRZ >= 0.0f){
-		pActor->getRotation().z = glm::degrees(pActor->getRotation().z);
-		pActor->getRotation().z += input.getMouseDY() * DEGREES_PER_SECOND * dt;
-		pActor->getRotation().z = glm::radians(pActor->getRotation().z);
-	} else{
-		pActor->getRotation().z = glm::degrees(pActor->getRotation().z);
-		pActor->getRotation().z -= input.getMouseDY() * DEGREES_PER_SECOND * dt;
-		pActor->getRotation().z = glm::radians(pActor->getRotation().z);
-	}
+	pActor->setRotation(glm::rotate(pActor->getRotation(), glm::radians(input.getMouseDX() * DEGREES_PER_SECOND * dt), glm::vec3(0.0f, 0.0f, 1.0f)));
 }

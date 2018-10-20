@@ -10,6 +10,7 @@
 
 ///TODO:
 	//investigate object rename issue
+	//lights in creation mode
 
 MainApp::MainApp():
 	m_appState(AppState::EDIT),
@@ -153,7 +154,8 @@ void MainApp::processInput(){
 
 	if(m_inputManager.isKeyPressed(SDL_BUTTON_LEFT) 
 	   && m_gui.b_placementTab
-	   && !ImGui::IsMouseHoveringAnyWindow())
+	   && !ImGui::IsMouseHoveringAnyWindow()
+	   && !m_gui.b_showEditRotWindow)
 	{
 		pixelPick(m_inputManager.getActualMouseCoords());
 	}
@@ -250,7 +252,6 @@ void MainApp::openMap(const std::string& file){
 		std::vector<float> p = obj["pos"].get<std::vector<float>>();
 		glm::vec3 pos = glm::vec3(p[0], p[1], p[2]);
 		std::vector<float> r = obj["rot"].get<std::vector<float>>();
-		glm::vec3 rot = glm::vec3(r[0], r[1], r[2]);
 		std::vector<float> s = obj["scale"].get<std::vector<float>>();
 		glm::vec3 scale = glm::vec3(s[0], s[1], s[2]);
 
@@ -258,7 +259,7 @@ void MainApp::openMap(const std::string& file){
 		object->setName(obj_name);
 		object->setInEditorName(obj_inEditorName);
 		object->setPosition(pos);
-		object->setRotation(rot);
+		object->setRotation(glm::quat(r[3], r[0], r[1], r[2]));
 		object->setScale(scale);
 		object->m_bodyType = type;
 
@@ -341,7 +342,7 @@ void MainApp::saveMap(const std::string& file){
 			{"name", obj->getName()},
 			{"inEditorName", obj->getInEditorName()},
 			{"pos", {obj->getPosition().x, obj->getPosition().y, obj->getPosition().z}},
-			{"rot", {obj->getRotation().x, obj->getRotation().y, obj->getRotation().z}},
+			{"rot", {obj->getRotation().x, obj->getRotation().y, obj->getRotation().z, obj->getRotation().w}},
 			{"scale", {obj->getScale().x, obj->getScale().y, obj->getScale().z}},
 			{"bodyType", (int)obj->m_bodyType},
 		};
@@ -400,7 +401,7 @@ void MainApp::saveCreatedObject(char* buf){
 		json col = {
 			{"shape", body.shape},
 			{"pos", {body.colRelativePos.x, body.colRelativePos.y, body.colRelativePos.z}},
-			{"rot", {body.colRot.x, body.colRot.y, body.colRot.z}},
+			{"rot", {body.colRotQuat.x, body.colRotQuat.y, body.colRotQuat.z, body.colRotQuat.w}},
 			{"scale", {body.colScale.x, body.colScale.y, body.colScale.z}},
 			{"mass", body.mass}
 		};
@@ -443,11 +444,12 @@ void MainApp::openCreatedObject(const std::string& object){
 		std::vector<float> p = col["pos"].get<std::vector<float>>();
 		glm::vec3 pos = glm::vec3(p[0], p[1], p[2]);
 		std::vector<float> r = col["rot"].get<std::vector<float>>();
-		glm::vec3 rot = glm::vec3(r[0], r[1], r[2]);
 		std::vector<float> s = col["scale"].get<std::vector<float>>();
 		glm::vec3 scale = glm::vec3(s[0], s[1], s[2]);
 		body.colRelativePos = pos;
-		body.colRot = rot;
+		body.colRotQuat = glm::quat(r[3], r[0], r[1], r[2]);
+		glm::vec3 rot = glm::eulerAngles(body.colRotQuat);
+		body.colRotEuler = glm::vec3(glm::degrees(rot.x), glm::degrees(rot.y), glm::degrees(rot.z));
 		body.colScale = scale;
 		m_creationTabGameObject.addColBody(body);
 		m_gui.collisionBodies.push_back(body.shape);
@@ -668,9 +670,7 @@ void MainApp::drawGameObjects(bool bDrawColbodies){
 			m_gameObjectsShader.loadSelected(gameObject->isSelected());
 			glm::mat4 modelMatrix;
 			modelMatrix = glm::translate(modelMatrix, gameObject->getPosition());
-			modelMatrix = glm::rotate(modelMatrix, gameObject->getRotation().x, glm::vec3(1.0f, 0.0f, 0.0f));
-			modelMatrix = glm::rotate(modelMatrix, gameObject->getRotation().y, glm::vec3(0.0f, 1.0f, 0.0f));
-			modelMatrix = glm::rotate(modelMatrix, gameObject->getRotation().z, glm::vec3(0.0f, 0.0f, 1.0f));
+			modelMatrix = modelMatrix * glm::toMat4(gameObject->getRotation());
 			modelMatrix = glm::scale(modelMatrix, gameObject->getScale());
 			m_gameObjectsShader.loadModelMatrix(modelMatrix);
 			
@@ -698,6 +698,8 @@ void MainApp::drawGameObjects(bool bDrawColbodies){
 				m_billboardShader.loadSelected(gameObject->isSelected());
 				glm::mat4 modelMatrix;
 				modelMatrix = glm::translate(modelMatrix, gameObject->getPosition());
+				modelMatrix = modelMatrix * glm::toMat4(gameObject->getRotation());
+
 				modelMatrix[0][0] = view[0][0];
 				modelMatrix[0][1] = view[1][0];
 				modelMatrix[0][2] = view[2][0];
@@ -740,13 +742,8 @@ void MainApp::drawCollisionBodies(std::vector<renderer::CollisionBody*>& colBodi
 	for(auto body : colBodies){
 		glm::mat4 model;
 		model = glm::translate(model, body->colRelativePos);
-
-		model = glm::rotate(model, body->colRot.x, glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, body->colRot.y, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, body->colRot.z, glm::vec3(0.0f, 0.0f, 1.0f));
-
+		model = model * glm::toMat4(body->colRotQuat);
 		model = glm::scale(model, body->colScale);
-
 		m_basicColorShader.loadModelMatrix(model);
 
 		td = utilities::ResourceManager::loadModel(body->shape);
@@ -772,6 +769,8 @@ void MainApp::prePixelPickDraw(){
 		glm::mat4 model;
 		if(object->isBillboard()){
 			model = glm::translate(model, object->getPosition());
+			model = model * glm::toMat4(object->getRotation());
+
 			model[0][0] = view[0][0];
 			model[0][1] = view[1][0];
 			model[0][2] = view[2][0];
@@ -784,9 +783,7 @@ void MainApp::prePixelPickDraw(){
 			model = glm::scale(model, object->getScale());
 		} else{
 			model = glm::translate(model, object->getPosition());
-			model = glm::rotate(model, object->getRotation().x, glm::vec3(1.0f, 0.0f, 0.0f));
-			model = glm::rotate(model, object->getRotation().y, glm::vec3(0.0f, 1.0f, 0.0f));
-			model = glm::rotate(model, object->getRotation().z, glm::vec3(0.0f, 0.0f, 1.0f));
+			model = model * glm::toMat4(object->getRotation());
 			model = glm::scale(model, object->getScale());
 		}
 
@@ -810,9 +807,14 @@ void MainApp::prePixelPickDraw(){
 		for(auto gizmo : *gizmos){
 			glm::mat4 model;
 			model = glm::translate(model, m_gizmos.getPosition());
-			model = glm::rotate(model, gizmo.obj->getRotation().x, glm::vec3(1.0f, 0.0f, 0.0f));
-			model = glm::rotate(model, gizmo.obj->getRotation().y, glm::vec3(0.0f, 1.0f, 0.0f));
-			model = glm::rotate(model, gizmo.obj->getRotation().z, glm::vec3(0.0f, 0.0f, 1.0f));
+			
+			if(m_gizmos.getGizmoMode() == (int)GizmoMode::ROTATE){
+				auto baseRot = gizmo.obj->getRotation();
+				model = model * glm::toMat4(m_gizmos.getRot() * baseRot);
+			} else{
+				model = model * glm::toMat4(gizmo.obj->getRotation());
+			}
+
 			model = glm::scale(model, scale);
 
 			m_basicColorShader.loadModelMatrix(model);
@@ -850,9 +852,12 @@ void MainApp::drawTransformGizmos(){
 		glm::mat4 model;
 		model = glm::translate(model, m_gizmos.getPosition());
 
-		model = glm::rotate(model, gzm.obj->getRotation().x, glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, gzm.obj->getRotation().y, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, gzm.obj->getRotation().z, glm::vec3(0.0f, 0.0f, 1.0f));
+		if(m_gizmos.getGizmoMode() == (int)GizmoMode::ROTATE){
+			auto baseRot = gzm.obj->getRotation();
+			model = model * glm::toMat4(m_gizmos.getRot() * baseRot);
+		} else{
+			model = model * glm::toMat4(gzm.obj->getRotation());
+		}
 
 		model = glm::scale(model, scale);
 

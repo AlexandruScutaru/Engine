@@ -123,7 +123,7 @@ namespace physics{
 
 	void PhysicsBody::addBoxShape(glm::vec3& scaleFactor, renderer::CollisionBody& body){
 		glm::vec3 pos = body.colRelativePos;
-		glm::vec3 rot = body.colRot;
+		glm::quat rot = body.colRotQuat;
 		glm::vec3 size = body.colScale * scaleFactor;
 
 		rp3d::Vector3 halfDimenions(size.x / 2.0f, size.y / 2.0f, size.z / 2.0f);
@@ -132,7 +132,7 @@ namespace physics{
 		m_boxShapes.push_back(boxShape);
 
 		rp3d::Vector3 position = rp3d::Vector3(pos.x, pos.y, pos.z);
-		rp3d::Quaternion orientation(rp3d::Vector3(rot.x, rot.y, rot.z));
+		rp3d::Quaternion orientation(rot.x, rot.y, rot.z, rot.w);
 		rp3d::Transform transform(position, orientation);
 
 		rp3d::ProxyShape* shape(m_body->addCollisionShape(boxShape, transform, body.mass));
@@ -155,7 +155,7 @@ namespace physics{
 
 	void PhysicsBody::addCapsuleShape(glm::vec3& scaleFactor, renderer::CollisionBody& body){
 		glm::vec3 pos = body.colRelativePos;
-		glm::vec3 rot = body.colRot;
+		glm::quat rot = body.colRotQuat;
 		glm::vec3 size = body.colScale * scaleFactor;
 		
 		float radius = size.x / 2.0f;
@@ -164,7 +164,7 @@ namespace physics{
 		m_capsuleShapes.push_back(capsuleShape);
 		
 		rp3d::Vector3 position = rp3d::Vector3(pos.x, pos.y, pos.z);
-		rp3d::Quaternion orientation(rp3d::Vector3(rot.x, rot.y, rot.z));
+		rp3d::Quaternion orientation(rot.x, rot.y, rot.z, rot.w);
 		rp3d::Transform transform(position, orientation);
 		
 		m_proxyhapes.push_back(m_body->addCollisionShape(capsuleShape, transform, body.mass));

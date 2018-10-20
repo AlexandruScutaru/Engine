@@ -16,7 +16,7 @@ namespace physics{
 class Utilities{
 public:
 	static void OpenMap(const std::string& file, std::vector<GameObject*>& objects, std::vector<renderer::Light*>& lights, physics::PhysicsWorld* world);
-	static GameObject* OpenGameObject(const std::string& file, glm::vec3& pos, glm::vec3& rot, glm::vec3& scale, physics::PhysicsWorld* world);
+	static GameObject* OpenGameObject(const std::string& file, glm::vec3& pos, glm::quat& rot, glm::vec3& scale, physics::PhysicsWorld* world);
 
 	template <typename T> 
 	static std::map<renderer::TexturedModel*, std::vector<T*>> BatchRenderables(std::vector<T*>& entities){

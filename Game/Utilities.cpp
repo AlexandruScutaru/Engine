@@ -25,15 +25,13 @@ void Utilities::OpenMap(const std::string & file, std::vector<GameObject*>& obje
 		std::vector<float> p = obj["pos"].get<std::vector<float>>();
 		glm::vec3 pos = glm::vec3(p[0], p[1], p[2]);
 		std::vector<float> r = obj["rot"].get<std::vector<float>>();
-		//glm::vec3 rot = glm::vec3(glm::degrees(r[0]), glm::degrees(r[1]), glm::degrees(r[2]));
-		glm::vec3 rot = glm::vec3(r[0], r[1], r[2]);
-
+		glm::quat rot(r[3], r[0], r[1], r[2]);
 		std::vector<float> s = obj["scale"].get<std::vector<float>>();
 		glm::vec3 scale = glm::vec3(s[0], s[1], s[2]);
 
 		object = OpenGameObject(obj_name, pos, rot, scale, world); //info about collision
 		object->setPosition(pos);
-		object->setRotation(object->getPhysicsBody()->getRotation());
+		object->setRotation(rot);
 		object->setScale(scale);
 		object->getPhysicsBody()->setBodyType(type);
 		objects.push_back(object);
@@ -86,7 +84,7 @@ void Utilities::OpenMap(const std::string & file, std::vector<GameObject*>& obje
 	}
 }
 
-GameObject* Utilities::OpenGameObject(const std::string& file, glm::vec3& pos, glm::vec3& rot, glm::vec3& scale, physics::PhysicsWorld* world){
+GameObject* Utilities::OpenGameObject(const std::string& file, glm::vec3& pos, glm::quat& rot, glm::vec3& scale, physics::PhysicsWorld* world){
 	std::ifstream in("res/gameobjects/" + file);
 	json obj;
 	in >> obj;
@@ -101,13 +99,11 @@ GameObject* Utilities::OpenGameObject(const std::string& file, glm::vec3& pos, g
 		std::vector<float> p = col["pos"].get<std::vector<float>>();
 		glm::vec3 pos = glm::vec3(p[0], p[1], p[2]);
 		std::vector<float> r = col["rot"].get<std::vector<float>>();
-		//glm::vec3 rot = glm::vec3(glm::degrees(r[0]), glm::degrees(r[1]), glm::degrees(r[2]));
-		glm::vec3 rot = glm::vec3(r[0], r[1], r[2]);
-
+		glm::quat rot(r[3], r[0], r[1], r[2]);
 		std::vector<float> s = col["scale"].get<std::vector<float>>();
 		glm::vec3 scale = glm::vec3(s[0], s[1], s[2]);
 		body.colRelativePos = pos;
-		body.colRot = rot;
+		body.colRotQuat = rot;
 		body.colScale = scale;
 		colBodies.push_back(body);
 	}
