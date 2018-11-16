@@ -7,6 +7,12 @@
 #include <Engine/CollisionBody.h>
 #include <ImGUI/imgui_internal.h>
 
+enum Scene_Tabs{
+	GAMEOBJECTS = 0,
+	ENTITIES,
+	LIGHTS
+};
+
 
 bool VectorOfStringGetter(void* data, int n, const char** out_text);
 bool VectorOfObjectsGetter(void* data, int n, const char** out_text);
@@ -39,6 +45,8 @@ GUI::GUI(MainApp* app) :
 	ImGui::GetStyle().PopupRounding = 0.0f;
 	ImGui::GetStyle().ScrollbarRounding = 0.0f;
 	//ImGui::GetStyle().WindowBorderSize = 1.0f;
+	
+	m_sceneTabs = 0ui8;
 }
 
 GUI::~GUI(){}
@@ -410,10 +418,21 @@ void GUI::showCreationTab(){
 void GUI::showPlacementTab(){
 	ImGui::BeginChild("scene", ImVec2(), true);
 	{
-		if(ImGui::CollapsingHeader("Gameobjects"))
+		if(ImGui::Button("GameObjects", ImVec2(ImGui::GetContentRegionAvailWidth(), 0.0f)))
+			m_sceneTabs = (m_sceneTabs & 1ui8 << Scene_Tabs::GAMEOBJECTS) ^ 1ui8 << Scene_Tabs::GAMEOBJECTS;
+		if(m_sceneTabs & 1ui8 << Scene_Tabs::GAMEOBJECTS)
 			showGameobjectsTab();
-		if(ImGui::CollapsingHeader("Lights"))
+		
+		if(ImGui::Button("Entities", ImVec2(ImGui::GetContentRegionAvailWidth(), 0.0f)))
+			m_sceneTabs = (m_sceneTabs & 1ui8 << Scene_Tabs::ENTITIES) ^ 1ui8 << Scene_Tabs::ENTITIES;
+		if(m_sceneTabs & 1ui8 << Scene_Tabs::ENTITIES)
+			showEntitiesTab();
+
+		if(ImGui::Button("Lights", ImVec2(ImGui::GetContentRegionAvailWidth(), 0.0f)))
+			m_sceneTabs = (m_sceneTabs & 1ui8 << Scene_Tabs::LIGHTS) ^ 1ui8 << Scene_Tabs::LIGHTS;
+		if(m_sceneTabs & 1ui8 << Scene_Tabs::LIGHTS)
 			showLightsTab();
+
 	}
 	ImGui::EndChild();
 }
@@ -552,7 +571,8 @@ void GUI::updateDirContents(std::vector<std::string>& directory){
 }
 
 void GUI::showGameobjectsTab(){
-	//objects in scene list
+	//gameobjects in scene
+
 	ImGui::PushItemWidth(-1);
 	ImGui::Text("Gameobjects in scene:");
 	ImGui::ListBox("##gameobjectsList", &placedGameobjectEntryItem, VectorOfObjectsGetter, (void*)(&app->m_objectsInScene), (int)(app->m_objectsInScene.size()), 10);
@@ -629,8 +649,13 @@ void GUI::showGameobjectsTab(){
 	ImGui::PopItemWidth();
 }
 
+void GUI::showEntitiesTab(){
+	ImGui::Text("TO DO!");
+}
+
 void GUI::showLightsTab(){
 	//lights in scene list
+
 	ImGui::PushItemWidth(-1);
 	ImGui::Text("Lights in scene:");
 	ImGui::ListBox("##lightsList", &placedLightEntryItem, VectorOfLightsGetter, (void*)(&app->m_lights), (int)(app->m_lights.size()), 10);

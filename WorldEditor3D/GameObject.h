@@ -9,7 +9,7 @@
 #include "Actor.h"
 
 
-class GameObject : public Actor, public renderer::RenderableEntity, public renderer::CollidableEntity {
+class GameObject : public Actor {
 public:
 	GameObject();
 	GameObject(renderer::TexturedModel* model,
@@ -44,6 +44,14 @@ public:
 	const std::string& getSpecName(){ return m_specName; }
 	const std::string& getMeshName(){ return m_meshName; }
 
+	void setTexturedModel(renderer::TexturedModel* model){ m_model = model; }
+	renderer::TexturedModel* getTexturedModel(){ return m_model; }
+
+	void addColBody(renderer::CollisionBody& body){ m_colBodies.push_back(body); };
+	void removeColBody(size_t index);
+	std::vector<renderer::CollisionBody>& getColBodies(){ return m_colBodies; }
+	void clearColBodies(){ m_colBodies.clear(); }
+
 	physics::BodyType m_bodyType;
 	bool m_gravityEnabled;
 	bool m_allowedToSleep;
@@ -59,6 +67,9 @@ private:
 	std::string m_diffName;
 	std::string m_specName;
 	std::string m_meshName;
+
+	renderer::TexturedModel* m_model;
+	std::vector<renderer::CollisionBody> m_colBodies;
 
 	bool m_selected;
 

@@ -461,6 +461,9 @@ void MainApp::openCreatedObject(const std::string& object){
 }
 
 void MainApp::pixelPick(glm::vec2& coords){
+	if(!m_gui.m_sceneTabs)
+		return;
+
 	prePixelPickDraw();
 	glm::u8vec4 color = renderer::Renderer::getColorAt(coords);
 	int val = color[0] +

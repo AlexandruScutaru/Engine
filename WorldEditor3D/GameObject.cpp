@@ -6,7 +6,7 @@ using namespace renderer;
 GameObject::GameObject(){}
 
 GameObject::GameObject(TexturedModel* model, bool static_obj) :
-	RenderableEntity(model),
+	m_model(model),
 	m_selected(false),
 	m_diffName("default.png"),
 	m_specName("no_SPEC.png"),
@@ -22,7 +22,7 @@ GameObject::GameObject(TexturedModel* model, bool static_obj) :
 {}
 
 GameObject::GameObject(TexturedModel* model, glm::vec3& pos, glm::quat& rot, glm::vec3& scale, bool static_obj) :
-	RenderableEntity(model),
+	m_model(model),
 	Actor(pos, rot, scale),
 	m_selected(false),
 	m_diffName("default.png"),
@@ -40,8 +40,6 @@ GameObject::GameObject(TexturedModel* model, glm::vec3& pos, glm::quat& rot, glm
 
 GameObject::GameObject(const GameObject& other) :
 	Actor(other),
-	RenderableEntity(other),
-	CollidableEntity(other),
 	m_selected(false)
 {
 	m_name					= other.m_name;
@@ -57,6 +55,12 @@ GameObject::GameObject(const GameObject& other) :
 	m_rollingResistance		= other.m_rollingResistance;
 	m_linearDamping			= other.m_linearDamping;
 	m_angularDamping		= other.m_angularDamping;
+	m_model					= other.m_model;
+	m_colBodies				= other.m_colBodies;
 }
 
 GameObject::~GameObject(){}
+
+void GameObject::removeColBody(size_t index){
+	m_colBodies.erase(m_colBodies.begin() + index);
+}

@@ -13,6 +13,7 @@ public:
 	virtual ~Actor();
 
 	virtual void update(float deltaTime){}
+	virtual void draw(){}
 
 	void setPosition(glm::vec3& pos){ m_pos = pos; }
 	void setRotation(glm::quat& rot){ m_rot = rot; }

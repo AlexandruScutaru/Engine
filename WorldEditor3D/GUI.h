@@ -49,6 +49,7 @@ public:
 	void openButtonPressed();
 	void updateDirContents(std::vector<std::string>& dir);
 	void showGameobjectsTab();
+	void showEntitiesTab();
 	void showLightsTab();
 	void showGridSettingsWindow();
 	void showRotationEditWindow();
@@ -78,6 +79,8 @@ private:
 	glm::vec3 m_rot;
 	float m_moveInc;
 	MainApp* app;
+
+	uint8_t m_sceneTabs;
 
 };
 
