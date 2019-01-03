@@ -157,10 +157,12 @@
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="GUI.cpp" />
     <ClCompile Include="imgui_impl_sdl_gl3.cpp" />
+    <ClCompile Include="LightBillboard.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainApp.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="RenderUtilities.cpp" />
     <ClCompile Include="TranformGizmos.cpp" />
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>
@@ -174,9 +176,11 @@
     <ClInclude Include="Grid.h" />
     <ClInclude Include="GUI.h" />
     <ClInclude Include="imgui_impl_sdl_gl3.h" />
+    <ClInclude Include="LightBillboard.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="MainApp.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="RenderUtilities.h" />
     <ClInclude Include="TranformGizmos.h" />
     <ClInclude Include="Utilities.h" />
   </ItemGroup>

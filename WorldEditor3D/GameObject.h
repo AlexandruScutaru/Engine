@@ -1,8 +1,7 @@
 #ifndef GAMEOBJECT_H
 #define GAMEOBJECT_H
 
-#include <Engine/RenderableEntity.h>
-#include <Engine/CollidableEntity.h>
+
 #include <Engine/TexturedModel.h>
 #include <Engine/PhysicsBody.h>
 
@@ -27,25 +26,17 @@ public:
 	void setDiffName(const std::string& diff){ m_diffName = diff; }
 	void setSpecName(const std::string& spec){ m_specName = spec; }
 	void setMeshName(const std::string& mesh){ m_meshName = mesh; }
-	void setIsBillboard(bool isBillboard){ m_model->setBillboard(isBillboard); }
 	
 	void setBodyType(physics::BodyType type){ m_bodyType = type; }
 	void setName(const std::string& name){ m_name = name; }
 	void setInEditorName(const std::string& inEditorName){ m_inEditorName = inEditorName; }
-	void setSelected(bool selected){ m_selected = selected; }
-
+	
 	physics::BodyType getBodyType(){ return m_bodyType; }
-	bool isSelected(){ return m_selected; }
-	bool isBillboard(){ return m_model->isBillboard(); }
-	bool& isBillboardRef(){ return m_model->isBillboardRef(); }
 	const std::string& getName(){ return m_name; }
 	const std::string& getInEditorName(){ return m_inEditorName; }
 	const std::string& getDiffName(){ return m_diffName; }
 	const std::string& getSpecName(){ return m_specName; }
 	const std::string& getMeshName(){ return m_meshName; }
-
-	void setTexturedModel(renderer::TexturedModel* model){ m_model = model; }
-	renderer::TexturedModel* getTexturedModel(){ return m_model; }
 
 	void addColBody(renderer::CollisionBody& body){ m_colBodies.push_back(body); };
 	void removeColBody(size_t index);
@@ -68,10 +59,7 @@ private:
 	std::string m_specName;
 	std::string m_meshName;
 
-	renderer::TexturedModel* m_model;
 	std::vector<renderer::CollisionBody> m_colBodies;
-
-	bool m_selected;
 
 };
 #endif // !GAMEOBJECT_H

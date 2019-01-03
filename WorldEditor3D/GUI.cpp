@@ -7,12 +7,6 @@
 #include <Engine/CollisionBody.h>
 #include <ImGUI/imgui_internal.h>
 
-enum Scene_Tabs{
-	GAMEOBJECTS = 0,
-	ENTITIES,
-	LIGHTS
-};
-
 
 bool VectorOfStringGetter(void* data, int n, const char** out_text);
 bool VectorOfObjectsGetter(void* data, int n, const char** out_text);
@@ -129,32 +123,23 @@ void GUI::showToolbar(){
 		fdMode = FD_Mode::ADD_GAMEOBJECT;
 		updateDirContents(dirContents);
 	}
-	//duplicate gameobject
+	//duplicate selected
 	ImGui::SameLine();
 	td = *utilities::ResourceManager::getTexture("res/editor/duplicate.png");
 	if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1) && b_placementTab){
-		if(placedLightEntryItem > 1){
-			//point light selected
-			app->duplicatePointLight(placedLightEntryItem);
-		}
-		else if(app->m_selectedObjsVect.size() > 0){
-			//object selected
-			app->duplicateSelectedObjects();
-		} 
+		if(m_sceneTabs & 1ui8 << Scene_Tabs::GAMEOBJECTS)
+			app->duplicateSelectedGameObjects();
+		else if(m_sceneTabs & 1ui8 << Scene_Tabs::LIGHTS)
+			app->duplicateSelectedPointLights();
 	}
-	//remove gameobject
+	//remove selected
 	ImGui::SameLine();
 	td = *utilities::ResourceManager::getTexture("res/editor/remove.png");
 	if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1) && b_placementTab){
-		if(placedLightEntryItem > 1){
-			//remove point light
-			app->removePointLight(placedLightEntryItem);
-			placedLightEntryItem = -1;
-		} else if(app->m_selectedObjsVect.size() > 0){
-			//remove object
-			app->removeSelectedObjects();
-			placedGameobjectEntryItem = -1;
-		}
+		if(m_sceneTabs & 1ui8 << Scene_Tabs::GAMEOBJECTS)
+			app->removeSelectedGameObjects();
+		else if(m_sceneTabs & 1ui8 << Scene_Tabs::LIGHTS)
+			app->removeSelectedGameObjects();
 	}
 
 	ImGui::PopStyleColor();
@@ -418,18 +403,24 @@ void GUI::showCreationTab(){
 void GUI::showPlacementTab(){
 	ImGui::BeginChild("scene", ImVec2(), true);
 	{
-		if(ImGui::Button("GameObjects", ImVec2(ImGui::GetContentRegionAvailWidth(), 0.0f)))
+		if(ImGui::Button("GameObjects", ImVec2(ImGui::GetContentRegionAvailWidth(), 0.0f))){
 			m_sceneTabs = (m_sceneTabs & 1ui8 << Scene_Tabs::GAMEOBJECTS) ^ 1ui8 << Scene_Tabs::GAMEOBJECTS;
+			app->deselectAll();
+		}
 		if(m_sceneTabs & 1ui8 << Scene_Tabs::GAMEOBJECTS)
 			showGameobjectsTab();
 		
-		if(ImGui::Button("Entities", ImVec2(ImGui::GetContentRegionAvailWidth(), 0.0f)))
+		if(ImGui::Button("Entities", ImVec2(ImGui::GetContentRegionAvailWidth(), 0.0f))){
 			m_sceneTabs = (m_sceneTabs & 1ui8 << Scene_Tabs::ENTITIES) ^ 1ui8 << Scene_Tabs::ENTITIES;
+			app->deselectAll();
+		}
 		if(m_sceneTabs & 1ui8 << Scene_Tabs::ENTITIES)
 			showEntitiesTab();
 
-		if(ImGui::Button("Lights", ImVec2(ImGui::GetContentRegionAvailWidth(), 0.0f)))
+		if(ImGui::Button("Lights", ImVec2(ImGui::GetContentRegionAvailWidth(), 0.0f))){
 			m_sceneTabs = (m_sceneTabs & 1ui8 << Scene_Tabs::LIGHTS) ^ 1ui8 << Scene_Tabs::LIGHTS;
+			app->deselectAll();
+		}
 		if(m_sceneTabs & 1ui8 << Scene_Tabs::LIGHTS)
 			showLightsTab();
 
@@ -572,6 +563,15 @@ void GUI::updateDirContents(std::vector<std::string>& directory){
 
 void GUI::showGameobjectsTab(){
 	//gameobjects in scene
+	if(app->m_selectedObjsVect.size() == 1){
+		for(size_t i = 0; i < app->m_objectsInScene.size(); i++)
+			if(app->m_objectsInScene[i] == app->m_selectedObjsVect[0]){
+				placedGameobjectEntryItem = i;
+				break;
+			}
+	} else{
+		placedGameobjectEntryItem = -1;
+	}
 
 	ImGui::PushItemWidth(-1);
 	ImGui::Text("Gameobjects in scene:");
@@ -581,9 +581,7 @@ void GUI::showGameobjectsTab(){
 		for(auto& obj : app->m_selectedObjsVect)
 			if(obj) obj->setSelected(false);
 		app->m_selectedObjsVect.clear();
-		app->m_currentlySelectedLight = nullptr;
-		placedLightEntryItem = -1;
-
+		
 		app->m_selectedObjsVect.push_back(app->m_objectsInScene[placedGameobjectEntryItem]);
 		app->m_selectedObjsVect[0]->setSelected(true);
 		//object info
@@ -655,6 +653,17 @@ void GUI::showEntitiesTab(){
 
 void GUI::showLightsTab(){
 	//lights in scene list
+	if(app->m_selectedObjsVect.size() == 1){
+		for(size_t i = 0; i < app->m_lights.size(); i++)
+			if(app->m_lights[i] == static_cast<LightBillboard*>(app->m_selectedObjsVect[0])->getLight()){
+				placedLightEntryItem = i;
+				break;
+			}
+	} else if(placedLightEntryItem == 1){
+		//do nothing
+	} else{
+		placedLightEntryItem = -1;
+	}
 
 	ImGui::PushItemWidth(-1);
 	ImGui::Text("Lights in scene:");
@@ -667,17 +676,12 @@ void GUI::showLightsTab(){
 		if(placedLightEntryItem >= 0){
 			ImGui::Text("Properties");
 			ImGui::PushItemWidth(65);
-			for(auto& obj : app->m_selectedObjsVect)
-				if(obj) obj->setSelected(false);
-			app->m_selectedObjsVect.clear();
+			app->deselectAll();
 
-			app->m_currentlySelectedLight = nullptr;
-			placedGameobjectEntryItem = -1;
-			for(auto entry : app->m_billboardLightsMap){
-				if(entry.second == app->m_lights[placedLightEntryItem]){
-					app->m_selectedObjsVect.push_back(entry.first);
+			for(auto entry : app->m_lightsBillboards){
+				if(entry->getLight() == app->m_lights[placedLightEntryItem]){
+					app->m_selectedObjsVect.push_back(entry);
 					app->m_selectedObjsVect[0]->setSelected(true);
-					app->m_currentlySelectedLight = app->m_lights[placedLightEntryItem];
 					break;
 				}
 			}
@@ -717,12 +721,7 @@ void GUI::showLightsTab(){
 				ImGui::DragFloat("##lightDragDirZ", &app->m_selectedObjsVect[0]->getPosition().z, 0.01f, -FLT_MAX, FLT_MAX, "%.2f");
 			}
 			else if(placedLightEntryItem == 1){
-				//spot light - doesnt have a billboard mapped to it
-				for(auto& obj : app->m_selectedObjsVect)
-					if(obj) obj->setSelected(false);
-				app->m_selectedObjsVect.clear();
-				app->m_currentlySelectedLight = nullptr;
-				placedGameobjectEntryItem = -1;
+				app->deselectAll();
 
 				renderer::SpotLight* sl = static_cast<renderer::SpotLight*>(app->m_lights[1]);
 				ImGui::Text("Amb :");

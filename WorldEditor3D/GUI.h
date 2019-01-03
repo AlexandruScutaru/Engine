@@ -30,6 +30,12 @@ enum class FD_Mode{
 	MAP_SAVE
 };
 
+enum Scene_Tabs{
+	GAMEOBJECTS = 0,
+	ENTITIES,
+	LIGHTS
+};
+
 
 class GUI{
 public:

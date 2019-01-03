@@ -17,7 +17,9 @@
 #include "BasicColorShader.h"
 #include "BillboardShader.h"
 #include "Grid.h"
+#include "Actor.h" 
 #include "GameObject.h"
+#include "LightBillboard.h"
 #include "TranformGizmos.h"
 #include "Player.h"
 
@@ -30,6 +32,7 @@
 using json = nlohmann::json;
 
 class GUI;
+class RenderUtilities;
 
 enum class AppState{
 	EDIT,
@@ -42,6 +45,7 @@ public:
 	MainApp();
 	~MainApp();
 	friend class GUI;
+	friend class RenderUtilities;
 
 	void run(); // runs the app
 
@@ -62,18 +66,13 @@ private:
 	void pixelPick(glm::vec2& coords);
 	void addNewObject(const std::string& file);
 	void addPointLight();
-	void duplicatePointLight(int index);
-	void removePointLight(int index);
-	void removeSelectedObjects();
-	void duplicateSelectedObjects();
+	void duplicateSelectedGameObjects();
+	void duplicateSelectedPointLights();
+	void removeSelectedGameObjects();
+	void removeSelectedPointLights();
+	void deselectAll();
 
 	void updateToDrawVector();
-	void drawGameObjects(bool drawCollisionBodies);
-	void drawCollisionBodies(std::vector<renderer::CollisionBody*>& colBodies);
-	void prePixelPickDraw();
-	void drawTransformGizmos();
-	void drawLines();
-	void drawGrid();
 
 	renderer::Window m_window; //the app window
 	utilities::InputManager m_inputManager;
@@ -81,17 +80,18 @@ private:
 	
 	TranformGizmos m_gizmos;
 	
-	std::vector<GameObject*> m_selectedObjsVect;
-	renderer::Light* m_currentlySelectedLight;
+	std::vector<Actor*> m_selectedObjsVect;
+	
+	std::vector<GameObject*> m_objectsInScene;
+	std::map<unsigned int, GameObject*> m_gameObjectsMap;
+
+	// lighting
+	std::vector<renderer::Light*> m_lights;
+	std::vector<LightBillboard*> m_lightsBillboards;
+	std::map<unsigned int, LightBillboard*> m_lightsBillboardsMap;
 	
 	AppState m_appState;
 
-	//mapping all objects by a specific code to pixel select them in the editor
-	std::map<unsigned int, GameObject*> m_gameObjectsMap;
-	std::map<GameObject*, renderer::Light*> m_billboardLightsMap;
-
-	std::vector<GameObject*> m_billboardsForLights;
-	std::vector<GameObject*> m_objectsInScene;
 	//this vector is to be filled with objects to draw 
 	//i hope at aleat a frustum culling will be implemented
 	std::vector<GameObject*> m_objects_ToDraw;
@@ -100,8 +100,6 @@ private:
 	GameObject m_creationTabGameObject;
 	renderer::DirLight m_creationTabLight;
 
-	// lighting
-	std::vector<renderer::Light*> m_lights;
 	Player m_player;
 
 	GameObjectShader m_gameObjectsShader;

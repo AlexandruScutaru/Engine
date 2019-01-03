@@ -1,6 +1,7 @@
 #include "MainApp.h"
 #include "Config.h"
 #include "Utilities.h"
+#include "RenderUtilities.h"
 
 #include <dirent/dirent.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -10,12 +11,13 @@
 
 ///TODO:
 	//investigate object rename issue
-	//lights in creation mode
+	//lights in creation mode shouldn't appear
+	//add utilities for loading/saving maps/objects
+	//add thumbnail for model selected to be added
 
 MainApp::MainApp():
 	m_appState(AppState::EDIT),
-	m_gui(this),
-	m_currentlySelectedLight(nullptr)
+	m_gui(this)
 {
 	initSystems();
 }
@@ -23,12 +25,14 @@ MainApp::MainApp():
 MainApp::~MainApp(){
 	ImGui_ImplSdlGL3_Shutdown();
 
-	m_billboardLightsMap.clear();
 	m_gameObjectsMap.clear();
 	m_objects_ToDraw.clear();
-	for(auto obj : m_billboardsForLights)
-		delete obj;
-	m_billboardsForLights.clear();
+	m_lightsBillboardsMap.clear();
+	m_selectedObjsVect.clear();
+
+	for(auto lightBillboard : m_lightsBillboards)
+		delete lightBillboard;
+	m_lightsBillboards.clear();
 	for(auto obj : m_objectsInScene)
 		delete obj;
 	m_objectsInScene.clear();
@@ -65,7 +69,7 @@ void MainApp::initLevel(){
 	m_basicColorShader.initShader("res/shaders/basic");
 	m_billboardShader.initShader("res/shaders/billboard");
 
-	m_gizmos.init((std::vector<Actor*>*)(&m_selectedObjsVect));
+	m_gizmos.init(&m_selectedObjsVect);
 
 	/// lighting, game objects etc
 	//set default data for the creatingEntiy object during the process of creating a new gameobject
@@ -169,14 +173,10 @@ void MainApp::update(float deltaTime){
 
 	static_cast<renderer::SpotLight*>(m_lights[1])->position = m_player.getCamera()->getPos();
 	static_cast<renderer::SpotLight*>(m_lights[1])->direction = m_player.getCamera()->getFront();
-
-	if(m_selectedObjsVect.size() > 0 && m_currentlySelectedLight){
-		if(m_currentlySelectedLight->casterType == renderer::Caster::DIRECTIONAL){
-			static_cast<renderer::DirLight*>(m_currentlySelectedLight)->direction = m_selectedObjsVect[0]->getPosition();
-		}else if(m_currentlySelectedLight->casterType == renderer::Caster::POINT){
-			(static_cast<renderer::PointLight*>(m_currentlySelectedLight))->position = m_selectedObjsVect[0]->getPosition();
-		}
-	}
+	for(auto lightBillboard : m_lightsBillboards)
+		lightBillboard->update(deltaTime);
+	for(auto gameobject : m_objectsInScene)
+		gameobject->update(deltaTime);
 
 	updateToDrawVector();
 }
@@ -189,10 +189,11 @@ void MainApp::drawGame(){
 	bool bDrawColBodies = false;
 	if(m_gui.b_creationTab)
 		bDrawColBodies = true;
-	drawGameObjects(bDrawColBodies);
-	drawLines();
-	if(Grid::isEnabled()) drawGrid();
-	drawTransformGizmos();
+	RenderUtilities::DrawGameObjects(this, bDrawColBodies);
+	RenderUtilities::DrawLightBillboards(this);
+	RenderUtilities::DrawLines(this);
+	if(Grid::isEnabled()) RenderUtilities::DrawGrid(this);
+	RenderUtilities::DrawTransformGizmos(this);
 }
 
 void MainApp::addDefaultLighting(){
@@ -200,13 +201,10 @@ void MainApp::addDefaultLighting(){
 	//directional light
 	m_lights.push_back(new renderer::DirLight());
 	std::string file = "billboard_dirLight";
-	GameObject* object;
-	object = new GameObject(utilities::ResourceManager::loadModel(file));
-	glm::vec3 pos = static_cast<renderer::DirLight*>(m_lights[0])->direction;
-	object->setPosition(pos);
-	m_billboardsForLights.push_back(object);
-	m_gameObjectsMap[object->getCode()] = object;
-	m_billboardLightsMap[object] = m_lights[0];
+	LightBillboard* lightBillboard = new LightBillboard(utilities::ResourceManager::loadModel(file), m_lights[0]);
+	lightBillboard->setPosition(static_cast<renderer::DirLight*>(m_lights[0])->direction);
+	m_lightsBillboards.push_back(lightBillboard);
+	m_lightsBillboardsMap[lightBillboard->getCode()] = lightBillboard;
 	//spot light
 	m_lights.push_back(new renderer::SpotLight(m_player.getCamera()->getFront(), m_player.getCamera()->getPos()));
 }
@@ -214,15 +212,15 @@ void MainApp::addDefaultLighting(){
 void MainApp::resetData(){
 	m_gui = GUI(this);
 	m_selectedObjsVect.clear();
-	m_currentlySelectedLight = nullptr;
 	
-	m_billboardLightsMap.clear();
+	m_lightsBillboardsMap.clear();
 	m_gameObjectsMap.clear();
 	m_objects_ToDraw.clear();
+	m_selectedObjsVect.clear();
 
-	for(auto obj : m_billboardsForLights)
-		delete obj;
-	m_billboardsForLights.clear();
+	for(auto lightBillboard : m_lightsBillboards)
+		delete lightBillboard;
+	m_lightsBillboards.clear();
 	for(auto obj : m_objectsInScene)
 		delete obj;
 	m_objectsInScene.clear();
@@ -281,12 +279,11 @@ void MainApp::openMap(const std::string& file){
 	m_lights.push_back(new renderer::DirLight(amb, diff, spec, dir));
 	
 	std::string billboard_file = "billboard_dirLight";
-	object = new GameObject(utilities::ResourceManager::loadModel(billboard_file));
-	glm::vec3 light_pos = static_cast<renderer::DirLight*>(m_lights[0])->direction;
-	object->setPosition(light_pos);
-	m_billboardsForLights.push_back(object);
-	m_gameObjectsMap[object->getCode()] = object;
-	m_billboardLightsMap[object] = m_lights[0];
+	
+	LightBillboard* lightBillboard = new LightBillboard(utilities::ResourceManager::loadModel(billboard_file), m_lights[0]);
+	lightBillboard->setPosition(static_cast<renderer::DirLight*>(m_lights[0])->direction);
+	m_lightsBillboards.push_back(lightBillboard);
+	m_lightsBillboardsMap[lightBillboard->getCode()] = lightBillboard;
 	
 	///spotlight
 	v = mapFile["lights"]["spotLight"]["amb"].get<std::vector<float>>();
@@ -321,12 +318,11 @@ void MainApp::openMap(const std::string& file){
 		m_lights.push_back(new renderer::PointLight(amb, diff, spec, pos, att));
 
 		billboard_file = "billboard_pointLight";
-		object = new GameObject(utilities::ResourceManager::loadModel(billboard_file));
-		light_pos = static_cast<renderer::PointLight*>(m_lights.back())->position;
-		object->setPosition(light_pos);
-		m_billboardsForLights.push_back(object);
-		m_gameObjectsMap[object->getCode()] = object;
-		m_billboardLightsMap[object] = m_lights.back();
+
+		LightBillboard* lightBillboard = new LightBillboard(utilities::ResourceManager::loadModel(billboard_file), m_lights.back());
+		lightBillboard->setPosition(static_cast<renderer::DirLight*>(m_lights.back())->direction);
+		m_lightsBillboards.push_back(lightBillboard);
+		m_lightsBillboardsMap[lightBillboard->getCode()] = lightBillboard;
 	}
 }
 
@@ -464,7 +460,7 @@ void MainApp::pixelPick(glm::vec2& coords){
 	if(!m_gui.m_sceneTabs)
 		return;
 
-	prePixelPickDraw();
+	RenderUtilities::PrePixelPickDraw(this);
 	glm::u8vec4 color = renderer::Renderer::getColorAt(coords);
 	int val = color[0] +
 			  color[1] * 256 +
@@ -473,69 +469,44 @@ void MainApp::pixelPick(glm::vec2& coords){
 	//check if clicked on gizmo
 	if(m_gizmos.wasClicked(val)){
 		m_gizmos.setActivated(val);
-	} else {
+	} else{
 		m_gizmos.setActivated(0);
 		if(val){
-			GameObject* obj = m_gameObjectsMap[val];
-			auto it = m_billboardLightsMap.find(obj);
-			if(it != m_billboardLightsMap.end()){ 
-				//clicked on a billboard for light
-				m_currentlySelectedLight = it->second;
-				for(auto& obj : m_selectedObjsVect)
-					if(obj) obj->setSelected(false);
-				m_selectedObjsVect.clear();
-				m_selectedObjsVect.push_back(obj);
-				m_selectedObjsVect[0]->setSelected(true);
-
-				for(size_t i = 0; i < m_lights.size(); ++i){
-					if(m_lights[i] == m_currentlySelectedLight){
-						m_gui.placedLightEntryItem = i;
+			//something was clicked, add it to the list
+			Actor* selected = nullptr;
+			if(m_gui.m_sceneTabs & 1ui8 << Scene_Tabs::GAMEOBJECTS){
+				auto it = m_gameObjectsMap.find(val);
+				if(it != m_gameObjectsMap.end()) selected = static_cast<Actor*>(it->second);
+			} else if(m_gui.m_sceneTabs & 1ui8 << Scene_Tabs::LIGHTS){
+				auto it = m_lightsBillboardsMap.find(val);
+				if(it != m_lightsBillboardsMap.end()) selected = static_cast<Actor*>(it->second);
+			}
+			if(selected){
+				if(m_inputManager.isKeyDown(SDLK_LCTRL)){
+					auto it = std::find(m_selectedObjsVect.begin(), m_selectedObjsVect.end(), selected);
+					if(it == m_selectedObjsVect.end()){
+						selected->setSelected(true);
+						m_selectedObjsVect.push_back(selected);
 					}
-				}
-				m_gui.placedGameobjectEntryItem = -1;
-			} else{ 
-				//clicked on a gameobject
-				if(m_inputManager.isKeyDown(SDLK_LCTRL) && m_gui.placedLightEntryItem == -1){
-					auto it = std::find(m_selectedObjsVect.begin(), m_selectedObjsVect.end(), obj);
-					if(it == m_selectedObjsVect.end())
-						m_selectedObjsVect.push_back(obj);
-					obj->setSelected(true);
-					m_gui.placedGameobjectEntryItem = -1;
-				} else if(m_inputManager.isKeyDown(SDLK_LSHIFT) && m_gui.placedLightEntryItem == -1){
-					auto it = std::find(m_selectedObjsVect.begin(), m_selectedObjsVect.end(), obj);
+				} else if(m_inputManager.isKeyDown(SDLK_LSHIFT)){
+					auto it = std::find(m_selectedObjsVect.begin(), m_selectedObjsVect.end(), selected);
 					if(it != m_selectedObjsVect.end()){
-						(*it)->setSelected(false);
+						selected->setSelected(false);
 						m_selectedObjsVect.erase(it);
 					}
-					m_gui.placedGameobjectEntryItem = -1;
 				} else{
 					for(auto& obj : m_selectedObjsVect)
-						if(obj) obj->setSelected(false);
+						obj->setSelected(false);
 					m_selectedObjsVect.clear();
-					m_selectedObjsVect.push_back(obj);
-					obj->setSelected(true);
-					auto it = std::find(m_objectsInScene.begin(), m_objectsInScene.end(), obj);
-					for(size_t i = 0; i < m_objectsInScene.size(); ++i){
-						if(m_objectsInScene[i] == obj){
-							m_gui.placedGameobjectEntryItem = i;
-						}
-					}
+					m_selectedObjsVect.push_back(selected);
+					selected->setSelected(true);
 				}
-				m_gui.placedLightEntryItem = -1;
-				m_currentlySelectedLight = nullptr;
 			}
 		} else{
+			//clicked on empty space, reset selected list
 			for(auto& obj : m_selectedObjsVect)
-				if(obj) obj->setSelected(false);
+				obj->setSelected(false);
 			m_selectedObjsVect.clear();
-			m_currentlySelectedLight = nullptr;
-			m_gui.placedGameobjectEntryItem = -1;
-			m_gui.placedLightEntryItem = -1;
-			if(!m_inputManager.isKeyPressed(SDLK_LCTRL) || !m_inputManager.isKeyPressed(SDLK_LSHIFT)){
-				for(auto& obj : m_selectedObjsVect)
-					if(obj) obj->setSelected(false);
-				m_selectedObjsVect.clear();
-			}
 		}
 	}
 }
@@ -572,40 +543,38 @@ void MainApp::addPointLight(){
 		glm::vec3(1.0f, 0.09f, 0.032f))
 	);
 	std::string file = "billboard_pointLight";
-	GameObject* object = new GameObject(utilities::ResourceManager::loadModel(file));
-	object->setPosition(pos);
-	m_billboardsForLights.push_back(object);
-	m_gameObjectsMap[object->getCode()] = object;
-	m_billboardLightsMap[object] = m_lights.back();
+	LightBillboard* lightBillboard = new LightBillboard(utilities::ResourceManager::loadModel(file), m_lights.back());
+	lightBillboard->setPosition(pos);
+	m_lightsBillboards.push_back(lightBillboard);
+	m_lightsBillboardsMap[lightBillboard->getCode()] = lightBillboard;
 }
 
-void MainApp::duplicatePointLight(int index){
-	renderer::PointLight *pl = new renderer::PointLight(*static_cast<renderer::PointLight*>(m_lights[index]));
-	m_lights.push_back(pl);
-	std::string file = "billboard_pointLight";
-	GameObject* object = new GameObject(utilities::ResourceManager::loadModel(file));
-	object->setPosition(pl->position);
-	m_billboardsForLights.push_back(object);
-	m_gameObjectsMap[object->getCode()] = object;
-	m_billboardLightsMap[object] = m_lights.back();
+void MainApp::duplicateSelectedPointLights(){
+	std::vector<Actor*> backUp = m_selectedObjsVect;
+	deselectAll();
+
+    LightBillboard* object;
+    for(auto& obj : backUp){
+    	object = new LightBillboard(*static_cast<LightBillboard*>(obj));
+    	m_lightsBillboards.push_back(object);
+    	m_lightsBillboardsMap[object->getCode()] = object;
+    	obj->setSelected(true);
+    	m_selectedObjsVect.push_back(obj);
+    }
 }
 
-void MainApp::removePointLight(int index){
-	if(m_selectedObjsVect.size() != 1)
-		return;
-	m_gameObjectsMap.erase(m_selectedObjsVect[0]->getCode());
-	m_billboardLightsMap.erase(m_selectedObjsVect[0]);
-
-	auto it = std::find(m_billboardsForLights.begin(), m_billboardsForLights.end(), m_selectedObjsVect[0]);
-	if(it != m_billboardsForLights.end())
-		m_billboardsForLights.erase(it);
-
+void MainApp::removeSelectedPointLights(){
+	for(auto& obj : m_selectedObjsVect){
+		auto it = std::find(m_lights.begin(), m_lights.end(), static_cast<LightBillboard*>(obj)->getLight());
+		if(it != m_lights.end()){
+			m_lightsBillboardsMap.erase(obj->getCode());
+			m_lights.erase(it);
+		}
+	}
 	m_selectedObjsVect.clear();
-	m_lights.erase(m_lights.begin() + index);
-	m_currentlySelectedLight = nullptr;
 }
 
-void MainApp::removeSelectedObjects(){
+void MainApp::removeSelectedGameObjects(){
 	for(auto& obj : m_selectedObjsVect){
 		auto it = std::find(m_objectsInScene.begin(), m_objectsInScene.end(), obj);
 		if(it != m_objectsInScene.end()){
@@ -616,21 +585,24 @@ void MainApp::removeSelectedObjects(){
 	m_selectedObjsVect.clear();
 }
 
-void MainApp::duplicateSelectedObjects(){
-	GameObject* object;
-	std::vector<GameObject*> backUp = m_selectedObjsVect;
-	for(auto obj : m_selectedObjsVect)
-		if(obj) obj->setSelected(false);
-	m_selectedObjsVect.clear();
+void MainApp::duplicateSelectedGameObjects(){
+	std::vector<Actor*> backUp = m_selectedObjsVect;
+	deselectAll();
 
+	GameObject* object;
 	for(auto& obj : backUp){
-		object = new GameObject(*obj);
+		object = new GameObject(*static_cast<GameObject*>(obj));
 		m_objectsInScene.push_back(object);
 		m_gameObjectsMap[object->getCode()] = object;
 		obj->setSelected(true);
 		m_selectedObjsVect.push_back(obj);
 	}
-	object = nullptr;
+}
+
+void MainApp::deselectAll(){
+	for(auto obj : m_selectedObjsVect)
+		if(obj) obj->setSelected(false);
+	m_selectedObjsVect.clear();
 }
 
 void MainApp::updateToDrawVector(){
@@ -641,353 +613,5 @@ void MainApp::updateToDrawVector(){
 	else{
 		for(const auto& gameObject : m_objectsInScene)
 			m_objects_ToDraw.push_back(gameObject);
-		for(const auto& gameObject : m_billboardsForLights)
-			m_objects_ToDraw.push_back(gameObject);
 	}
-}
-
-void MainApp::drawGameObjects(bool bDrawColbodies){
-	std::vector<renderer::CollisionBody*> colBodies;
-	///first draw the normal gameobjects
-	//prepare shader
-	m_gameObjectsShader.use();
-	m_gameObjectsShader.loadFlashlight(m_player.isFlashLightOn());
-	
-	if(m_gui.b_creationTab)
-		m_gameObjectsShader.loadLights(std::vector<renderer::Light*>{(renderer::Light*)&m_creationTabLight});
-	else
-		m_gameObjectsShader.loadLights(m_lights);
-	glm::mat4 view = m_player.getCamera()->getViewMatrix();
-	m_gameObjectsShader.loadViewPosition(m_player.getCamera()->getPos());
-	m_gameObjectsShader.loadViewMatrix(view);
-	m_gameObjectsShader.loadProjectionMatrix(renderer::Renderer::GetProjectionMatrix());
-
-	//get textured model batches
-	auto batches = Utilities::BatchRenderables<GameObject>(m_objects_ToDraw);
-	for(auto const& batch : batches){
-		if(batch.first->isBillboard())
-			continue;
-		renderer::Renderer::BindTexturedModel(batch.first);
-
-		for(auto const& gameObject : batch.second){
-			m_gameObjectsShader.loadSelected(gameObject->isSelected());
-			glm::mat4 modelMatrix;
-			modelMatrix = glm::translate(modelMatrix, gameObject->getPosition());
-			modelMatrix = modelMatrix * glm::toMat4(gameObject->getRotation());
-			modelMatrix = glm::scale(modelMatrix, gameObject->getScale());
-			m_gameObjectsShader.loadModelMatrix(modelMatrix);
-			
-			renderer::Renderer::DrawTexturedModel(batch.first);
-		}
-		if(bDrawColbodies){
-			std::vector<renderer::CollisionBody>* cb = &batch.second[0]->getColBodies();
-			for(auto& body : *cb)
-				colBodies.push_back(&body);
-		}
-	}
-	m_gameObjectsShader.unuse();
-
-	///now draw the billboards
-	//prepare shader
-	m_billboardShader.use();
-
-	m_billboardShader.loadViewMatrix(view);
-	m_billboardShader.loadProjectionMatrix(renderer::Renderer::GetProjectionMatrix());
-
-	for(auto const& batch : batches){
-		if(batch.first->isBillboard()){
-			renderer::Renderer::BindTexturedModel(batch.first);
-			for(auto const& gameObject : batch.second){
-				m_billboardShader.loadSelected(gameObject->isSelected());
-				glm::mat4 modelMatrix;
-				modelMatrix = glm::translate(modelMatrix, gameObject->getPosition());
-				modelMatrix = modelMatrix * glm::toMat4(gameObject->getRotation());
-
-				modelMatrix[0][0] = view[0][0];
-				modelMatrix[0][1] = view[1][0];
-				modelMatrix[0][2] = view[2][0];
-				modelMatrix[1][0] = view[0][1];
-				modelMatrix[1][1] = view[1][1];
-				modelMatrix[1][2] = view[2][1];
-				modelMatrix[2][0] = view[0][2];
-				modelMatrix[2][1] = view[1][2];
-				modelMatrix[2][2] = view[2][2];
-				modelMatrix = glm::scale(modelMatrix, gameObject->getScale());
-				m_billboardShader.loadModelMatrix(modelMatrix);
-
-				renderer::Renderer::DrawTexturedModel(batch.first);
-			}
-			if(bDrawColbodies){
-				std::vector<renderer::CollisionBody>* cb = &batch.second[0]->getColBodies();
-				for(auto& body : *cb)
-					colBodies.push_back(&body);
-			}
-		}
-	}
-	m_billboardShader.unuse();
-
-	if(bDrawColbodies)
-		drawCollisionBodies(colBodies);
-}
-
-void MainApp::drawCollisionBodies(std::vector<renderer::CollisionBody*>& colBodies){
-	if(!colBodies.size())
-		return;
-
-	// view/projection transformations
-	glm::mat4 view = m_player.getCamera()->getViewMatrix();
-	m_basicColorShader.use();
-	m_basicColorShader.loadViewMatrix(view);
-	m_basicColorShader.loadProjectionMatrix(renderer::Renderer::GetProjectionMatrix());
-	m_basicColorShader.loadColor(glm::vec3(0.0f, 1.0f, 0.0f));
-	renderer::TexturedModel* td;
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	for(auto body : colBodies){
-		glm::mat4 model;
-		model = glm::translate(model, body->colRelativePos);
-		model = model * glm::toMat4(body->colRotQuat);
-		model = glm::scale(model, body->colScale);
-		m_basicColorShader.loadModelMatrix(model);
-
-		td = utilities::ResourceManager::loadModel(body->shape);
-		glBindVertexArray(td->getMesh()->vertexArrayObject);
-		glDrawElements(GL_TRIANGLES, td->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
-	}
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	m_basicColorShader.unuse();
-}
-
-void MainApp::prePixelPickDraw(){
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glm::vec3 colorCode;
-	
-	m_basicColorShader.use();
-	glm::mat4 view = m_player.getCamera()->getViewMatrix();
-	m_basicColorShader.loadViewMatrix(view);
-	m_basicColorShader.loadProjectionMatrix(renderer::Renderer::GetProjectionMatrix());
-
-	//render gameobjects
-	for(auto object : m_objects_ToDraw){
-		glm::mat4 model;
-		if(object->isBillboard()){
-			model = glm::translate(model, object->getPosition());
-			model = model * glm::toMat4(object->getRotation());
-
-			model[0][0] = view[0][0];
-			model[0][1] = view[1][0];
-			model[0][2] = view[2][0];
-			model[1][0] = view[0][1];
-			model[1][1] = view[1][1];
-			model[1][2] = view[2][1];
-			model[2][0] = view[0][2];
-			model[2][1] = view[1][2];
-			model[2][2] = view[2][2];
-			model = glm::scale(model, object->getScale());
-		} else{
-			model = glm::translate(model, object->getPosition());
-			model = model * glm::toMat4(object->getRotation());
-			model = glm::scale(model, object->getScale());
-		}
-
-		m_basicColorShader.loadModelMatrix(model);
-		int code = object->getCode();
-		colorCode = glm::vec3(
-			((code & 0x000000FF) >>  0) / 255.0f,
-			((code & 0x0000FF00) >>  8) / 255.0f,
-			((code & 0x00FF0000) >> 16) / 255.0f
-		);
-		m_basicColorShader.loadColor(colorCode);
-		glBindVertexArray(object->getTexturedModel()->getMesh()->vertexArrayObject);
-		glDrawElements(GL_TRIANGLES, object->getTexturedModel()->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
-	}
-
-	if(m_gizmos.canBeShown()){
-		auto gizmos = m_gizmos.getGizmos();
-		renderer::TexturedModel* td;
-		glClear(GL_DEPTH_BUFFER_BIT);
-		glm::vec3 scale = glm::vec3(0.5f) * glm::distance(m_gizmos.getPosition(), m_player.getCamera()->getPos());
-		for(auto gizmo : *gizmos){
-			glm::mat4 model;
-			model = glm::translate(model, m_gizmos.getPosition());
-			
-			if(m_gizmos.getGizmoMode() == (int)GizmoMode::ROTATE){
-				auto baseRot = gizmo.obj->getRotation();
-				model = model * glm::toMat4(m_gizmos.getRot() * baseRot);
-			} else{
-				model = model * glm::toMat4(gizmo.obj->getRotation());
-			}
-
-			model = glm::scale(model, scale);
-
-			m_basicColorShader.loadModelMatrix(model);
-			int code = gizmo.obj->getCode();
-			colorCode = glm::vec3(
-				((code & 0x000000FF) >>  0) / 255.0f,
-				((code & 0x0000FF00) >>  8) / 255.0f,
-				((code & 0x00FF0000) >> 16) / 255.0f
-			);
-			m_basicColorShader.loadColor(colorCode);
-			td = gizmo.obj->getTexturedModel();
-			glBindVertexArray(td->getMesh()->vertexArrayObject);
-			glDrawElements(GL_TRIANGLES, td->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
-		}
-	}
-	m_basicColorShader.unuse();
-}
-
-void MainApp::drawTransformGizmos(){
-	if(!m_gizmos.canBeShown() || m_gui.b_creationTab)
-		return;
-
-	glClear(GL_DEPTH_BUFFER_BIT);
-	const std::vector<Gizmo>* gzms = m_gizmos.getGizmos();
-
-	m_basicColorShader.use();
-	// view/projection transformations
-	glm::mat4 view = m_player.getCamera()->getViewMatrix();
-	m_basicColorShader.loadViewMatrix(view);
-	m_basicColorShader.loadProjectionMatrix(renderer::Renderer::GetProjectionMatrix());
-	glm::vec3 scale = glm::vec3(0.5f) * glm::distance(m_gizmos.getPosition(), m_player.getCamera()->getPos());
-	renderer::TexturedModel* td;
-	for(auto gzm : *gzms){
-		m_basicColorShader.loadColor(gzm.color);
-		glm::mat4 model;
-		model = glm::translate(model, m_gizmos.getPosition());
-
-		if(m_gizmos.getGizmoMode() == (int)GizmoMode::ROTATE){
-			auto baseRot = gzm.obj->getRotation();
-			model = model * glm::toMat4(m_gizmos.getRot() * baseRot);
-		} else{
-			model = model * glm::toMat4(gzm.obj->getRotation());
-		}
-
-		model = glm::scale(model, scale);
-
-		m_basicColorShader.loadModelMatrix(model);
-
-		td = gzm.obj->getTexturedModel();
-		glBindVertexArray(td->getMesh()->vertexArrayObject);
-		glDrawElements(GL_TRIANGLES, td->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
-	}
-	m_basicColorShader.unuse();
-}
-
-void MainApp::drawLines(){
-	///bind the line VAO
-	glBindVertexArray(m_lineVAO);
-	///tell opengl to draw wireframe
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	///load appropiate uniforms
-	m_basicColorShader.use();
-	m_basicColorShader.loadViewMatrix(m_player.getCamera()->getViewMatrix());
-	m_basicColorShader.loadProjectionMatrix(renderer::Renderer::GetProjectionMatrix());
-	glm::mat4 model;
-	///directional lines
-	//x
-	model = glm::translate(model, glm::vec3(0.0f));
-	m_basicColorShader.loadColor(glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(2.0f));
-	m_basicColorShader.loadModelMatrix(model);
-	glDrawArrays(GL_LINES, 0, 2);
-	//y
-	model = glm::mat4();
-	model = glm::translate(model, glm::vec3(0.0f));
-	m_basicColorShader.loadColor(glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(2.0f));
-	m_basicColorShader.loadModelMatrix(model);
-	glDrawArrays(GL_LINES, 0, 2);
-	//z
-	model = glm::mat4();
-	model = glm::translate(model, glm::vec3(0.0f));
-	m_basicColorShader.loadColor(glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(2.0f));
-	m_basicColorShader.loadModelMatrix(model);
-	glDrawArrays(GL_LINES, 0, 2);
-
-	///tell opengl to draw filled polygons
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	///unbind line VAO
-	glBindVertexArray(0);
-	///stop using this shader
-	m_basicColorShader.unuse();
-}
-
-void MainApp::drawGrid(){
-	///bind the line VAO
-	glBindVertexArray(m_lineVAO);
-	///tell opengl to draw wireframe
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	///load appropiate uniforms
-	m_basicColorShader.use();
-	m_basicColorShader.loadViewMatrix(m_player.getCamera()->getViewMatrix());
-	m_basicColorShader.loadProjectionMatrix(renderer::Renderer::GetProjectionMatrix());
-	m_basicColorShader.loadColor(glm::vec3(0.3f, 0.3f, 0.3f));
-
-	glm::vec3 gridPosition;
-	gridPosition.x = std::round(m_player.getPosition().x / Grid::getStep()) * Grid::getStep();
-	gridPosition.y = Grid::getHeight();
-	gridPosition.z = std::round(m_player.getPosition().z / Grid::getStep()) * Grid::getStep();
-
-	float scaleFactor = 0.069f;
-	int ord = 0;
-	while(Grid::getStep() * ord <= 7.0f){
-		glm::mat4 model;
-		model = glm::translate(model, glm::vec3(gridPosition.x, Grid::getHeight(), gridPosition.z + Grid::getStep() * ord));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(scaleFactor));
-		m_basicColorShader.loadModelMatrix(model);
-		glDrawArrays(GL_LINES, 0, 2);
-
-		model = glm::mat4();
-		model = glm::translate(model, glm::vec3(gridPosition.x, Grid::getHeight(), gridPosition.z - Grid::getStep() * ord));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(scaleFactor));
-		m_basicColorShader.loadModelMatrix(model);
-		glDrawArrays(GL_LINES, 0, 2);
-
-		ord++;
-	}
-	ord = 0;
-	while(Grid::getStep() * ord <= 7.0f){
-		glm::mat4 model;
-		model = glm::translate(model, glm::vec3(gridPosition.x + Grid::getStep() * ord, Grid::getHeight(), gridPosition.z));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(scaleFactor));
-		m_basicColorShader.loadModelMatrix(model);
-		glDrawArrays(GL_LINES, 0, 2);
-
-		model = glm::mat4();
-		model = glm::translate(model, glm::vec3(gridPosition.x - Grid::getStep() * ord, Grid::getHeight(), gridPosition.z));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(scaleFactor));
-		m_basicColorShader.loadModelMatrix(model);
-		glDrawArrays(GL_LINES, 0, 2);
-
-		ord++;
-	}
-
-	///tell opengl to draw filled polygons
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	///unbind line VAO
-	glBindVertexArray(0);
-	///stop using this shader
-	m_basicColorShader.unuse();
 }
