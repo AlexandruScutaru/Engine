@@ -11,14 +11,14 @@ namespace renderer{
 class LightBillboard : public Actor {
 public:
 	LightBillboard();
-	//LightBillboard(renderer::TexturedModel* model);
+	
 	LightBillboard(renderer::TexturedModel* model,
 			   renderer::Light* light = nullptr,
 			   glm::vec3& pos = glm::vec3(0.0f),
 			   glm::quat& rot = glm::quat(),
 			   glm::vec3& scale = glm::vec3(1.0f)
 	);
-	//LightBillboard(const LightBillboard& other);
+	
 	virtual ~LightBillboard();
 
 	virtual void setPosition(glm::vec3& pos) override;

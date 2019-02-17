@@ -11,11 +11,8 @@ LightBillboard::LightBillboard(renderer::TexturedModel * model, renderer::Light 
 	m_light(light)
 {}
 
-//LightBillboard::LightBillboard(const LightBillboard & other)
-//{
-//}
-
 LightBillboard::~LightBillboard(){}
+
 
 void LightBillboard::setPosition(glm::vec3 & pos){
 	m_pos = pos;

@@ -20,6 +20,7 @@
 #include "Actor.h" 
 #include "GameObject.h"
 #include "LightBillboard.h"
+#include "CollisionVolumeBillboard.h"
 #include "TranformGizmos.h"
 #include "Player.h"
 
@@ -66,10 +67,13 @@ private:
 	void pixelPick(glm::vec2& coords);
 	void addNewObject(const std::string& file);
 	void addPointLight();
+	void addNewColVolume();
 	void duplicateSelectedGameObjects();
 	void duplicateSelectedPointLights();
+	void duplicateSelectedColVolumes();
 	void removeSelectedGameObjects();
 	void removeSelectedPointLights();
+	void removeSelectedColVolumes();
 	void deselectAll();
 
 	void updateToDrawVector();
@@ -82,6 +86,7 @@ private:
 	
 	std::vector<Actor*> m_selectedObjsVect;
 	
+	//gameobjects
 	std::vector<GameObject*> m_objectsInScene;
 	std::map<unsigned int, GameObject*> m_gameObjectsMap;
 
@@ -90,6 +95,10 @@ private:
 	std::vector<LightBillboard*> m_lightsBillboards;
 	std::map<unsigned int, LightBillboard*> m_lightsBillboardsMap;
 	
+	//collision volumes (triggers)
+	std::vector<CollisionVolumeBillboard*> m_colVolumeBillboards;
+	std::map<unsigned int, CollisionVolumeBillboard*> m_colVolumeBillboardsMap;
+
 	AppState m_appState;
 
 	//this vector is to be filled with objects to draw 

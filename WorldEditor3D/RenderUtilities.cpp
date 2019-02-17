@@ -125,6 +125,49 @@ void RenderUtilities::DrawLightBillboards(MainApp * app){
 	app->m_billboardShader.unuse();
 }
 
+void RenderUtilities::DrawColVolumesBillboards(MainApp * app){
+	auto batches = Utilities::BatchRenderables<CollisionVolumeBillboard>(app->m_colVolumeBillboards);
+	app->m_billboardShader.use();
+
+	glm::mat4 view = app->m_player.getCamera()->getViewMatrix();
+	app->m_billboardShader.loadViewMatrix(view);
+	app->m_billboardShader.loadProjectionMatrix(renderer::Renderer::GetProjectionMatrix());
+
+	for(auto const& batch : batches){
+		if(batch.first->isBillboard()){
+			renderer::Renderer::BindTexturedModel(batch.first);
+			for(auto const& gameObject : batch.second){
+				app->m_billboardShader.loadSelected(gameObject->isSelected());
+				glm::mat4 modelMatrix;
+				modelMatrix = glm::translate(modelMatrix, gameObject->getPosition());
+				modelMatrix = modelMatrix * glm::toMat4(gameObject->getRotation());
+
+				modelMatrix[0][0] = view[0][0];
+				modelMatrix[0][1] = view[1][0];
+				modelMatrix[0][2] = view[2][0];
+				modelMatrix[1][0] = view[0][1];
+				modelMatrix[1][1] = view[1][1];
+				modelMatrix[1][2] = view[2][1];
+				modelMatrix[2][0] = view[0][2];
+				modelMatrix[2][1] = view[1][2];
+				modelMatrix[2][2] = view[2][2];
+				modelMatrix = glm::scale(modelMatrix, gameObject->getScale());
+				app->m_billboardShader.loadModelMatrix(modelMatrix);
+
+				renderer::Renderer::DrawTexturedModel(batch.first);
+			}
+		}
+	}
+	app->m_billboardShader.unuse();
+
+	std::vector<renderer::CollisionBody*> bodies = {};
+	for(auto const& colVolume : app->m_colVolumeBillboards)
+		bodies.push_back(colVolume->getColBodyPtr());
+
+	DrawCollisionBodies(app, bodies);
+
+}
+
 void RenderUtilities::DrawCollisionBodies(MainApp* app, std::vector<renderer::CollisionBody*>& colBodies){
 	if(!colBodies.size())
 		return;
@@ -371,6 +414,8 @@ std::vector<Actor*> RenderUtilities::GetPixelPickActors(MainApp * app){
 		objects.push_back(static_cast<Actor*>(gameobject));
 	for(auto light : app->m_lightsBillboards)
 		objects.push_back(static_cast<Actor*>(light));
+	for(auto colVolume : app->m_colVolumeBillboards)
+		objects.push_back(static_cast<Actor*>(colVolume));
 
 	return objects;
 }

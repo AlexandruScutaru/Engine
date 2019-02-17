@@ -14,6 +14,7 @@ class RenderUtilities{
 public:
 	static void DrawGameObjects(MainApp* app, bool drawCollisionBodies);
 	static void DrawLightBillboards(MainApp* app);
+	static void DrawColVolumesBillboards(MainApp* app);
 	static void DrawCollisionBodies(MainApp* app, std::vector<renderer::CollisionBody*>& colBodies);
 	static void PrePixelPickDraw(MainApp* app);
 	static void DrawTransformGizmos(MainApp* app, bool useColorCode = false);

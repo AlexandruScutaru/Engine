@@ -177,6 +177,9 @@ void MainApp::update(float deltaTime){
 		lightBillboard->update(deltaTime);
 	for(auto gameobject : m_objectsInScene)
 		gameobject->update(deltaTime);
+	for(auto colVolume : m_colVolumeBillboards)
+		colVolume->update(deltaTime);
+
 
 	updateToDrawVector();
 }
@@ -191,6 +194,7 @@ void MainApp::drawGame(){
 		bDrawColBodies = true;
 	RenderUtilities::DrawGameObjects(this, bDrawColBodies);
 	RenderUtilities::DrawLightBillboards(this);
+	RenderUtilities::DrawColVolumesBillboards(this);
 	RenderUtilities::DrawLines(this);
 	if(Grid::isEnabled()) RenderUtilities::DrawGrid(this);
 	RenderUtilities::DrawTransformGizmos(this);
@@ -480,6 +484,9 @@ void MainApp::pixelPick(glm::vec2& coords){
 			} else if(m_gui.m_sceneTabs & 1ui8 << Scene_Tabs::LIGHTS){
 				auto it = m_lightsBillboardsMap.find(val);
 				if(it != m_lightsBillboardsMap.end()) selected = static_cast<Actor*>(it->second);
+			} else if(m_gui.m_sceneTabs & 1ui8 << Scene_Tabs::COL_VOLUMES){
+				auto it = m_colVolumeBillboardsMap.find(val);
+				if(it != m_colVolumeBillboardsMap.end()) selected = static_cast<Actor*>(it->second);
 			}
 			if(selected){
 				if(m_inputManager.isKeyDown(SDLK_LCTRL)){
@@ -523,10 +530,7 @@ void MainApp::addNewObject(const std::string& file){
 	m_objectsInScene.push_back(object);
 	m_gameObjectsMap[object->getCode()] = object;
 	
-	for(auto& obj : m_selectedObjsVect)
-		if(obj) obj->setSelected(false);
-	m_selectedObjsVect.clear();
-
+	deselectAll();
 	object->setSelected(true);
 	m_selectedObjsVect.push_back(object);
 
@@ -549,6 +553,23 @@ void MainApp::addPointLight(){
 	m_lightsBillboardsMap[lightBillboard->getCode()] = lightBillboard;
 }
 
+void MainApp::addNewColVolume(){
+	std::string file = "billboard_colVolume";
+	CollisionVolumeBillboard* colVolumeBillboard = new CollisionVolumeBillboard(utilities::ResourceManager::loadModel(file),
+																				"collision_volume",
+																				renderer::CollisionShapes::SHAPE_CUBE);
+	glm::vec3 pos = m_player.getCamera()->getPos() + m_player.getCamera()->getFront() * 4.0f;
+	colVolumeBillboard->setPosition(pos);
+	m_colVolumeBillboards.push_back(colVolumeBillboard);
+	m_colVolumeBillboardsMap[colVolumeBillboard->getCode()] = colVolumeBillboard;
+
+	deselectAll();
+	colVolumeBillboard->setSelected(true);
+	m_selectedObjsVect.push_back(colVolumeBillboard);
+
+	colVolumeBillboard = nullptr;
+}
+
 void MainApp::duplicateSelectedPointLights(){
 	std::vector<Actor*> backUp = m_selectedObjsVect;
 	deselectAll();
@@ -563,12 +584,37 @@ void MainApp::duplicateSelectedPointLights(){
     }
 }
 
+void MainApp::duplicateSelectedColVolumes(){
+	std::vector<Actor*> backUp = m_selectedObjsVect;
+	deselectAll();
+
+	CollisionVolumeBillboard* object;
+	for(auto& obj : backUp){
+		object = new CollisionVolumeBillboard(*static_cast<CollisionVolumeBillboard*>(obj));
+		m_colVolumeBillboards.push_back(object);
+		m_colVolumeBillboardsMap[object->getCode()] = object;
+		obj->setSelected(true);
+		m_selectedObjsVect.push_back(obj);
+	}
+}
+
 void MainApp::removeSelectedPointLights(){
 	for(auto& obj : m_selectedObjsVect){
 		auto it = std::find(m_lights.begin(), m_lights.end(), static_cast<LightBillboard*>(obj)->getLight());
 		if(it != m_lights.end()){
 			m_lightsBillboardsMap.erase(obj->getCode());
 			m_lights.erase(it);
+		}
+	}
+	m_selectedObjsVect.clear();
+}
+
+void MainApp::removeSelectedColVolumes(){
+	for(auto& obj : m_selectedObjsVect){
+		auto it = std::find(m_colVolumeBillboards.begin(), m_colVolumeBillboards.end(), obj);
+		if(it != m_colVolumeBillboards.end()){
+			m_colVolumeBillboardsMap.erase(obj->getCode());
+			m_colVolumeBillboards.erase(it);
 		}
 	}
 	m_selectedObjsVect.clear();

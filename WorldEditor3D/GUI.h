@@ -32,7 +32,7 @@ enum class FD_Mode{
 
 enum Scene_Tabs{
 	GAMEOBJECTS = 0,
-	ENTITIES,
+	COL_VOLUMES,
 	LIGHTS
 };
 
@@ -55,7 +55,7 @@ public:
 	void openButtonPressed();
 	void updateDirContents(std::vector<std::string>& dir);
 	void showGameobjectsTab();
-	void showEntitiesTab();
+	void showColVolumesTab();
 	void showLightsTab();
 	void showGridSettingsWindow();
 	void showRotationEditWindow();
@@ -71,6 +71,7 @@ public:
 	int fdEntryItem;
 	int placedGameobjectEntryItem;
 	int placedLightEntryItem;
+	int placedCollisionVolumeEntryItem;
 	int collisionBodyEntryItem;
 
 	FD_Mode fdMode;
@@ -81,7 +82,8 @@ public:
 	friend class MainApp;
 
 private:
-	bool m_justShown;
+	bool m_rotationEditJustShown;
+	bool m_rotateGameobject;
 	glm::vec3 m_rot;
 	float m_moveInc;
 	MainApp* app;

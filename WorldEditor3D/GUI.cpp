@@ -11,6 +11,7 @@
 bool VectorOfStringGetter(void* data, int n, const char** out_text);
 bool VectorOfObjectsGetter(void* data, int n, const char** out_text);
 bool VectorOfShapesGetter(void* data, int n, const char** out_text);
+bool VectorOfColVolumesGetter(void* data, int n, const char** out_text);
 bool VectorOfLightsGetter(void* data, int n, const char** out_text);
 
 
@@ -26,9 +27,10 @@ GUI::GUI(MainApp* app) :
 	b_showSaveFileDialog(false),
 	b_showGridWindow(false),
 	b_showEditRotWindow(false),
-	m_justShown(false),
+	m_rotationEditJustShown(false),
 	placedGameobjectEntryItem(-1),
 	placedLightEntryItem(-1),
+	placedCollisionVolumeEntryItem(-1),
 	collisionBodyEntryItem(-1),
 	m_moveInc(0.01f)
 {
@@ -109,19 +111,25 @@ void GUI::showToolbar(){
 	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 
 	//add point light
-	td = *utilities::ResourceManager::getTexture("res/editor/add-pointLight.png");
-	if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1) && b_placementTab){
-		app->addPointLight();
-	}
+	//td = *utilities::ResourceManager::getTexture("res/editor/add-pointLight.png");
+	//if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1) && b_placementTab){
+	//	app->addPointLight();
+	//}
 
 	//add gameobject
-	ImGui::SameLine();
+	//ImGui::SameLine();
 	td = *utilities::ResourceManager::getTexture("res/editor/add-gameobject.png");
 	if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1) && b_placementTab){
-		b_showOpenFileDialog = true;
-		currentPath = "res/gameobjects/";
-		fdMode = FD_Mode::ADD_GAMEOBJECT;
-		updateDirContents(dirContents);
+		if(m_sceneTabs & 1ui8 << Scene_Tabs::LIGHTS){
+			app->addPointLight();
+		} else if(m_sceneTabs & 1ui8 << Scene_Tabs::GAMEOBJECTS){
+			b_showOpenFileDialog = true;
+			currentPath = "res/gameobjects/";
+			fdMode = FD_Mode::ADD_GAMEOBJECT;
+			updateDirContents(dirContents);
+		} else if(m_sceneTabs & 1ui8 << Scene_Tabs::COL_VOLUMES){
+			app->addNewColVolume();
+		}
 	}
 	//duplicate selected
 	ImGui::SameLine();
@@ -131,6 +139,8 @@ void GUI::showToolbar(){
 			app->duplicateSelectedGameObjects();
 		else if(m_sceneTabs & 1ui8 << Scene_Tabs::LIGHTS)
 			app->duplicateSelectedPointLights();
+		else if(m_sceneTabs & 1ui8 << Scene_Tabs::COL_VOLUMES)
+			app->duplicateSelectedColVolumes();
 	}
 	//remove selected
 	ImGui::SameLine();
@@ -140,6 +150,8 @@ void GUI::showToolbar(){
 			app->removeSelectedGameObjects();
 		else if(m_sceneTabs & 1ui8 << Scene_Tabs::LIGHTS)
 			app->removeSelectedGameObjects();
+		else if(m_sceneTabs & 1ui8 << Scene_Tabs::COL_VOLUMES)
+			app->removeSelectedColVolumes();
 	}
 
 	ImGui::PopStyleColor();
@@ -410,12 +422,12 @@ void GUI::showPlacementTab(){
 		if(m_sceneTabs & 1ui8 << Scene_Tabs::GAMEOBJECTS)
 			showGameobjectsTab();
 		
-		if(ImGui::Button("Entities", ImVec2(ImGui::GetContentRegionAvailWidth(), 0.0f))){
-			m_sceneTabs = (m_sceneTabs & 1ui8 << Scene_Tabs::ENTITIES) ^ 1ui8 << Scene_Tabs::ENTITIES;
+		if(ImGui::Button("Collision Volumes", ImVec2(ImGui::GetContentRegionAvailWidth(), 0.0f))){
+			m_sceneTabs = (m_sceneTabs & 1ui8 << Scene_Tabs::COL_VOLUMES) ^ 1ui8 << Scene_Tabs::COL_VOLUMES;
 			app->deselectAll();
 		}
-		if(m_sceneTabs & 1ui8 << Scene_Tabs::ENTITIES)
-			showEntitiesTab();
+		if(m_sceneTabs & 1ui8 << Scene_Tabs::COL_VOLUMES)
+			showColVolumesTab();
 
 		if(ImGui::Button("Lights", ImVec2(ImGui::GetContentRegionAvailWidth(), 0.0f))){
 			m_sceneTabs = (m_sceneTabs & 1ui8 << Scene_Tabs::LIGHTS) ^ 1ui8 << Scene_Tabs::LIGHTS;
@@ -629,7 +641,8 @@ void GUI::showGameobjectsTab(){
 			if(ImGui::Button("Edit")){
 				m_rot = glm::eulerAngles(obj->getRotation());
 				b_showEditRotWindow = true;
-				m_justShown = true;
+				m_rotationEditJustShown = true;
+				m_rotateGameobject = true;
 			}
 			
 			ImGui::Text("S:");
@@ -647,8 +660,92 @@ void GUI::showGameobjectsTab(){
 	ImGui::PopItemWidth();
 }
 
-void GUI::showEntitiesTab(){
-	ImGui::Text("TO DO!");
+void GUI::showColVolumesTab(){
+	if(app->m_selectedObjsVect.size() == 1){
+		for(size_t i = 0; i < app->m_colVolumeBillboards.size(); i++)
+			if(app->m_colVolumeBillboards[i] == app->m_selectedObjsVect[0]){
+				placedCollisionVolumeEntryItem = i;
+				break;
+			}
+	} else{
+		placedCollisionVolumeEntryItem = -1;
+	}
+
+	ImGui::PushItemWidth(-1);
+	ImGui::Text("Collision volumes in scene:");
+	ImGui::ListBox("##colVolumesList", &placedCollisionVolumeEntryItem, VectorOfColVolumesGetter, (void*)(&app->m_colVolumeBillboards), (int)(app->m_colVolumeBillboards.size()), 10);
+	
+	if(placedCollisionVolumeEntryItem >= 0){
+		for(auto& colVol : app->m_colVolumeBillboards)
+			if(colVol) colVol->setSelected(false);
+		app->m_selectedObjsVect.clear();
+
+		app->m_selectedObjsVect.push_back(app->m_colVolumeBillboards[placedCollisionVolumeEntryItem]);
+		app->m_selectedObjsVect[0]->setSelected(true);
+		
+		//collision volume info
+		memset(m_name, '\0', OBJECT_NAME_SIZE);
+		strncat_s(m_name, app->m_colVolumeBillboards[placedCollisionVolumeEntryItem]->getName().c_str(), OBJECT_NAME_SIZE);
+		ImGui::InputText("##colVolumeName", m_name, OBJECT_NAME_SIZE);
+		app->m_colVolumeBillboards[placedCollisionVolumeEntryItem]->setName(m_name);
+
+		ImGui::Separator();
+		ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5f);
+		ImGui::Text("Volume shape:");
+		ImGui::SameLine();
+		ImGui::Combo("##colVolumeShape", &app->m_colVolumeBillboards[placedCollisionVolumeEntryItem]->getColBodyPtr()->shape, "Cube\0Sphere\0Cilinder\0Cone\0Capsule\0\0");
+		ImGui::PopItemWidth();
+
+		ImGui::Separator();
+		ImGui::Text("Transforms");
+		CollisionVolumeBillboard* obj = app->m_colVolumeBillboards[placedCollisionVolumeEntryItem];
+		ImGui::BeginChild("colVOlumeTransforms", ImVec2(-1, 65), false);
+		{
+			ImGui::PushItemWidth(70);
+			ImGui::Text("P:");
+			ImGui::SameLine();
+			ImGui::InputFloat("##colVolInputPosX", &obj->getPosition().x, 0.0f, 0.0f, 2);
+			ImGui::SameLine();
+			ImGui::InputFloat("##colVolInputPosY", &obj->getPosition().y, 0.0f, 0.0f, 2);
+			ImGui::SameLine();
+			ImGui::InputFloat("##colVolInputPosZ", &obj->getPosition().z, 0.0f, 0.0f, 2);
+		
+			ImGui::Text("R:");
+			ImGui::SameLine();
+			
+			ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+			auto rot = glm::eulerAngles(obj->getColBodyRef().colRotQuat);
+			rot = glm::vec3(glm::degrees(rot.x), glm::degrees(rot.y), glm::degrees(rot.z));
+			ImGui::InputFloat("##colVolInputRotX", &rot.x, 0.0f, 0.0f, 2);
+			ImGui::SameLine();
+			ImGui::InputFloat("##colVolInputRotY", &rot.y, 0.0f, 0.0f, 2);
+			ImGui::SameLine();
+			ImGui::InputFloat("##colVolInputRotZ", &rot.z, 0.0f, 0.0f, 2);
+			ImGui::PopItemFlag();
+			ImGui::PopStyleVar();
+			
+			ImGui::SameLine();
+			if(ImGui::Button("Edit")){
+				m_rot = glm::eulerAngles(obj->getColBodyRef().colRotQuat);
+				b_showEditRotWindow = true;
+				m_rotationEditJustShown = true;
+				m_rotateGameobject = false;
+			}
+			
+			ImGui::Text("S:");
+			ImGui::SameLine();
+			ImGui::InputFloat("##colVolInputScaleX", &obj->getColBodyPtr()->colScale.x, 0.0f, 0.0f, 2);
+			ImGui::SameLine();
+			ImGui::InputFloat("##colVolInputScaleY", &obj->getColBodyPtr()->colScale.y, 0.0f, 0.0f, 2);
+			ImGui::SameLine();
+			ImGui::InputFloat("##colVolInputScaleZ", &obj->getColBodyPtr()->colScale.z, 0.0f, 0.0f, 2);
+			
+			ImGui::PopItemWidth();
+		}
+		ImGui::EndChild();
+	}
+	ImGui::PopItemWidth();
 }
 
 void GUI::showLightsTab(){
@@ -871,12 +968,16 @@ void GUI::showRotationEditWindow(){
 				 ImGuiWindowFlags_NoResize |
 				 ImGuiWindowFlags_NoCollapse
 	);
+	Actor* obj;
+	if(m_rotateGameobject)
+		obj = app->m_objectsInScene[placedGameobjectEntryItem];
+	else
+		obj = app->m_colVolumeBillboards[placedCollisionVolumeEntryItem];
 
-	GameObject* obj = app->m_objectsInScene[placedGameobjectEntryItem];
 	static glm::vec3 rotDg = glm::vec3(glm::degrees(m_rot.x), glm::degrees(m_rot.y), glm::degrees(m_rot.z));
-	if(m_justShown){
+	if(m_rotationEditJustShown){
 		rotDg = glm::vec3(glm::degrees(m_rot.x), glm::degrees(m_rot.y), glm::degrees(m_rot.z));
-		m_justShown = false;
+		m_rotationEditJustShown = false;
 	}
 	ImGui::PushItemWidth(70);
 
@@ -913,8 +1014,13 @@ bool VectorOfObjectsGetter(void * data, int n, const char ** out_text){
 
 bool VectorOfShapesGetter(void * data, int n, const char ** out_text){
 	std::vector<int>* v = (std::vector<int>*)data;
-	*out_text = utilities::ResourceManager::IndexToShape((*v)[n]);
-		
+	*out_text = utilities::ResourceManager::IndexToShape((*v)[n]);	
+	return true;
+}
+
+bool VectorOfColVolumesGetter(void * data, int n, const char ** out_text){
+	std::vector<CollisionVolumeBillboard*>* v = (std::vector<CollisionVolumeBillboard*>*)data;
+	*out_text = (*v)[n]->getName().c_str();
 	return true;
 }
 
@@ -922,6 +1028,5 @@ bool VectorOfLightsGetter(void * data, int n, const char ** out_text){
 	if(n == 0)		*out_text = "directional";
 	else if(n == 1)	*out_text = "spot";
 	else			*out_text = "point";
-
 	return true;
 }
