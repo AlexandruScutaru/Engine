@@ -16,6 +16,8 @@ namespace renderer{
 		static glm::u8vec4 getColorAt(glm::vec2& coords);
 		static void updateProjectionMatrix(float fov, int width, int height);
 		static glm::mat4& GetProjectionMatrix(){ return m_projection; }
+		static void enableBackFaceCulling();
+		static void disableBackFaceCulling();
 
 	private:
 		Renderer();

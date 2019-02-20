@@ -2,6 +2,7 @@
 #define RENDER_UTILITIES_H
 
 #include <vector>
+#include <GLM/glm.hpp>
 
 class MainApp;
 class Actor;
@@ -15,7 +16,7 @@ public:
 	static void DrawGameObjects(MainApp* app, bool drawCollisionBodies);
 	static void DrawLightBillboards(MainApp* app);
 	static void DrawColVolumesBillboards(MainApp* app);
-	static void DrawCollisionBodies(MainApp* app, std::vector<renderer::CollisionBody*>& colBodies);
+	static void DrawCollisionBodies(MainApp* app, std::vector<renderer::CollisionBody*>& colBodies, glm::vec3& color = glm::vec3(0.0f, 1.0f, 0.0f));
 	static void PrePixelPickDraw(MainApp* app);
 	static void DrawTransformGizmos(MainApp* app, bool useColorCode = false);
 	static void DrawLines(MainApp* app);

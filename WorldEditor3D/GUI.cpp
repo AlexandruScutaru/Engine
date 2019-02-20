@@ -27,6 +27,7 @@ GUI::GUI(MainApp* app) :
 	b_showSaveFileDialog(false),
 	b_showGridWindow(false),
 	b_showEditRotWindow(false),
+	b_showPopup(false),
 	m_rotationEditJustShown(false),
 	placedGameobjectEntryItem(-1),
 	placedLightEntryItem(-1),
@@ -58,6 +59,8 @@ void GUI::updateImGuiWindows(){
 	if(b_showSaveFileDialog) showSaveFileDialog();
 	if(b_showGridWindow)     showGridSettingsWindow();
 	if(b_showEditRotWindow)  showRotationEditWindow();
+
+	if(b_showPopup)			 showWarningPopup();
 }
 
 void GUI::showMainMenu(){
@@ -485,7 +488,6 @@ void GUI::showSaveFileDialog(){
 				 ImGuiWindowFlags_NoCollapse
 	);
 	ImGui::PushItemWidth(-1);
-
 	ImGui::Text("Existing files:");
 
 	ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
@@ -513,9 +515,9 @@ void GUI::showSaveFileDialog(){
 		if(!exists){
 			b_showSaveFileDialog = false;
 			if(fdMode == FD_Mode::OBJECT_SAVE){
-				app->saveCreatedObject(buf);
+				Utilities::saveCreatedObject(app, buf);
 			} else if(fdMode == FD_Mode::MAP_SAVE){
-				app->saveMap(buf);
+				Utilities::saveMap(app, buf);
 			}
 		}
 		memset(buf, '\0', OBJECT_NAME_SIZE);
@@ -526,6 +528,22 @@ void GUI::showSaveFileDialog(){
 	}
 	ImGui::PopItemWidth();
 	ImGui::End();
+}
+
+void GUI::showWarningPopup(){
+	ImGui::OpenPopup(popupTitle.c_str());
+	if(ImGui::BeginPopupModal(popupTitle.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize)){
+		ImGui::Text("");
+		ImGui::Text(popupInfo.c_str());
+		ImGui::Text("");
+		ImGui::Separator();
+		ImGui::SetCursorPosX(ImGui::GetWindowSize().x / 2 - 40);
+		if(ImGui::Button("OK", ImVec2(80, 0))) { 
+			ImGui::CloseCurrentPopup(); 
+			b_showPopup = false;
+		}
+		ImGui::EndPopup();
+	}
 }
 
 void GUI::openButtonPressed(){
@@ -543,10 +561,10 @@ void GUI::openButtonPressed(){
 		app->m_creationTabGameObject.getTexturedModel()->setMesh(utilities::ResourceManager::getMesh("res/models/" + dirContents[fdEntryItem]));
 		break;
 	case FD_Mode::MAP_OPEN:
-		app->openMap(dirContents[fdEntryItem]);
+		Utilities::openMap(app, dirContents[fdEntryItem]);
 		break;
 	case FD_Mode::OBJECT_OPEN:
-		app->openCreatedObject(dirContents[fdEntryItem]);
+		Utilities::openCreatedObject(app, dirContents[fdEntryItem]);
 		break;
 	case FD_Mode::ADD_GAMEOBJECT:
 		app->addNewObject(dirContents[fdEntryItem]);
@@ -683,39 +701,50 @@ void GUI::showColVolumesTab(){
 		app->m_selectedObjsVect.push_back(app->m_colVolumeBillboards[placedCollisionVolumeEntryItem]);
 		app->m_selectedObjsVect[0]->setSelected(true);
 		
+		auto currentCollisionVolume = app->m_colVolumeBillboards[placedCollisionVolumeEntryItem];
 		//collision volume info
 		memset(m_name, '\0', OBJECT_NAME_SIZE);
-		strncat_s(m_name, app->m_colVolumeBillboards[placedCollisionVolumeEntryItem]->getName().c_str(), OBJECT_NAME_SIZE);
+		strncat_s(m_name, currentCollisionVolume->getName().c_str(), OBJECT_NAME_SIZE);
 		ImGui::InputText("##colVolumeName", m_name, OBJECT_NAME_SIZE);
-		app->m_colVolumeBillboards[placedCollisionVolumeEntryItem]->setName(m_name);
-
+		currentCollisionVolume->setName(m_name);
 		ImGui::Separator();
+
 		ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5f);
+		ImGui::Text("Volume type: ");
+		ImGui::SameLine();
+		int volumeType = currentCollisionVolume->getVolumeType();
+		ImGui::Combo("##colVolumeType", &volumeType, "Level start\0Level end\0Trigger\0\0");
+		currentCollisionVolume->setVolumeType(static_cast<VolumeType>(volumeType));
+		if(volumeType == static_cast<int>(VolumeType::START)) {
+			auto& colBody = currentCollisionVolume->getColBodyRef();
+			colBody.shape = renderer::CollisionShapes::SHAPE_CAPSULE;
+			colBody.colScale = glm::vec3(1.0f, 1.65f, 1.0f);
+		}
+
 		ImGui::Text("Volume shape:");
 		ImGui::SameLine();
-		ImGui::Combo("##colVolumeShape", &app->m_colVolumeBillboards[placedCollisionVolumeEntryItem]->getColBodyPtr()->shape, "Cube\0Sphere\0Cilinder\0Cone\0Capsule\0\0");
+		ImGui::Combo("##colVolumeShape", &currentCollisionVolume->getColBodyPtr()->shape, "Cube\0Sphere\0Cilinder\0Cone\0Capsule\0\0");
 		ImGui::PopItemWidth();
-
 		ImGui::Separator();
+
 		ImGui::Text("Transforms");
-		CollisionVolumeBillboard* obj = app->m_colVolumeBillboards[placedCollisionVolumeEntryItem];
 		ImGui::BeginChild("colVOlumeTransforms", ImVec2(-1, 65), false);
 		{
 			ImGui::PushItemWidth(70);
 			ImGui::Text("P:");
 			ImGui::SameLine();
-			ImGui::InputFloat("##colVolInputPosX", &obj->getPosition().x, 0.0f, 0.0f, 2);
+			ImGui::InputFloat("##colVolInputPosX", &currentCollisionVolume->getPosition().x, 0.0f, 0.0f, 2);
 			ImGui::SameLine();
-			ImGui::InputFloat("##colVolInputPosY", &obj->getPosition().y, 0.0f, 0.0f, 2);
+			ImGui::InputFloat("##colVolInputPosY", &currentCollisionVolume->getPosition().y, 0.0f, 0.0f, 2);
 			ImGui::SameLine();
-			ImGui::InputFloat("##colVolInputPosZ", &obj->getPosition().z, 0.0f, 0.0f, 2);
+			ImGui::InputFloat("##colVolInputPosZ", &currentCollisionVolume->getPosition().z, 0.0f, 0.0f, 2);
 		
 			ImGui::Text("R:");
 			ImGui::SameLine();
 			
 			ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
 			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-			auto rot = glm::eulerAngles(obj->getColBodyRef().colRotQuat);
+			auto rot = glm::eulerAngles(currentCollisionVolume->getColBodyRef().colRotQuat);
 			rot = glm::vec3(glm::degrees(rot.x), glm::degrees(rot.y), glm::degrees(rot.z));
 			ImGui::InputFloat("##colVolInputRotX", &rot.x, 0.0f, 0.0f, 2);
 			ImGui::SameLine();
@@ -727,7 +756,7 @@ void GUI::showColVolumesTab(){
 			
 			ImGui::SameLine();
 			if(ImGui::Button("Edit")){
-				m_rot = glm::eulerAngles(obj->getColBodyRef().colRotQuat);
+				m_rot = glm::eulerAngles(currentCollisionVolume->getColBodyRef().colRotQuat);
 				b_showEditRotWindow = true;
 				m_rotationEditJustShown = true;
 				m_rotateGameobject = false;
@@ -735,11 +764,11 @@ void GUI::showColVolumesTab(){
 			
 			ImGui::Text("S:");
 			ImGui::SameLine();
-			ImGui::InputFloat("##colVolInputScaleX", &obj->getColBodyPtr()->colScale.x, 0.0f, 0.0f, 2);
+			ImGui::InputFloat("##colVolInputScaleX", &currentCollisionVolume->getColBodyPtr()->colScale.x, 0.0f, 0.0f, 2);
 			ImGui::SameLine();
-			ImGui::InputFloat("##colVolInputScaleY", &obj->getColBodyPtr()->colScale.y, 0.0f, 0.0f, 2);
+			ImGui::InputFloat("##colVolInputScaleY", &currentCollisionVolume->getColBodyPtr()->colScale.y, 0.0f, 0.0f, 2);
 			ImGui::SameLine();
-			ImGui::InputFloat("##colVolInputScaleZ", &obj->getColBodyPtr()->colScale.z, 0.0f, 0.0f, 2);
+			ImGui::InputFloat("##colVolInputScaleZ", &currentCollisionVolume->getColBodyPtr()->colScale.z, 0.0f, 0.0f, 2);
 			
 			ImGui::PopItemWidth();
 		}

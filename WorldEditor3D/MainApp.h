@@ -34,6 +34,7 @@ using json = nlohmann::json;
 
 class GUI;
 class RenderUtilities;
+class Utilities;
 
 enum class AppState{
 	EDIT,
@@ -47,6 +48,7 @@ public:
 	~MainApp();
 	friend class GUI;
 	friend class RenderUtilities;
+	friend class Utilities;
 
 	void run(); // runs the app
 
@@ -58,12 +60,8 @@ private:
 	void update(float deltaTime); //updates based on deltatime
 	void drawGame(); //draws on screen
 	void addDefaultLighting();
-	
 	void resetData();
-	void openMap(const std::string& file);
-	void saveMap(const std::string& file);
-	void saveCreatedObject(char* buf);
-	void openCreatedObject(const std::string& object);
+	
 	void pixelPick(glm::vec2& coords);
 	void addNewObject(const std::string& file);
 	void addPointLight();

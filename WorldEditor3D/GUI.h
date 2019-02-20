@@ -52,6 +52,7 @@ public:
 	void showPlacementTab();
 	void showOpenFileDialog();
 	void showSaveFileDialog();
+	void showWarningPopup();
 	void openButtonPressed();
 	void updateDirContents(std::vector<std::string>& dir);
 	void showGameobjectsTab();
@@ -66,6 +67,11 @@ public:
 	bool b_showSaveFileDialog;
 	bool b_showGridWindow;
 	bool b_showEditRotWindow;
+	
+	bool b_showPopup;
+	std::string popupTitle;
+	std::string popupInfo;
+
 
 	char m_name[OBJECT_NAME_SIZE];
 	int fdEntryItem;

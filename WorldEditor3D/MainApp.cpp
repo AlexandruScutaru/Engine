@@ -33,6 +33,9 @@ MainApp::~MainApp(){
 	for(auto lightBillboard : m_lightsBillboards)
 		delete lightBillboard;
 	m_lightsBillboards.clear();
+	for(auto colVolBillboard : m_colVolumeBillboards)
+		delete colVolBillboard;
+	m_colVolumeBillboards.clear();
 	for(auto obj : m_objectsInScene)
 		delete obj;
 	m_objectsInScene.clear();
@@ -225,6 +228,9 @@ void MainApp::resetData(){
 	for(auto lightBillboard : m_lightsBillboards)
 		delete lightBillboard;
 	m_lightsBillboards.clear();
+	for(auto colVolBillboard : m_colVolumeBillboards)
+		delete colVolBillboard;
+	m_colVolumeBillboards.clear();
 	for(auto obj : m_objectsInScene)
 		delete obj;
 	m_objectsInScene.clear();
@@ -233,231 +239,6 @@ void MainApp::resetData(){
 	m_lights.clear();
 
 	m_creationTabGameObject = GameObject(utilities::ResourceManager::loadModel("default"));
-}
-
-void MainApp::openMap(const std::string& file){
-	std::string path = m_gui.currentPath + file;
-
-	resetData();
-
-	std::ifstream in(path);
-	json mapFile;
-	in >> mapFile;
-
-	GameObject* object;
-	//gameobjects
-	for(auto it = mapFile["gameobjects"].begin(); it != mapFile["gameobjects"].end(); ++it){
-		json obj = it.value();
-		std::string obj_name = obj["name"].get<std::string>();
-		std::string obj_inEditorName = obj["inEditorName"].get<std::string>();
-		physics::BodyType type = static_cast<physics::BodyType>(obj["bodyType"].get<int>());
-		std::vector<float> p = obj["pos"].get<std::vector<float>>();
-		glm::vec3 pos = glm::vec3(p[0], p[1], p[2]);
-		std::vector<float> r = obj["rot"].get<std::vector<float>>();
-		std::vector<float> s = obj["scale"].get<std::vector<float>>();
-		glm::vec3 scale = glm::vec3(s[0], s[1], s[2]);
-
-		object = new GameObject(utilities::ResourceManager::loadModel(obj_name));
-		object->setName(obj_name);
-		object->setInEditorName(obj_inEditorName);
-		object->setPosition(pos);
-		object->setRotation(glm::quat(r[3], r[0], r[1], r[2]));
-		object->setScale(scale);
-		object->m_bodyType = type;
-
-		m_objectsInScene.push_back(object);
-		m_gameObjectsMap[object->getCode()] = object;
-	}
-	
-	//lights
-	std::vector<float> v;
-	///dirlight
-	v = mapFile["lights"]["dirLight"]["amb"].get<std::vector<float>>();
-	glm::vec3 amb = glm::vec3(v[0], v[1], v[2]);
-	v.clear(), v = mapFile["lights"]["dirLight"]["diff"].get<std::vector<float>>();
-	glm::vec3 diff = glm::vec3(v[0], v[1], v[2]);
-	v.clear(), v = mapFile["lights"]["dirLight"]["spec"].get<std::vector<float>>();
-	glm::vec3 spec = glm::vec3(v[0], v[1], v[2]);
-	v.clear(), v = mapFile["lights"]["dirLight"]["dir"].get<std::vector<float>>();
-	glm::vec3 dir = glm::vec3(v[0], v[1], v[2]);
-	m_lights.push_back(new renderer::DirLight(amb, diff, spec, dir));
-	
-	std::string billboard_file = "billboard_dirLight";
-	
-	LightBillboard* lightBillboard = new LightBillboard(utilities::ResourceManager::loadModel(billboard_file), m_lights[0]);
-	lightBillboard->setPosition(static_cast<renderer::DirLight*>(m_lights[0])->direction);
-	m_lightsBillboards.push_back(lightBillboard);
-	m_lightsBillboardsMap[lightBillboard->getCode()] = lightBillboard;
-	
-	///spotlight
-	v = mapFile["lights"]["spotLight"]["amb"].get<std::vector<float>>();
-	amb = glm::vec3(v[0], v[1], v[2]);
-	v.clear(), v = mapFile["lights"]["spotLight"]["diff"].get<std::vector<float>>();
-	diff = glm::vec3(v[0], v[1], v[2]);
-	v.clear(), v = mapFile["lights"]["spotLight"]["spec"].get<std::vector<float>>();
-	spec = glm::vec3(v[0], v[1], v[2]);
-	v.clear(), v = mapFile["lights"]["spotLight"]["dir"].get<std::vector<float>>();
-	dir = glm::vec3(v[0], v[1], v[2]);
-	v.clear(), v = mapFile["lights"]["spotLight"]["pos"].get<std::vector<float>>();
-	glm::vec3 pos = glm::vec3(v[0], v[1], v[2]);
-	v.clear(), v = mapFile["lights"]["spotLight"]["att"].get<std::vector<float>>();
-	glm::vec3 att = glm::vec3(v[0], v[1], v[2]);
-	float cutOff = mapFile["lights"]["spotLight"]["cutOff"].get<float>();
-	float outCutOff = mapFile["lights"]["spotLight"]["outCutOff"].get<float>();
-	m_lights.push_back(new renderer::SpotLight(amb, diff, spec, dir, pos, att, cutOff, outCutOff));
-	
-	///pointlights
-	for(auto it = mapFile["lights"]["pointLights"].begin(); it != mapFile["lights"]["pointLights"].end(); ++it){
-		json pointLight = it.value();
-		v = pointLight["amb"].get<std::vector<float>>();
-		amb = glm::vec3(v[0], v[1], v[2]);
-		v.clear(), v = pointLight["diff"].get<std::vector<float>>();
-		diff = glm::vec3(v[0], v[1], v[2]);
-		v.clear(), v = pointLight["spec"].get<std::vector<float>>();
-		spec = glm::vec3(v[0], v[1], v[2]);
-		v.clear(), v = pointLight["pos"].get<std::vector<float>>();
-		pos = glm::vec3(v[0], v[1], v[2]);
-		v.clear(), v = pointLight["att"].get<std::vector<float>>();
-		att = glm::vec3(v[0], v[1], v[2]);
-		m_lights.push_back(new renderer::PointLight(amb, diff, spec, pos, att));
-
-		billboard_file = "billboard_pointLight";
-
-		LightBillboard* lightBillboard = new LightBillboard(utilities::ResourceManager::loadModel(billboard_file), m_lights.back());
-		lightBillboard->setPosition(static_cast<renderer::DirLight*>(m_lights.back())->direction);
-		m_lightsBillboards.push_back(lightBillboard);
-		m_lightsBillboardsMap[lightBillboard->getCode()] = lightBillboard;
-	}
-}
-
-void MainApp::saveMap(const std::string& file){
-	std::string path = m_gui.currentPath + file;
-	json map;
-	map["gameobjects"] = {};
-	map["lights"] = {};
-	map["lights"]["pointLights"] = {};
-	
-	for(auto obj : m_objectsInScene){
-		json entry = {
-			{"name", obj->getName()},
-			{"inEditorName", obj->getInEditorName()},
-			{"pos", {obj->getPosition().x, obj->getPosition().y, obj->getPosition().z}},
-			{"rot", {obj->getRotation().x, obj->getRotation().y, obj->getRotation().z, obj->getRotation().w}},
-			{"scale", {obj->getScale().x, obj->getScale().y, obj->getScale().z}},
-			{"bodyType", (int)obj->m_bodyType},
-		};
-		map["gameobjects"].push_back(entry);
-	}
-	
-	renderer::DirLight* dl = static_cast<renderer::DirLight*>(m_lights[0]);
-	map["lights"]["dirLight"] = {
-		{"amb", {dl->ambient.x, dl->ambient.y, dl->ambient.z}},
-		{"diff", {dl->diffuse.x, dl->diffuse.y, dl->diffuse.z}},
-		{"spec", {dl->specular.x, dl->specular.y, dl->specular.z}},
-		{"dir", {dl->direction.x, dl->direction.y, dl->direction.z}}
-	};
-	renderer::SpotLight* sl = static_cast<renderer::SpotLight*>(m_lights[1]);
-	map["lights"]["spotLight"] = {
-		{"amb", {sl->ambient.x, sl->ambient.y, sl->ambient.z}},
-		{"diff", {sl->diffuse.x, sl->diffuse.y, sl->diffuse.z}},
-		{"spec", {sl->specular.x, sl->specular.y, sl->specular.z}},
-		{"dir", {sl->direction.x, sl->direction.y, sl->direction.z}},
-		{"pos", {sl->position.x, sl->position.y, sl->position.z}},
-		{"att", {sl->attenuation.x, sl->attenuation.y, sl->attenuation.z}},
-		{"cutOff", sl->cutOff},
-		{"outCutOff", sl->outerCutOff}
-	};
-	for(size_t index = 2; index < m_lights.size(); index++){
-		renderer::PointLight* pl = static_cast<renderer::PointLight*>(m_lights[index]);
-		json entry = {
-			{"amb",		{pl->ambient.x,		pl->ambient.y,		pl->ambient.z}},
-			{"diff",	{pl->diffuse.x,		pl->diffuse.y,		pl->diffuse.z}},
-			{"spec",	{pl->specular.x,	pl->specular.y,		pl->specular.z}},
-			{"pos",		{pl->position.x,	pl->position.y,		pl->position.z}},
-			{"att",		{pl->attenuation.x, pl->attenuation.y,	pl->attenuation.z}},
-		};
-		map["lights"]["pointLights"].push_back(entry);
-	}
-	std::ofstream out(path);
-	out << std::setw(4) << map << std::endl;
-	out.close();
-}
-
-void MainApp::saveCreatedObject(char* buf){
-	json entry = {
-		{"diff", m_creationTabGameObject.getDiffName()},
-		{"spec", m_creationTabGameObject.getSpecName()},
-		{"mesh", m_creationTabGameObject.getMeshName()},
-		{"billboard", m_creationTabGameObject.isBillboard()},
-		{"gravity", m_creationTabGameObject.m_gravityEnabled},
-		{"sleep", m_creationTabGameObject.m_allowedToSleep},
-		{"bounciness", m_creationTabGameObject.m_bounciness},
-		{"friction", m_creationTabGameObject.m_frictionCoefficient},
-		{"rollingResist", m_creationTabGameObject.m_rollingResistance},
-		{"linearDamp", m_creationTabGameObject.m_linearDamping},
-		{"angularDamp", m_creationTabGameObject.m_angularDamping}
-	};
-	for(renderer::CollisionBody body : m_creationTabGameObject.getColBodies()){
-		json col = {
-			{"shape", body.shape},
-			{"pos", {body.colRelativePos.x, body.colRelativePos.y, body.colRelativePos.z}},
-			{"rot", {body.colRotQuat.x, body.colRotQuat.y, body.colRotQuat.z, body.colRotQuat.w}},
-			{"scale", {body.colScale.x, body.colScale.y, body.colScale.z}},
-			{"mass", body.mass}
-		};
-		entry["collision"].push_back(col);
-	}
-
-	std::string path = m_gui.currentPath + std::string(buf);
-	std::ofstream out(path);
-	out << std::setw(4) << entry << std::endl;
-	out.close();
-}
-
-void MainApp::openCreatedObject(const std::string& object){
-	std::string path = m_gui.currentPath + object;
-	std::ifstream in(path);
-	json obj;
-	in >> obj;
-	in.close();
-
-	m_creationTabGameObject.clearColBodies();
-	m_gui.collisionBodies.clear();
-	m_gui.collisionBodyEntryItem = -1;
-	m_creationTabGameObject.setDiffName(obj["diff"].get<std::string>());
-	m_creationTabGameObject.setSpecName(obj["spec"].get<std::string>());
-	m_creationTabGameObject.setMeshName(obj["mesh"].get<std::string>());
-	m_creationTabGameObject.setIsBillboard(obj["billboard"].get<bool>());
-	m_creationTabGameObject.m_gravityEnabled = obj["gravity"].get<bool>();
-	m_creationTabGameObject.m_allowedToSleep = obj["sleep"].get<bool>();
-	m_creationTabGameObject.m_bounciness = obj["bounciness"].get<float>();
-	m_creationTabGameObject.m_frictionCoefficient = obj["friction"].get<float>();
-	m_creationTabGameObject.m_rollingResistance = obj["rollingResist"].get<float>();
-	m_creationTabGameObject.m_linearDamping = obj["linearDamp"].get<float>();
-	m_creationTabGameObject.m_angularDamping = obj["angularDamp"].get<float>();
-
-	for(auto it = obj["collision"].begin(); it != obj["collision"].end(); it++){
-		json col = it.value();
-		renderer::CollisionBody body;
-		body.shape = col["shape"].get<int>();
-		body.mass = col["mass"].get<float>();
-		std::vector<float> p = col["pos"].get<std::vector<float>>();
-		glm::vec3 pos = glm::vec3(p[0], p[1], p[2]);
-		std::vector<float> r = col["rot"].get<std::vector<float>>();
-		std::vector<float> s = col["scale"].get<std::vector<float>>();
-		glm::vec3 scale = glm::vec3(s[0], s[1], s[2]);
-		body.colRelativePos = pos;
-		body.colRotQuat = glm::quat(r[3], r[0], r[1], r[2]);
-		glm::vec3 rot = glm::eulerAngles(body.colRotQuat);
-		body.colRotEuler = glm::vec3(glm::degrees(rot.x), glm::degrees(rot.y), glm::degrees(rot.z));
-		body.colScale = scale;
-		m_creationTabGameObject.addColBody(body);
-		m_gui.collisionBodies.push_back(body.shape);
-	}
-
-	m_creationTabGameObject.getTexturedModel()->setMesh(utilities::ResourceManager::getMesh("res/models/" + m_creationTabGameObject.getMeshName()));
-	m_creationTabGameObject.getTexturedModel()->getMaterial().setDiffuseMap( utilities::ResourceManager::getTexture("res/textures/" + m_creationTabGameObject.getDiffName()));
-	m_creationTabGameObject.getTexturedModel()->getMaterial().setSpecularMap(utilities::ResourceManager::getTexture("res/textures/" + m_creationTabGameObject.getSpecName()));
 }
 
 void MainApp::pixelPick(glm::vec2& coords){

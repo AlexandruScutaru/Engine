@@ -164,11 +164,11 @@ void RenderUtilities::DrawColVolumesBillboards(MainApp * app){
 	for(auto const& colVolume : app->m_colVolumeBillboards)
 		bodies.push_back(colVolume->getColBodyPtr());
 
-	DrawCollisionBodies(app, bodies);
+	DrawCollisionBodies(app, bodies, glm::vec3(0.05f, 0.875f, 0.8125f));
 
 }
 
-void RenderUtilities::DrawCollisionBodies(MainApp* app, std::vector<renderer::CollisionBody*>& colBodies){
+void RenderUtilities::DrawCollisionBodies(MainApp* app, std::vector<renderer::CollisionBody*>& colBodies, glm::vec3& color){
 	if(!colBodies.size())
 		return;
 
@@ -177,9 +177,12 @@ void RenderUtilities::DrawCollisionBodies(MainApp* app, std::vector<renderer::Co
 	app->m_basicColorShader.use();
 	app->m_basicColorShader.loadViewMatrix(view);
 	app->m_basicColorShader.loadProjectionMatrix(renderer::Renderer::GetProjectionMatrix());
-	app->m_basicColorShader.loadColor(glm::vec3(0.0f, 1.0f, 0.0f));
+	app->m_basicColorShader.loadColor(color);
 	renderer::TexturedModel* td;
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	
+	renderer::Renderer::disableBackFaceCulling();
+
 	for(auto body : colBodies){
 		glm::mat4 model;
 		model = glm::translate(model, body->colRelativePos);
@@ -193,6 +196,8 @@ void RenderUtilities::DrawCollisionBodies(MainApp* app, std::vector<renderer::Co
 	}
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	app->m_basicColorShader.unuse();
+
+	renderer::Renderer::enableBackFaceCulling();
 }
 
 void RenderUtilities::PrePixelPickDraw(MainApp* app){

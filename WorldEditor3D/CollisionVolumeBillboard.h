@@ -6,6 +6,12 @@
 #include <Engine/CollisionBody.h>
 #include <string>
 
+enum class VolumeType {
+	START = 0,
+	END,
+	TRIGGER
+};
+
 class CollisionVolumeBillboard : public Actor {
 public:
 	CollisionVolumeBillboard();
@@ -24,14 +30,17 @@ public:
 
 	void setName(const std::string& name){ m_inEditorName = name; }
 	void setBody(renderer::CollisionBody& body){ m_colBody = body; }
+	void setVolumeType(VolumeType type){ m_type = type; }
 
 	const std::string& getName(){ return m_inEditorName; }
+	int getVolumeType(){ return static_cast<int>(m_type); }
 	renderer::CollisionBody& getColBodyRef(){ return m_colBody; }
 	renderer::CollisionBody* getColBodyPtr(){ return &m_colBody; }
 
 private:
 	std::string m_inEditorName;
 	renderer::CollisionBody m_colBody;
+	VolumeType m_type;
 
 };
 

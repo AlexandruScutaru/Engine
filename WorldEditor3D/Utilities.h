@@ -5,8 +5,17 @@
 #include <map>
 #include <vector>
 
+class MainApp;
+
 class Utilities{
 public:
+
+	static void openMap(MainApp* app, const std::string& file);
+	static void saveMap(MainApp* app, const std::string& file);
+	static void saveCreatedObject(MainApp* app, const std::string& buf);
+	static void openCreatedObject(MainApp* app, const std::string& object);
+
+
 	template <typename T> 
 	static std::map<renderer::TexturedModel*, std::vector<T*>> BatchRenderables(std::vector<T*>& entities){
 		std::map<renderer::TexturedModel*, std::vector<T*>> batches;
@@ -28,6 +37,8 @@ public:
 
 private:
 	Utilities();
+
+	static bool checkIfMapCanBeSaved(MainApp* app);
 };
 
 #endif // !UTILITIES_H

@@ -49,4 +49,13 @@ namespace renderer{
 		m_projection = glm::perspective(glm::radians(fov), (float)width / (float)height, 0.1f, 100.0f);
 	}
 
+	void Renderer::enableBackFaceCulling(){
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+	}
+
+	void Renderer::disableBackFaceCulling(){
+		glDisable(GL_CULL_FACE);
+	}
+
 }
