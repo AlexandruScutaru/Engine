@@ -9,8 +9,9 @@
 #include <cmath>
 #include <Engine/CollisionBody.h>
 
-MainApp::MainApp():
-	m_appState(AppState::EDIT)
+MainApp::MainApp() :
+	m_appState(AppState::EDIT),
+	m_eventListener(physics::PhysicsEventListener(std::bind(&MainApp::beginContact, this, std::placeholders::_1)))
 {
 	initSystems();
 }
@@ -33,6 +34,31 @@ void MainApp::run(){
 	loop();
 }
 
+void MainApp::beginContact(const rp3d::ContactPointInfo& contact) {
+	rp3d::CollisionBody* body1 = contact.shape1->getBody();
+	rp3d::CollisionBody* body2 = contact.shape2->getBody();
+	rp3d::CollisionBody* other = nullptr;
+	rp3d::RigidBody* playerBody = m_player.getPhysicsBody()->m_body;
+	
+	if(body1 != playerBody && body2 != playerBody)
+		return;
+	
+	if(body1 == playerBody)
+		other = body2;
+	else
+		other = body1;
+	
+	for(auto& colVol : m_collisionVolumes) {
+		if(other == colVol->getPhysicsBody()->m_body) {
+			if(colVol->m_type == CollisionVolume::VolumeType::END) {
+				std::cout << "finish" << std::endl;
+				m_appState = AppState::EXIT;
+				break;
+			}
+		}
+	}
+}
+
 void MainApp::initSystems(){
 	m_window.create(CONFIG.window_cfg.title, CONFIG.window_cfg.width, CONFIG.window_cfg.height, CONFIG.window_cfg.window_mode);
 	renderer::Window::setMouseTrapping(CONFIG.window_cfg.trap_mouse ? SDL_TRUE : SDL_FALSE);
@@ -49,7 +75,8 @@ void MainApp::initLevel(){
 	m_basicColorShader.initShader("res/shaders/basic");
 	m_billboardShader.initShader("res/shaders/billboard");
 
-	Utilities::OpenMap("res/maps/a", m_objectsInScene, m_lights, &m_dynamicWorld);
+	Utilities::OpenMap("res/maps/tst2", m_objectsInScene, m_collisionVolumes, m_lights, &m_dynamicWorld, &m_player);
+	m_dynamicWorld.setEventListener(&m_eventListener);
 }
 
 void MainApp::loop(){
@@ -64,6 +91,10 @@ void MainApp::loop(){
 	utilities::Timer fpsTimer;
 	fpsTimer.start();
 
+	m_player.getPhysicsBody()->m_body->setLinearVelocity(rp3d::Vector3(0.0f, 0.0f, 0.0f));
+	m_player.getPhysicsBody()->m_body->setAngularVelocity(rp3d::Vector3(0.0f, 0.0f, 0.0f));
+
+
 	float currentTime = SDL_GetTicks() / 1000.0f;
 	while(m_appState == AppState::EDIT){
 		m_fpsLimiter.begin();
@@ -76,9 +107,11 @@ void MainApp::loop(){
 	
 		//set object position to positon in physiscs world before update
 		for(auto& obj : m_objectsInScene){
-			obj->setPosition(obj->getPhysicsBody()->getPostion());
+			obj->setPosition(obj->getPhysicsBody()->getPosition());
 			obj->setRotation(obj->getPhysicsBody()->getRotation());
 		}
+		m_player.setPosition(m_player.getPhysicsBody()->getPosition());
+
 		accumulator += frameTime;
 		while(accumulator >= PHYSICS_STEP){
 			processInput();
@@ -148,7 +181,7 @@ void MainApp::processInput(){
 void MainApp::update(float deltaTime){
 	m_dynamicWorld.update(deltaTime);
 	m_player.update(m_inputManager, deltaTime);
-
+	
 	static_cast<renderer::SpotLight*>(m_lights[1])->position = m_player.getCamera()->getPos();
 	static_cast<renderer::SpotLight*>(m_lights[1])->direction = m_player.getCamera()->getFront();
 }
@@ -156,9 +189,15 @@ void MainApp::update(float deltaTime){
 void MainApp::drawGame(float interpolation){
 	//interpolate the position from physics engine with the previous one
 	for(auto& obj : m_objectsInScene){
-		obj->setPosition(obj->getPhysicsBody()->getPostion() * interpolation + obj->getPosition() * (1.0f - interpolation));
+		obj->setPosition(obj->getPhysicsBody()->getPosition() * interpolation + obj->getPosition() * (1.0f - interpolation));
 		obj->setRotation(obj->getPhysicsBody()->getRotation() * interpolation + obj->getRotation() * (1.0f - interpolation));
 	}
+
+	m_player.setPosition(m_player.getPhysicsBody()->getPosition() * interpolation + m_player.getPosition() * (1.0f - interpolation));
+	//auto rotEuler = glm::eulerAngles(m_player.getPhysicsBody()->getRotation());
+	//rotEuler = glm::vec3(glm::degrees(rotEuler.x), glm::degrees(rotEuler.y), glm::degrees(rotEuler.z));
+	//m_player.setRotation(rotEuler * interpolation + m_player.getRotation() * (1.0f - interpolation));
+
 	updateToDrawVector();
 
 	glViewport(0, 0, renderer::Window::getW(), renderer::Window::getH());

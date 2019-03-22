@@ -18,6 +18,7 @@ namespace physics{
 	{}
 
 	PhysicsBody::~PhysicsBody(){
+		m_body->getLinearVelocity();
 		for(auto proxy : m_proxyhapes)
 			m_body->removeCollisionShape(proxy);
 		for(auto shape : m_boxShapes)
@@ -48,7 +49,7 @@ namespace physics{
 		m_body->setType(bType);
 	}
 
-	void PhysicsBody::addCollisionShapes(glm::vec3& scaleFactor, std::vector<renderer::CollisionBody>& collisionBodies){
+	void PhysicsBody::addCollisionShapes(glm::vec3 & scaleFactor, std::vector<renderer::CollisionBody>& collisionBodies, CollisionCategory category){
 		for(auto& body : collisionBodies){
 			switch(body.shape){
 			case renderer::SHAPE_CUBE:
@@ -64,6 +65,13 @@ namespace physics{
 				LOG_INFO("Trying to add unknown shape index {}, shape not added!", body.shape);
 				break;
 			}
+			m_proxyhapes.back()->setCollisionCategoryBits(category);
+			if(category == CollisionCategory::PLAYER)
+				m_proxyhapes.back()->setCollideWithMaskBits(CollisionCategory::GENERAL | CollisionCategory::TRIGGER);
+			else if(category == CollisionCategory::GENERAL)
+				m_proxyhapes.back()->setCollideWithMaskBits(CollisionCategory::PLAYER | CollisionCategory::GENERAL);
+			//else if(category == CollisionCategory::TRIGGER)
+			//	m_proxyhapes.back()->setCollideWithMaskBits(CollisionCategory::PLAYER);
 		}
 	}
 
@@ -107,7 +115,20 @@ namespace physics{
 		m_body->setAngularDamping(val);
 	}
 
-	glm::vec3 PhysicsBody::getPostion(){
+	void PhysicsBody::applyForceToCenterOfMass(glm::vec3 & force){
+		m_body->applyForceToCenterOfMass(rp3d::Vector3(force.x, force.y, force.z));
+	}
+
+	void PhysicsBody::setLinearVelocity(glm::vec3 & velocity){
+		m_body->setLinearVelocity(rp3d::Vector3(velocity.x, velocity.y, velocity.z));
+	}
+
+	glm::vec3 PhysicsBody::getLinearVelocity(){
+		auto velocity = m_body->getLinearVelocity();
+		return glm::vec3(velocity.x, velocity.y, velocity.z);
+	}
+
+	glm::vec3 PhysicsBody::getPosition(){
 		auto pos = m_body->getTransform().getPosition();
 		return glm::vec3(pos.x, pos.y, pos.z);
 	}
@@ -135,8 +156,7 @@ namespace physics{
 		rp3d::Quaternion orientation(rot.x, rot.y, rot.z, rot.w);
 		rp3d::Transform transform(position, orientation);
 
-		rp3d::ProxyShape* shape(m_body->addCollisionShape(boxShape, transform, body.mass));
-		m_proxyhapes.push_back(shape);
+		m_proxyhapes.push_back(m_body->addCollisionShape(boxShape, transform, body.mass));
 	}
 
 	void PhysicsBody::addSphereShape(glm::vec3& scaleFactor, renderer::CollisionBody& body){

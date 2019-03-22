@@ -9,6 +9,7 @@
 
 
 namespace physics{
+	class PhysicsEventListener;
 
 	class PhysicsWorld{
 	public:
@@ -20,6 +21,7 @@ namespace physics{
 		void setNbIterationsPositionSolver(unsigned int val);
 		void enableSleeping(bool val);
 		void update(float timeStep);
+		void setEventListener(PhysicsEventListener* listener);
 
 		std::shared_ptr<physics::PhysicsBody> createPhysicsBody(glm::vec3& pos, glm::quat& rot);
 

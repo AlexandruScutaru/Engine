@@ -192,15 +192,16 @@ void MainApp::drawGame(){
 	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-	bool bDrawColBodies = false;
-	if(m_gui.b_creationTab)
-		bDrawColBodies = true;
-	RenderUtilities::DrawGameObjects(this, bDrawColBodies);
-	RenderUtilities::DrawLightBillboards(this);
-	RenderUtilities::DrawColVolumesBillboards(this);
-	RenderUtilities::DrawLines(this);
-	if(Grid::isEnabled()) RenderUtilities::DrawGrid(this);
-	RenderUtilities::DrawTransformGizmos(this);
+	if(m_gui.b_creationTab){
+		RenderUtilities::DrawGameObjects(this, true);
+	} else {
+		RenderUtilities::DrawGameObjects(this, false);
+		RenderUtilities::DrawLightBillboards(this);
+		RenderUtilities::DrawColVolumesBillboards(this);
+		RenderUtilities::DrawLines(this);
+		if(Grid::isEnabled()) RenderUtilities::DrawGrid(this);
+		RenderUtilities::DrawTransformGizmos(this);
+	}
 }
 
 void MainApp::addDefaultLighting(){
@@ -381,10 +382,12 @@ void MainApp::duplicateSelectedColVolumes(){
 
 void MainApp::removeSelectedPointLights(){
 	for(auto& obj : m_selectedObjsVect){
-		auto it = std::find(m_lights.begin(), m_lights.end(), static_cast<LightBillboard*>(obj)->getLight());
-		if(it != m_lights.end()){
+		auto it = std::find(m_lightsBillboards.begin(), m_lightsBillboards.end(), static_cast<LightBillboard*>(obj));
+		if(it != m_lightsBillboards.end()){
 			m_lightsBillboardsMap.erase(obj->getCode());
-			m_lights.erase(it);
+			//erase-remove-idiom
+			m_lights.erase(std::remove(m_lights.begin(), m_lights.end(), (*it)->getLight()), m_lights.end());
+			m_lightsBillboards.erase(it);
 		}
 	}
 	m_selectedObjsVect.clear();

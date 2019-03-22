@@ -1,4 +1,5 @@
 #include "PhysicsWorld.h"
+#include "PhysicsEventListener.h"
 
 #include <iostream>
 
@@ -42,6 +43,10 @@ namespace physics{
 
 	void PhysicsWorld::update(float timeStep){
 		m_world.update(timeStep);
+	}
+
+	void PhysicsWorld::setEventListener(PhysicsEventListener* listener) {
+		m_world.setEventListener(listener);
 	}
 
 }

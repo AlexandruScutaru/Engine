@@ -9,6 +9,12 @@
 
 namespace physics{
 
+	enum CollisionCategory {
+		GENERAL = 0x001,
+		TRIGGER = 0x002,
+		PLAYER  = 0x004
+	};
+
 	enum class BodyType { 
 		STATIC, 
 		KINEMATIC, 
@@ -27,7 +33,7 @@ namespace physics{
 		~PhysicsBody();
 
 		void setBodyType(BodyType type = BodyType::DYNAMIC);
-		void addCollisionShapes(glm::vec3& scaleFactor, std::vector<renderer::CollisionBody>& collisionBodies);
+		void addCollisionShapes(glm::vec3& scaleFactor, std::vector<renderer::CollisionBody>& collisionBodies, CollisionCategory category = CollisionCategory::GENERAL);
 		void enableGravity(bool val);
 		void allowSleep(bool val);
 		void setBounciness(float val);
@@ -36,7 +42,11 @@ namespace physics{
 		void setLinearDamping(float val);
 		void setAngularDamping(float val);
 
-		glm::vec3 getPostion();
+		void applyForceToCenterOfMass(glm::vec3& force);
+		void setLinearVelocity(glm::vec3& velocity);
+		glm::vec3 getLinearVelocity();
+
+		glm::vec3 getPosition();
 		glm::quat getRotation();
 
 	public:

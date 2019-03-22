@@ -2,10 +2,13 @@
 #define UTILITIES_H
 
 #include "GameObject.h"
+#include "Player.h"
+
 #include <map>
 #include <vector>
 
 class GameObject;
+class CollisionVolume;
 namespace renderer{
 	struct Light;
 }
@@ -15,7 +18,7 @@ namespace physics{
 
 class Utilities{
 public:
-	static void OpenMap(const std::string& file, std::vector<GameObject*>& objects, std::vector<renderer::Light*>& lights, physics::PhysicsWorld* world);
+	static void OpenMap(const std::string& file, std::vector<GameObject*>& objects, std::vector<CollisionVolume*>& colVols, std::vector<renderer::Light*>& lights, physics::PhysicsWorld* world, Player* player);
 	static GameObject* OpenGameObject(const std::string& file, glm::vec3& pos, glm::quat& rot, glm::vec3& scale, physics::PhysicsWorld* world);
 
 	template <typename T> 

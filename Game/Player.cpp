@@ -6,13 +6,13 @@
 
 #define LOOK_SENSITIVITY 0.6f
 
-const glm::vec3 Player::m_cameraOffset = glm::vec3(0.0f, 0.5f, 0.0f);
+const glm::vec3 Player::m_cameraOffset = glm::vec3(0.0f, 1.1f, 0.0f);
 
 
 Player::Player() :
 	m_flashLightOn(false),
-	m_pos(glm::vec3(0.0f, 7.0f, 7.0f)),
-	m_rot(glm::vec3(0.0f, -90.0f, 0.0f)),
+	m_pos(glm::vec3(0.0f)),
+	m_rot(glm::vec3(0.0f)),
 	m_scale(glm::vec3(1.0f)),
 	movementSpeed(3.5f)
 {
@@ -40,27 +40,74 @@ Player::~Player(){
 
 
 void Player::update(utilities::InputManager& inputManager, float deltaTime){
+
 	//camera movement
 	float cameraSpeed = movementSpeed * deltaTime;
+	
+	m_camera->getForward();
+	m_camera->getRight();
+	
+	glm::vec3 dir(0.0f);
+	float force = 1000.0f;
+	
+	if(inputManager.isKeyDown(SDLK_LSHIFT))
+		force = 2000.0f;
+	
+	if(inputManager.isKeyDown(SDLK_w)){
+		dir = -m_camera->getForward();
+	} else if(inputManager.isKeyDown(SDLK_s)){
+		dir = +m_camera->getForward();
+	}
+	
+	if(inputManager.isKeyDown(SDLK_a)){
+		dir += (-m_camera->getRight());
+	} else if(inputManager.isKeyDown(SDLK_d)){
+		dir += m_camera->getRight();
+	} 
+	
+	if(dir.x != 0.0f || dir.y != 0.0f || dir.z != 0.0f) {
+		dir.y = 0.0f;
+		dir = glm::normalize(dir);
+		dir *= force;
+		m_rigidBody->applyForceToCenterOfMass(dir);
+	} 
 
-	if(inputManager.isKeyDown(SDLK_w))
-		m_pos += cameraSpeed * m_camera->getFront();
-	else if(inputManager.isKeyDown(SDLK_s))
-		m_pos -= cameraSpeed * m_camera->getFront();
-
-	if(inputManager.isKeyDown(SDLK_a))
-		m_pos -= glm::normalize(glm::cross(m_camera->getFront(), m_camera->getUp())) * cameraSpeed;
-	else if(inputManager.isKeyDown(SDLK_d))
-		m_pos += glm::normalize(glm::cross(m_camera->getFront(), m_camera->getUp())) * cameraSpeed;
-
-	if(inputManager.isKeyDown(SDLK_q))
-		m_pos -= cameraSpeed *  m_camera->getUp();
-	else if(inputManager.isKeyDown(SDLK_e))
-		m_pos += cameraSpeed *  m_camera->getUp();
-
+	auto crtVel = m_rigidBody->getLinearVelocity();
+	m_rigidBody->setLinearVelocity(glm::vec3(crtVel.x * 0.8f, crtVel.y, crtVel.z * 0.8f));
+			
+	bool canjump = false;
+	auto body = (*m_rigidBody).m_body;
+	const rp3d::ContactManifoldListElement* listElem;
+	listElem = body->getContactManifoldsList();
+	//std::cout << "Player pos: " << m_pos.x << " " << m_pos.y << " " << m_pos.z << std::endl;
+	for(; listElem != nullptr; listElem = listElem->next) {
+		rp3d::ContactManifold* manifold = listElem->contactManifold;
+	
+		// For each contact point of the manifold 
+		for(int i = 0; i<manifold->getNbContactPoints(); i++) {
+	
+			// Get the contact point 
+			rp3d::ContactPoint* point = manifold->getContactPoint(i);
+	
+			// Get the world-space contact point on body 1 
+			rp3d::Vector3 pos = point->getWorldPointOnBody1();
+	
+			// Get the world-space contact normal 
+			rp3d::Vector3 normal = point->getNormal();
+	
+			//std::cout << "Contact #" << i << ": pos=" << pos.x << " " << pos.y << " " << pos.z << "\tnormal: " << normal.x << " " << normal.y << " " << normal.z << std::endl;
+			if(pos.y <= m_pos.y)
+				canjump = true;
+		}
+	}
+	
+	if(canjump && inputManager.isKeyPressed(SDLK_SPACE)){
+		m_rigidBody->applyForceToCenterOfMass(glm::vec3(0.0f, 20000.0f, 0.0f));
+	}
+	
 	if(inputManager.isKeyPressed(SDLK_f))
 		m_flashLightOn = !m_flashLightOn;
-
+	
 	//camera rotation
 	m_rot.x -= (inputManager.getRelMouseCoords().y * LOOK_SENSITIVITY);
 	m_rot.y += (inputManager.getRelMouseCoords().x * LOOK_SENSITIVITY);

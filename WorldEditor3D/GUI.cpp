@@ -109,18 +109,10 @@ void GUI::showToolbar(){
 
 	ImGui::Begin("##toolbar", NULL, toolbar_flags);
 
+	///actors placement
 	renderer::TextureData td;
-	///gameobject and lights placement
 	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-
-	//add point light
-	//td = *utilities::ResourceManager::getTexture("res/editor/add-pointLight.png");
-	//if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1) && b_placementTab){
-	//	app->addPointLight();
-	//}
-
 	//add gameobject
-	//ImGui::SameLine();
 	td = *utilities::ResourceManager::getTexture("res/editor/add-gameobject.png");
 	if(ImGui::ImageButton((ImTextureID)td.id, ImVec2(22, 22), ImVec2(0, 0), ImVec2(1, -1), 1) && b_placementTab){
 		if(m_sceneTabs & 1ui8 << Scene_Tabs::LIGHTS){
@@ -152,7 +144,7 @@ void GUI::showToolbar(){
 		if(m_sceneTabs & 1ui8 << Scene_Tabs::GAMEOBJECTS)
 			app->removeSelectedGameObjects();
 		else if(m_sceneTabs & 1ui8 << Scene_Tabs::LIGHTS)
-			app->removeSelectedGameObjects();
+			app->removeSelectedPointLights();
 		else if(m_sceneTabs & 1ui8 << Scene_Tabs::COL_VOLUMES)
 			app->removeSelectedColVolumes();
 	}
@@ -718,7 +710,7 @@ void GUI::showColVolumesTab(){
 		if(volumeType == static_cast<int>(VolumeType::START)) {
 			auto& colBody = currentCollisionVolume->getColBodyRef();
 			colBody.shape = renderer::CollisionShapes::SHAPE_CAPSULE;
-			colBody.colScale = glm::vec3(1.0f, 1.65f, 1.0f);
+			colBody.colScale = glm::vec3(0.56f, 1.15f, 0.56f);
 		}
 
 		ImGui::Text("Volume shape:");

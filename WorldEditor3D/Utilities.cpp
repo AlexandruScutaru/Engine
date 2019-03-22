@@ -102,13 +102,6 @@ void Utilities::openMap(MainApp* app, const std::string& file){
 
 	//collision volumes
 	CollisionVolumeBillboard* colVol;
-	//gameobjects
-
-	//{ "inEditorName", obj->getName() },
-	//{"type", obj->getVolumeType()},
-	//{"rot", {colBody.colRotQuat.x, colBody.colRotQuat.y, colBody.colRotQuat.z, colBody.colRotQuat.w}},
-	//{"scale", {colBody.colScale.x, colBody.colScale.y, colBody.colScale.z}},
-	//{"pos", {obj->getPosition().x, obj->getPosition().y, obj->getPosition().z}}
 
 	billboard_file = "billboard_colVolume";
 	for(auto it = mapFile["collisionVolumes"].begin(); it != mapFile["collisionVolumes"].end(); ++it){

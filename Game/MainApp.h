@@ -12,11 +12,13 @@
 #include <Engine/InputManager.h>
 #include <Engine/ResourceManager.h>
 #include <Engine/PhysicsWorld.h>
+#include <Engine/PhysicsEventListener.h>
 
 #include "GameObjectShader.h"
 #include "BasicColorShader.h"
 #include "BillboardShader.h"
 #include "GameObject.h"
+#include "CollisionVolume.h"
 #include "Player.h"
 
 #include <GLM/glm.hpp>
@@ -42,6 +44,8 @@ public:
 
 	void run(); // runs the app
 
+	void beginContact(const rp3d::ContactPointInfo& contact);
+
 private:
 	void initSystems(); //initializes the core systems
 	void initLevel(); //initilizes the current level
@@ -62,7 +66,8 @@ private:
 	std::vector<GameObject*> m_objectsInScene;
 	std::vector<GameObject*> m_objects_ToDraw;
 	std::vector<renderer::Light*> m_lights;
-	//GameObject* crate;
+	//at index 0 is the start and at 1 is the end, the rest are just triggers
+	std::vector<CollisionVolume*> m_collisionVolumes;
 	
 	Player m_player;
 	AppState m_appState;
@@ -70,8 +75,9 @@ private:
 	GameObjectShader m_gameObjectsShader;
 	BasicColorShader m_basicColorShader;
 	BillboardShader  m_billboardShader;
-
+	
 	physics::PhysicsWorld m_dynamicWorld;
+	physics::PhysicsEventListener m_eventListener;
 
 };
 

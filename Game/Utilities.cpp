@@ -1,16 +1,18 @@
 #include "Utilities.h"
 #include "GameObject.h"
+#include "CollisionVolume.h"
 
 #include <Engine/Lights.h>
 #include <Engine/ResourceManager.h>
 #include <Engine/PhysicsWorld.h>
-#include <fstream>
 
+#include <fstream>
+#include <algorithm>
 #include <JSON/json.hpp>
 using json = nlohmann::json;
 
 
-void Utilities::OpenMap(const std::string & file, std::vector<GameObject*>& objects, std::vector<renderer::Light*>& lights, physics::PhysicsWorld* world){
+void Utilities::OpenMap(const std::string & file, std::vector<GameObject*>& objects, std::vector<CollisionVolume*>& colVols, std::vector<renderer::Light*>& lights, physics::PhysicsWorld* world, Player* player){
 	std::ifstream in(file);
 	json mapFile;
 	in >> mapFile;
@@ -35,6 +37,55 @@ void Utilities::OpenMap(const std::string & file, std::vector<GameObject*>& obje
 		object->setScale(scale);
 		object->getPhysicsBody()->setBodyType(type);
 		objects.push_back(object);
+	}
+
+	//collision bodies
+	CollisionVolume* colVol;
+	for(auto it = mapFile["collisionVolumes"].begin(); it != mapFile["collisionVolumes"].end(); ++it) {
+		json obj = it.value();
+		int type = obj["type"].get<int>();
+		int shape = obj["shape"].get<int>();
+		std::vector<float> p = obj["pos"].get<std::vector<float>>();
+		glm::vec3 pos = glm::vec3(p[0], p[1], p[2]);
+		std::vector<float> r = obj["rot"].get<std::vector<float>>();
+		glm::quat rot(r[3], r[0], r[1], r[2]);
+		std::vector<float> s = obj["scale"].get<std::vector<float>>();
+		glm::vec3 scale = glm::vec3(s[0], s[1], s[2]);
+
+		if(type == static_cast<int>(CollisionVolume::VolumeType::START)) { 
+			//player start - contains data about player collision capsule too
+			auto rotEuler = glm::eulerAngles(rot);
+			rotEuler = glm::vec3(glm::degrees(rotEuler.x), glm::degrees(rotEuler.y), glm::degrees(rotEuler.z));
+			player->setRotation(glm::vec3(0.0f, rotEuler.y, 0.0f));
+			
+			renderer::CollisionBody body(glm::vec3(0.0f), rot, rotEuler, scale, static_cast<int>(renderer::CollisionShapes::SHAPE_SPHERE), 60.0f);
+			auto physicsBody = world->createPhysicsBody(pos + glm::vec3(0.0f, 4.0f, 0.0f), rot);
+
+			physicsBody->enableGravity(true);
+			physicsBody->allowSleep(false);
+			physicsBody->setBounciness(0.0f);
+			physicsBody->setFrictionCoefficient(0.0f);
+			physicsBody->setRollingResistance(0.0f);
+			physicsBody->setLinearDamping(0.6f);
+			physicsBody->setAngularDamping(0.6f);
+			physicsBody->addCollisionShapes(glm::vec3(1.0f), std::vector<renderer::CollisionBody>{body}, physics::CollisionCategory::PLAYER);
+			player->setPhysicsBody(physicsBody);
+		} else {
+			colVol = new CollisionVolume(pos);
+			colVol->m_type = static_cast<CollisionVolume::VolumeType>(type);
+
+			auto rotEuler = glm::eulerAngles(rot);
+			rotEuler = glm::vec3(glm::degrees(rotEuler.x), glm::degrees(rotEuler.y), glm::degrees(rotEuler.z));
+
+			renderer::CollisionBody body(glm::vec3(0.0f), rot, rotEuler, scale, shape, 1.0f);
+			auto physicsBody = world->createPhysicsBody(pos, rot);
+
+			physicsBody->addCollisionShapes(glm::vec3(1.0f), std::vector<renderer::CollisionBody>{body}, physics::CollisionCategory::TRIGGER);
+			physicsBody->setBodyType(physics::BodyType::STATIC);
+			colVol->setPhysicsBody(physicsBody);
+
+			colVols.push_back(colVol);
+		}
 	}
 
 	//lights
@@ -121,7 +172,7 @@ GameObject* Utilities::OpenGameObject(const std::string& file, glm::vec3& pos, g
 	physicsBody->setRollingResistance(obj["rollingResist"].get<float>());
 	physicsBody->setLinearDamping(obj["linearDamp"].get<float>());
 	physicsBody->setAngularDamping(obj["angularDamp"].get<float>());
-	physicsBody->addCollisionShapes(scale, colBodies);
+	physicsBody->addCollisionShapes(scale, colBodies, physics::CollisionCategory::GENERAL);
 	
 	object->setPhysicsBody(physicsBody);
 

@@ -1,7 +1,11 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include <Engine/PhysicsBody.h>
+
 #include <GLM/glm.hpp>
+
+#include <memory>
 
 namespace utilities{
 	class InputManager;
@@ -36,6 +40,9 @@ public:
 	void backup();
 	void restore();
 
+	void setPhysicsBody(std::shared_ptr<physics::PhysicsBody> body){ m_rigidBody = body; }
+	std::shared_ptr<physics::PhysicsBody> getPhysicsBody(){ return m_rigidBody; }
+
 private:
 	void updateCamera();
 
@@ -50,6 +57,8 @@ private:
 	glm::vec3 m_buPos;
 	glm::vec3 m_buRot;
 	bool m_buFL;
+
+	std::shared_ptr<physics::PhysicsBody> m_rigidBody;
 };
 
 #endif // !PLAYER_H

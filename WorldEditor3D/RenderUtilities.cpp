@@ -10,12 +10,13 @@ void RenderUtilities::DrawGameObjects(MainApp* app, bool drawCollisionBodies){
 	//prepare shader
 	
 	app->m_gameObjectsShader.use();
-	app->m_gameObjectsShader.loadFlashlight(app->m_player.isFlashLightOn());
 
-	if(app->m_gui.b_creationTab)
+	if(app->m_gui.b_creationTab) {
 		app->m_gameObjectsShader.loadLights(std::vector<renderer::Light*>{(renderer::Light*)&app->m_creationTabLight});
-	else
+	} else {
+		app->m_gameObjectsShader.loadFlashlight(app->m_player.isFlashLightOn());
 		app->m_gameObjectsShader.loadLights(app->m_lights);
+	}
 	glm::mat4 view = app->m_player.getCamera()->getViewMatrix();
 	app->m_gameObjectsShader.loadViewPosition(app->m_player.getCamera()->getPos());
 	app->m_gameObjectsShader.loadViewMatrix(view);

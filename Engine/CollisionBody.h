@@ -23,6 +23,15 @@ namespace renderer{
 			shape = 0;
 			mass = 1.0f;
 		}
+		CollisionBody(glm::vec3& pos, glm::quat& rotQuat, glm::vec3& rotEuler, glm::vec3& scale, int shape, float mass) :
+			colRelativePos(pos),
+			colRotQuat(rotQuat),
+			colRotEuler(rotEuler),
+			colScale(scale),
+			shape(shape),
+			mass(mass)
+		{}
+
 		void updateQuaternion(){
 			colRotQuat = glm::quat(glm::vec3(glm::radians(colRotEuler.x), glm::radians(colRotEuler.y), glm::radians(colRotEuler.z)));
 		}
