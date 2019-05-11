@@ -107,6 +107,12 @@ namespace utilities{
 				std::cout << "game.max_frame_time not found" << std::endl;
 				max_frame_time = 0.25f;
 			}
+			try{
+				map = cfg["game"]["map"].get<std::string>();
+			} catch(...){
+				std::cout << "game.map not found" << std::endl;
+				map = "tst2";
+			}
 		}
 	}
 
@@ -131,7 +137,7 @@ namespace utilities{
 		max_graphics_fps = 120;
 		max_physics_fps = 30;
 		max_frame_time = 0.25f;
-
+		map = "tst2";
 	}
 
 }

@@ -666,6 +666,17 @@ void GUI::showGameobjectsTab(){
 			ImGui::PopItemWidth();
 		}
 		ImGui::EndChild();
+
+		ImGui::Separator();
+		ImGui::Text("Update data");
+		ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth()/2);
+		ImGui::InputInt("Generic Type", &obj->m_type, 0, 0);
+		ImGui::PopItemWidth();
+		ImGui::Text("Script");
+		memset(m_script, '\0', SCRIPT_LENGTH);
+		strncat_s(m_script, obj->m_updateScript.c_str(), SCRIPT_LENGTH);
+		ImGui::InputTextMultiline("##gameobjectUpdate", m_script, IM_ARRAYSIZE(m_script) , ImVec2(-1.0f, ImGui::GetTextLineHeight() * 10), ImGuiInputTextFlags_AllowTabInput | (false ? ImGuiInputTextFlags_ReadOnly : 0));
+		obj->m_updateScript = std::string(m_script);
 	}
 	ImGui::PopItemWidth();
 }

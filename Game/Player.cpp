@@ -69,8 +69,13 @@ void Player::update(utilities::InputManager& inputManager, float deltaTime){
 		dir.y = 0.0f;
 		dir = glm::normalize(dir);
 		dir *= force;
+		m_rigidBody->setFrictionCoefficient(0.0f);
+		m_rigidBody->setRollingResistance(0.0f);
 		m_rigidBody->applyForceToCenterOfMass(dir);
-	} 
+	} else{
+		m_rigidBody->setFrictionCoefficient(1.0f);
+		m_rigidBody->setRollingResistance(1.0f);
+	}
 
 	auto crtVel = m_rigidBody->getLinearVelocity();
 	m_rigidBody->setLinearVelocity(glm::vec3(crtVel.x * 0.8f, crtVel.y, crtVel.z * 0.8f));

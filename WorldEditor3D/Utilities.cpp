@@ -29,7 +29,7 @@ void Utilities::openMap(MainApp* app, const std::string& file){
 		std::vector<float> r = obj["rot"].get<std::vector<float>>();
 		std::vector<float> s = obj["scale"].get<std::vector<float>>();
 		glm::vec3 scale = glm::vec3(s[0], s[1], s[2]);
-
+		
 		object = new GameObject(utilities::ResourceManager::loadModel(obj_name));
 		object->setName(obj_name);
 		object->setInEditorName(obj_inEditorName);
@@ -37,6 +37,8 @@ void Utilities::openMap(MainApp* app, const std::string& file){
 		object->setRotation(glm::quat(r[3], r[0], r[1], r[2]));
 		object->setScale(scale);
 		object->m_bodyType = type;
+		object->m_type = obj["genericType"].get<int>();
+		object->m_updateScript = obj["updateScript"].get<std::string>();
 
 		app->m_objectsInScene.push_back(object);
 		app->m_gameObjectsMap[object->getCode()] = object;
@@ -151,6 +153,8 @@ void Utilities::saveMap(MainApp* app, const std::string& file){
 			{"rot", {obj->getRotation().x, obj->getRotation().y, obj->getRotation().z, obj->getRotation().w}},
 			{"scale", {obj->getScale().x, obj->getScale().y, obj->getScale().z}},
 			{"bodyType", (int)obj->m_bodyType},
+			{"genericType", obj->m_type},
+			{"updateScript", obj->m_updateScript}
 		};
 		map["gameobjects"].push_back(entry);
 	}

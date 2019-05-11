@@ -75,7 +75,7 @@ void MainApp::initLevel(){
 	m_basicColorShader.initShader("res/shaders/basic");
 	m_billboardShader.initShader("res/shaders/billboard");
 
-	Utilities::OpenMap("res/maps/tst2", m_objectsInScene, m_collisionVolumes, m_lights, &m_dynamicWorld, &m_player);
+	Utilities::OpenMap("res/maps/" + CONFIG.map, m_objectsInScene, m_collisionVolumes, m_lights, &m_dynamicWorld, &m_player);
 	m_dynamicWorld.setEventListener(&m_eventListener);
 }
 

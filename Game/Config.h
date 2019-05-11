@@ -35,6 +35,7 @@ namespace utilities{
 		int max_graphics_fps;
 		int max_physics_fps;
 		float max_frame_time;
+		std::string map;
 
 	private:
 		void SetDefaults();

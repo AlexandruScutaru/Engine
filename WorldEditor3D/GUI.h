@@ -10,6 +10,7 @@
 #include <string>
 
 #define OBJECT_NAME_SIZE 64
+#define SCRIPT_LENGTH 1024*16
 #define TOOLBAR_HEIGHT 36
 #define MAIN_MENU_HEIGHT 18
 #define EDITOR_WINDOW_WIDTH 350
@@ -74,6 +75,7 @@ public:
 
 
 	char m_name[OBJECT_NAME_SIZE];
+	char m_script[SCRIPT_LENGTH];
 	int fdEntryItem;
 	int placedGameobjectEntryItem;
 	int placedLightEntryItem;

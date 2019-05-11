@@ -64,8 +64,8 @@ void Utilities::OpenMap(const std::string & file, std::vector<GameObject*>& obje
 			physicsBody->enableGravity(true);
 			physicsBody->allowSleep(false);
 			physicsBody->setBounciness(0.0f);
-			physicsBody->setFrictionCoefficient(0.0f);
-			physicsBody->setRollingResistance(0.0f);
+			physicsBody->setFrictionCoefficient(1.0f);
+			physicsBody->setRollingResistance(1.0f);
 			physicsBody->setLinearDamping(0.6f);
 			physicsBody->setAngularDamping(0.6f);
 			physicsBody->addCollisionShapes(glm::vec3(1.0f), std::vector<renderer::CollisionBody>{body}, physics::CollisionCategory::PLAYER);

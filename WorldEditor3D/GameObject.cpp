@@ -17,7 +17,9 @@ GameObject::GameObject(TexturedModel* model, bool static_obj) :
 	m_frictionCoefficient(-1.0f),
 	m_rollingResistance(-1.0f),
 	m_linearDamping(0.0f),
-	m_angularDamping(0.0f)
+	m_angularDamping(0.0f),
+	m_type(0),
+	m_updateScript("")
 {}
 
 GameObject::GameObject(TexturedModel* model, glm::vec3& pos, glm::quat& rot, glm::vec3& scale, bool static_obj) :
@@ -32,7 +34,9 @@ GameObject::GameObject(TexturedModel* model, glm::vec3& pos, glm::quat& rot, glm
 	m_frictionCoefficient(-1.0f),
 	m_rollingResistance(-1.0f),
 	m_linearDamping(0.0f),
-	m_angularDamping(0.0f)
+	m_angularDamping(0.0f),
+	m_type(0),
+	m_updateScript("")
 {}
 
 GameObject::GameObject(const GameObject& other) :
@@ -52,6 +56,8 @@ GameObject::GameObject(const GameObject& other) :
 	m_linearDamping			= other.m_linearDamping;
 	m_angularDamping		= other.m_angularDamping;
 	m_colBodies				= other.m_colBodies;
+	m_type					= other.m_type;
+	m_updateScript			= other.m_updateScript;
 }
 
 GameObject::~GameObject(){}

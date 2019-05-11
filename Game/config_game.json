@@ -7,15 +7,16 @@
 	},
 	"window":{
 		"title" : "game",
-		"width" : 1280,
-		"height" : 720,
+		"width" : 900,
+		"height" : 540,
 		"trap_mouse" : true,
 		"window_mode" : 0
 	},
 	"game":{
 		"vsync" : false,
-		"max_graphics_fps" : 120,
+		"max_graphics_fps" : 60,
 		"max_physics_fps" : 60,
-		"max_frame_time" : 0.25
+		"max_frame_time" : 0.25,
+		"map": "tst2"
 	}
 }

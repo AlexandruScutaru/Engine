@@ -52,6 +52,9 @@ public:
 	float m_linearDamping;
 	float m_angularDamping;
 
+	int m_type;
+	std::string m_updateScript;
+
 private:
 	std::string m_name;
 	std::string m_inEditorName;
