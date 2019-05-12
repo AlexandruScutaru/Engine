@@ -43,6 +43,8 @@ public:
 	void setPhysicsBody(std::shared_ptr<physics::PhysicsBody> body){ m_rigidBody = body; }
 	std::shared_ptr<physics::PhysicsBody> getPhysicsBody(){ return m_rigidBody; }
 
+	bool hasKey = false;
+
 private:
 	void updateCamera();
 
@@ -59,6 +61,7 @@ private:
 	bool m_buFL;
 
 	std::shared_ptr<physics::PhysicsBody> m_rigidBody;
+
 };
 
 #endif // !PLAYER_H

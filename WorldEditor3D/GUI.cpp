@@ -436,39 +436,27 @@ void GUI::showPlacementTab(){
 }
 
 void GUI::showOpenFileDialog(){
-	ImGui::SetNextWindowSize(ImVec2(500, 11.2f * ImGui::GetFrameHeightWithSpacing()), ImGuiSetCond_Always);
+	ImGui::SetNextWindowSize(ImVec2(300, 11.2f * ImGui::GetFrameHeightWithSpacing()), ImGuiSetCond_Always);
 	ImGui::SetNextWindowFocus();
 	ImGui::Begin("Open file", &b_showOpenFileDialog,
 				 ImGuiWindowFlags_NoResize |
 				 ImGuiWindowFlags_NoCollapse
 	);
 
-	ImGui::BeginChild("##fileSelecting", ImVec2(ImGui::GetWindowContentRegionWidth() * 0.6f, 0), false);
-	{
-		ImGui::PushItemWidth(-1);
-		ImGui::Text("Available files:");
-		ImGui::ListBox("##", &fdEntryItem, VectorOfStringGetter, (void*)(&dirContents), (int)(dirContents.size()), 10);
-		
-		if(ImGui::Button("Open")){
-			b_showOpenFileDialog = false;
-			openButtonPressed();
-		}
-		ImGui::SameLine();
-		if(ImGui::Button("Cancel")){
-			b_showOpenFileDialog = false;
-		}
-
-		ImGui::PopItemWidth();
+	ImGui::PushItemWidth(-1);
+	ImGui::Text("Available files:");
+	ImGui::ListBox("##", &fdEntryItem, VectorOfStringGetter, (void*)(&dirContents), (int)(dirContents.size()), 10);
+	
+	if(ImGui::Button("Open")){
+		b_showOpenFileDialog = false;
+		openButtonPressed();
 	}
-	ImGui::EndChild();
 	ImGui::SameLine();
-	ImGui::BeginChild("##Preview", ImVec2(0, ImGui::GetWindowHeight()/2), false);
-	{
-		ImGui::PushItemWidth(-1);
-		ImGui::Text("placeholder");
-		ImGui::PopItemWidth();
+	if(ImGui::Button("Cancel")){
+		b_showOpenFileDialog = false;
 	}
-	ImGui::EndChild();
+
+	ImGui::PopItemWidth();
 
 	ImGui::End();
 }
@@ -802,9 +790,9 @@ void GUI::showLightsTab(){
 	ImGui::Separator();
 	ImGui::BeginChild("gameobjectTransforms", ImVec2(-1, -1), false);
 	{
+		float color[3] = {0.0f};
 		if(placedLightEntryItem >= 0){
 			ImGui::Text("Properties");
-			ImGui::PushItemWidth(65);
 			app->deselectAll();
 
 			for(auto entry : app->m_lightsBillboards){
@@ -815,32 +803,31 @@ void GUI::showLightsTab(){
 				}
 			}
 			if(placedLightEntryItem == 0){
+				ImGui::PushItemWidth(-1);
 				//directional light
 				renderer::DirLight* dl = static_cast<renderer::DirLight*>(app->m_lights[0]);
+				
 				ImGui::Text("Amb :");
 				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragAmbR", &dl->ambient.r, 0.01f, 0.0f, 1.0f, "%.2f");
-				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragAmbG", &dl->ambient.g, 0.01f, 0.0f, 1.0f, "%.2f");
-				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragAmbB", &dl->ambient.b, 0.01f, 0.0f, 1.0f, "%.2f");
+				std::cout << dl->ambient.x << " " << dl->ambient.y << " " << dl->ambient.z << std::endl;
+				color[0] = dl->ambient.x, color[1] = dl->ambient.y, color[2] = dl->ambient.z;
+				ImGui::ColorEdit3("##dlamb", color);
+				dl->ambient = glm::vec3(color[0], color[1], color[2]);
 
 				ImGui::Text("Diff:");
 				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragDiffR", &dl->diffuse.r, 0.01f, 0.0f, 1.0f, "%.2f");
-				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragDiffG", &dl->diffuse.g, 0.01f, 0.0f, 1.0f, "%.2f");
-				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragDiffB", &dl->diffuse.b, 0.01f, 0.0f, 1.0f, "%.2f");
+				color[0] = dl->diffuse.x, color[1] = dl->diffuse.y, color[2] = dl->diffuse.z;
+				ImGui::ColorEdit3("##dldiff", color);
+				dl->diffuse = glm::vec3(color[0], color[1], color[2]);
 
 				ImGui::Text("Spec:");
 				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragSpecR", &dl->specular.r, 0.01f, 0.0f, 1.0f, "%.2f");
-				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragSpecG", &dl->specular.g, 0.01f, 0.0f, 1.0f, "%.2f");
-				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragSpecB", &dl->specular.b, 0.01f, 0.0f, 1.0f, "%.2f");
+				color[0] = dl->specular.x, color[1] = dl->specular.y, color[2] = dl->specular.z;
+				ImGui::ColorEdit3("##dlspec", color);
+				dl->specular = glm::vec3(color[0], color[1], color[2]);
+				ImGui::PopItemWidth();
 
+				ImGui::PushItemWidth(65);
 				ImGui::Text("Dir :");
 				ImGui::SameLine();
 				ImGui::DragFloat("##lightDragDirX", &app->m_selectedObjsVect[0]->getPosition().x, 0.01f, -FLT_MAX, FLT_MAX, "%.2f");
@@ -848,42 +835,41 @@ void GUI::showLightsTab(){
 				ImGui::DragFloat("##lightDragDirY", &app->m_selectedObjsVect[0]->getPosition().y, 0.01f, -FLT_MAX, FLT_MAX, "%.2f");
 				ImGui::SameLine();
 				ImGui::DragFloat("##lightDragDirZ", &app->m_selectedObjsVect[0]->getPosition().z, 0.01f, -FLT_MAX, FLT_MAX, "%.2f");
+				ImGui::PopItemWidth();
 			}
 			else if(placedLightEntryItem == 1){
+				ImGui::PushItemWidth(-1);
 				app->deselectAll();
 
 				renderer::SpotLight* sl = static_cast<renderer::SpotLight*>(app->m_lights[1]);
+				
 				ImGui::Text("Amb :");
 				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragAmbR", &sl->ambient.r, 0.01f, 0.0f, 1.0f, "%.2f");
-				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragAmbG", &sl->ambient.g, 0.01f, 0.0f, 1.0f, "%.2f");
-				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragAmbB", &sl->ambient.b, 0.01f, 0.0f, 1.0f, "%.2f");
+				color[0] = sl->ambient.x, color[1] = sl->ambient.y, color[2] = sl->ambient.z;
+				ImGui::ColorEdit3("##slamb", color);
+				sl->ambient = glm::vec3(color[0], color[1], color[2]);
 
 				ImGui::Text("Diff:");
 				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragDiffR", &sl->diffuse.r, 0.01f, 0.0f, 1.0f, "%.2f");
-				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragDiffG", &sl->diffuse.g, 0.01f, 0.0f, 1.0f, "%.2f");
-				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragDiffB", &sl->diffuse.b, 0.01f, 0.0f, 1.0f, "%.2f");
+				color[0] = sl->diffuse.x, color[1] = sl->diffuse.y, color[2] = sl->diffuse.z;
+				ImGui::ColorEdit3("##sldiff", color);
+				sl->diffuse = glm::vec3(color[0], color[1], color[2]);
 
 				ImGui::Text("Spec:");
 				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragSpecR", &sl->specular.r, 0.01f, 0.0f, 1.0f, "%.2f");
-				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragSpecG", &sl->specular.g, 0.01f, 0.0f, 1.0f, "%.2f");
-				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragSpecB", &sl->specular.b, 0.01f, 0.0f, 1.0f, "%.2f");
+				color[0] = sl->specular.x, color[1] = sl->specular.y, color[2] = sl->specular.z;
+				ImGui::ColorEdit3("##slspec", color);
+				sl->specular = glm::vec3(color[0], color[1], color[2]);
+				ImGui::PopItemWidth();
 
+				ImGui::PushItemWidth(65);
 				ImGui::Text("Att :");
 				ImGui::SameLine();
-				ImGui::InputFloat("##lightInputAttX", &sl->attenuation.x, 0.0f, 0.0f, 2);
+				ImGui::DragFloat("##lightInputAttX", &sl->attenuation.x, 0.001f, -FLT_MAX, FLT_MAX, "%.3f");
 				ImGui::SameLine();
-				ImGui::InputFloat("##lightInputAttY", &sl->attenuation.y, 0.0f, 0.0f, 2);
+				ImGui::DragFloat("##lightInputAttY", &sl->attenuation.y, 0.001f, -FLT_MAX, FLT_MAX, "%.3f");
 				ImGui::SameLine();
-				ImGui::InputFloat("##lightInputAttZ", &sl->attenuation.z, 0.0f, 0.0f, 2);
+				ImGui::DragFloat("##lightInputAttZ", &sl->attenuation.z, 0.001f, -FLT_MAX, FLT_MAX, "%.3f");
 
 				ImGui::Text("      Cut off: "); ImGui::SameLine();
 				float coneAngle = glm::degrees(glm::acos(sl->cutOff));
@@ -893,34 +879,33 @@ void GUI::showLightsTab(){
 				coneAngle = glm::degrees(glm::acos(sl->outerCutOff));
 				ImGui::DragFloat("##lightInputOuterCutOff", &coneAngle, 0.01f, 0.0f, 30.0f, "%.2f");
 				sl->outerCutOff = glm::cos(glm::radians(coneAngle));
+				ImGui::PopItemWidth();
 			}
 			else if(placedLightEntryItem > 1){
+				ImGui::PushItemWidth(-1);
 				//point lights
 				renderer::PointLight* pl = static_cast<renderer::PointLight*>(app->m_lights[placedLightEntryItem]);
+
 				ImGui::Text("Amb :");
 				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragAmbR", &pl->ambient.r, 0.01f, 0.0f, 1.0f, "%.2f");
-				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragAmbG", &pl->ambient.g, 0.01f, 0.0f, 1.0f, "%.2f");
-				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragAmbB", &pl->ambient.b, 0.01f, 0.0f, 1.0f, "%.2f");
+				color[0] = pl->ambient.x, color[1] = pl->ambient.y, color[2] = pl->ambient.z;
+				ImGui::ColorEdit3("##plamb", color);
+				pl->ambient = glm::vec3(color[0], color[1], color[2]);
 
 				ImGui::Text("Diff:");
 				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragDiffR", &pl->diffuse.r, 0.01f, 0.0f, 1.0f, "%.2f");
-				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragDiffG", &pl->diffuse.g, 0.01f, 0.0f, 1.0f, "%.2f");
-				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragDiffB", &pl->diffuse.b, 0.01f, 0.0f, 1.0f, "%.2f");
+				color[0] = pl->diffuse.x, color[1] = pl->diffuse.y, color[2] = pl->diffuse.z;
+				ImGui::ColorEdit3("##pldiff", color);
+				pl->diffuse = glm::vec3(color[0], color[1], color[2]);
 
 				ImGui::Text("Spec:");
 				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragSpecR", &pl->specular.r, 0.01f, 0.0f, 1.0f, "%.2f");
-				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragSpecG", &pl->specular.g, 0.01f, 0.0f, 1.0f, "%.2f");
-				ImGui::SameLine();
-				ImGui::DragFloat("##lightDragSpecB", &pl->specular.b, 0.01f, 0.0f, 1.0f, "%.2f");
+				color[0] = pl->specular.x, color[1] = pl->specular.y, color[2] = pl->specular.z;
+				ImGui::ColorEdit3("##plspec", color);
+				pl->specular = glm::vec3(color[0], color[1], color[2]);
+				ImGui::PopItemWidth();
 
+				ImGui::PushItemWidth(65);
 				ImGui::Text("Pos :");
 				ImGui::SameLine();
 				ImGui::DragFloat("##lightDragDirX", &app->m_selectedObjsVect[0]->getPosition().x, 0.01f, -FLT_MAX, FLT_MAX, "%.2f");
@@ -931,13 +916,13 @@ void GUI::showLightsTab(){
 			
 				ImGui::Text("Att :");
 				ImGui::SameLine();
-				ImGui::InputFloat("##lightInputAttX", &pl->attenuation.x, 0.0f, 0.0f, 2);
+				ImGui::DragFloat("##lightInputAttX", &pl->attenuation.x, 0.001f, -FLT_MAX, FLT_MAX, "%.3f");
 				ImGui::SameLine();
-				ImGui::InputFloat("##lightInputAttY", &pl->attenuation.y, 0.0f, 0.0f, 2);
+				ImGui::DragFloat("##lightInputAttY", &pl->attenuation.y, 0.001f, -FLT_MAX, FLT_MAX, "%.3f");
 				ImGui::SameLine();
-				ImGui::InputFloat("##lightInputAttZ", &pl->attenuation.z, 0.0f, 0.0f, 2);
+				ImGui::DragFloat("##lightInputAttZ", &pl->attenuation.z, 0.001f, -FLT_MAX, FLT_MAX, "%.3f");
+				ImGui::PopItemWidth();
 			}
-			ImGui::PopItemWidth();
 		}
 	}
 	ImGui::EndChild();

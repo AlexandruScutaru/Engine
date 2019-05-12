@@ -48,12 +48,28 @@ void MainApp::beginContact(const rp3d::ContactPointInfo& contact) {
 	else
 		other = body1;
 	
+	//check if we collided with a collision volume
 	for(auto& colVol : m_collisionVolumes) {
 		if(other == colVol->getPhysicsBody()->m_body) {
 			if(colVol->m_type == CollisionVolume::VolumeType::END) {
-				std::cout << "finish" << std::endl;
-				m_appState = AppState::EXIT;
-				break;
+				if(m_player.hasKey){
+					std::cout << "finish" << std::endl;
+					m_appState = AppState::EXIT;
+					break;
+				} else {
+					std::cout << "find the key first" << std::endl;
+				}
+			}
+		}
+	}
+
+	//check if we collided with a special gameobject
+	for(size_t i = 0u; i < m_objectsInScene.size(); i++){
+		if(other == m_objectsInScene[i]->getPhysicsBody()->m_body) {
+			if(m_objectsInScene[i]->getType() == GameObject::TYPE::KEY_PICKUP) {
+				std::cout << "picked up key" << std::endl;
+				m_objectsInScene.erase(m_objectsInScene.begin() + i--);
+				m_player.hasKey = true;
 			}
 		}
 	}

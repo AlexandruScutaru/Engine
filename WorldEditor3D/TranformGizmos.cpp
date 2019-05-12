@@ -11,6 +11,7 @@
 #include <GLM/gtx/quaternion.hpp>
 
 #define DEGREES_PER_SECOND 10.0f
+#define SNAP_OFFSET 0.00001f
 
 
 static void translateX	(Actor* pActor, utilities::InputManager& input, renderer::Camera* camera, float dt);
@@ -224,9 +225,9 @@ void TranformGizmos::updateGizmo(renderer::Camera* camera, utilities::InputManag
 	} else if(m_currentlyActivated && m_gizmoMode == GizmoMode::TRANSLATE && !input.isKeyPressed(SDL_BUTTON_LEFT)){
 		if(Grid::isSnapEnabled()){
 			for(auto& obj : *m_pSelectedVect){
-				obj->getPosition().x = std::round((obj)->getPosition().x / Grid::getStep()) * Grid::getStep();
-				obj->getPosition().y = std::round((obj)->getPosition().y / Grid::getStep()) * Grid::getStep();
-				obj->getPosition().z = std::round((obj)->getPosition().z / Grid::getStep()) * Grid::getStep();
+				obj->getPosition().x = std::round((obj)->getPosition().x / Grid::getStep()) * Grid::getStep() + SNAP_OFFSET;
+				obj->getPosition().y = std::round((obj)->getPosition().y / Grid::getStep()) * Grid::getStep() + SNAP_OFFSET;
+				obj->getPosition().z = std::round((obj)->getPosition().z / Grid::getStep()) * Grid::getStep() + SNAP_OFFSET;
 			}
 		}
 		m_currentlyActivated = 0;

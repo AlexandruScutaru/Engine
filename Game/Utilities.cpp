@@ -36,6 +36,8 @@ void Utilities::OpenMap(const std::string & file, std::vector<GameObject*>& obje
 		object->setRotation(rot);
 		object->setScale(scale);
 		object->getPhysicsBody()->setBodyType(type);
+		object->setType(obj["genericType"].get<int>());
+
 		objects.push_back(object);
 	}
 
@@ -58,7 +60,7 @@ void Utilities::OpenMap(const std::string & file, std::vector<GameObject*>& obje
 			rotEuler = glm::vec3(glm::degrees(rotEuler.x), glm::degrees(rotEuler.y), glm::degrees(rotEuler.z));
 			player->setRotation(glm::vec3(0.0f, rotEuler.y, 0.0f));
 			
-			renderer::CollisionBody body(glm::vec3(0.0f), rot, rotEuler, scale, static_cast<int>(renderer::CollisionShapes::SHAPE_SPHERE), 60.0f);
+			renderer::CollisionBody body(glm::vec3(0.0f), rot, rotEuler, scale, static_cast<int>(renderer::CollisionShapes::SHAPE_CAPSULE), 60.0f);
 			auto physicsBody = world->createPhysicsBody(pos + glm::vec3(0.0f, 4.0f, 0.0f), rot);
 
 			physicsBody->enableGravity(true);
@@ -67,7 +69,8 @@ void Utilities::OpenMap(const std::string & file, std::vector<GameObject*>& obje
 			physicsBody->setFrictionCoefficient(1.0f);
 			physicsBody->setRollingResistance(1.0f);
 			physicsBody->setLinearDamping(0.6f);
-			physicsBody->setAngularDamping(0.6f);
+			//physicsBody->setAngularDamping(0.6f);
+			physicsBody->setAngularDamping(1.0f);
 			physicsBody->addCollisionShapes(glm::vec3(1.0f), std::vector<renderer::CollisionBody>{body}, physics::CollisionCategory::PLAYER);
 			player->setPhysicsBody(physicsBody);
 		} else {

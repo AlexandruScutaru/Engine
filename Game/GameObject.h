@@ -25,13 +25,21 @@ public:
 	GameObject(const GameObject& other);
 	virtual ~GameObject();
 
+	enum TYPE {
+		STANDARD = 0,
+		KEY_PICKUP
+	};
+
 	void setIsBillboard(bool isBillboard){ m_model->setBillboard(isBillboard); }
 	bool isBillboard(){ return m_model->isBillboard(); }
 	void setPhysicsBody(std::shared_ptr<physics::PhysicsBody> body){ m_rigidBody = body; }
+	void setType(int type) { m_type = type; }
+
 	std::shared_ptr<physics::PhysicsBody> getPhysicsBody(){ return m_rigidBody; }
+	int getType() { return m_type; }
 
 private:
 	std::shared_ptr<physics::PhysicsBody> m_rigidBody;
-
+	int m_type;
 };
 #endif // !GAMEOBJECT_H

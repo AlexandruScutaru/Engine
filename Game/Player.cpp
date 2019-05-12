@@ -6,7 +6,7 @@
 
 #define LOOK_SENSITIVITY 0.6f
 
-const glm::vec3 Player::m_cameraOffset = glm::vec3(0.0f, 1.1f, 0.0f);
+const glm::vec3 Player::m_cameraOffset = glm::vec3(0.0f, 0.8f, 0.0f);
 
 
 Player::Player() :
@@ -51,7 +51,7 @@ void Player::update(utilities::InputManager& inputManager, float deltaTime){
 	float force = 1000.0f;
 	
 	if(inputManager.isKeyDown(SDLK_LSHIFT))
-		force = 2000.0f;
+		force = 2300.0f;
 	
 	if(inputManager.isKeyDown(SDLK_w)){
 		dir = -m_camera->getForward();
@@ -79,9 +79,14 @@ void Player::update(utilities::InputManager& inputManager, float deltaTime){
 
 	auto crtVel = m_rigidBody->getLinearVelocity();
 	m_rigidBody->setLinearVelocity(glm::vec3(crtVel.x * 0.8f, crtVel.y, crtVel.z * 0.8f));
-			
+	
 	bool canjump = false;
 	auto body = (*m_rigidBody).m_body;
+	//body->getTransform().setOrientation(rp3d::Quaternion());
+	rp3d::Transform trs;
+	trs.setPosition(body->getTransform().getPosition());
+	trs.setOrientation(rp3d::Quaternion::identity());
+	body->setTransform(trs);
 	const rp3d::ContactManifoldListElement* listElem;
 	listElem = body->getContactManifoldsList();
 	//std::cout << "Player pos: " << m_pos.x << " " << m_pos.y << " " << m_pos.z << std::endl;
