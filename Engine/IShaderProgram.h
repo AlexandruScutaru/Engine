@@ -40,6 +40,9 @@ namespace renderer{
 		//OpenGL's way of keeping track of where the shader program is 
 		GLuint m_program;
 
+	protected:
+		bool m_inited;
+
 	};
 
 }

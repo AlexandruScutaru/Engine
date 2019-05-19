@@ -17,7 +17,6 @@ Player::Player() :
 	movementSpeed(3.5f)
 {
 	backup();
-
 	m_camera = new renderer::Camera();
 	updateCamera();
 }
@@ -37,7 +36,6 @@ Player::Player(glm::vec3 & pos, glm::vec3 & rot, glm::vec3 & scale):
 Player::~Player(){
 	delete m_camera;
 }
-
 
 void Player::update(utilities::InputManager& inputManager, float deltaTime){
 
@@ -80,33 +78,28 @@ void Player::update(utilities::InputManager& inputManager, float deltaTime){
 	auto crtVel = m_rigidBody->getLinearVelocity();
 	m_rigidBody->setLinearVelocity(glm::vec3(crtVel.x * 0.8f, crtVel.y, crtVel.z * 0.8f));
 	
-	bool canjump = false;
 	auto body = (*m_rigidBody).m_body;
-	//body->getTransform().setOrientation(rp3d::Quaternion());
 	rp3d::Transform trs;
 	trs.setPosition(body->getTransform().getPosition());
 	trs.setOrientation(rp3d::Quaternion::identity());
 	body->setTransform(trs);
+	
+	bool canjump = false;
 	const rp3d::ContactManifoldListElement* listElem;
 	listElem = body->getContactManifoldsList();
-	//std::cout << "Player pos: " << m_pos.x << " " << m_pos.y << " " << m_pos.z << std::endl;
 	for(; listElem != nullptr; listElem = listElem->next) {
+		static float offset = m_scale.y / 2.1f;
 		rp3d::ContactManifold* manifold = listElem->contactManifold;
-	
 		// For each contact point of the manifold 
-		for(int i = 0; i<manifold->getNbContactPoints(); i++) {
-	
+		for(int i = 0; i<manifold->getNbContactPoints(); i++) {	
 			// Get the contact point 
 			rp3d::ContactPoint* point = manifold->getContactPoint(i);
-	
 			// Get the world-space contact point on body 1 
 			rp3d::Vector3 pos = point->getWorldPointOnBody1();
-	
 			// Get the world-space contact normal 
-			rp3d::Vector3 normal = point->getNormal();
-	
-			//std::cout << "Contact #" << i << ": pos=" << pos.x << " " << pos.y << " " << pos.z << "\tnormal: " << normal.x << " " << normal.y << " " << normal.z << std::endl;
-			if(pos.y <= m_pos.y)
+			//rp3d::Vector3 normal = point->getNormal();
+			
+			if(pos.y <= m_pos.y - offset)
 				canjump = true;
 		}
 	}
@@ -150,6 +143,20 @@ void Player::restore(){
 	m_pos = m_buPos;
 	m_rot = m_buRot;
 	m_flashLightOn = m_buFL;
+}
+
+void Player::reset(){
+	m_flashLightOn = false;
+	m_pos = glm::vec3(0.0f);
+	m_rot = glm::vec3(0.0f);
+	m_scale = glm::vec3(1.0f);
+	movementSpeed = 3.5f;
+	hasKey = false;
+
+	backup();
+	delete m_camera;
+	m_camera = new renderer::Camera();
+	updateCamera();
 }
 
 void Player::updateCamera(){

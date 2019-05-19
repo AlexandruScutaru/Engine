@@ -8,18 +8,19 @@
 
 namespace utilities{
 
-	Log::Log(){
-		initRotatingFileLogger(CONFIG.logger_cfg.file_name, CONFIG.logger_cfg.size, CONFIG.logger_cfg.number_of_files);
-		rotFileLogger->set_level((spdlog::level::level_enum)CONFIG.logger_cfg.level);
+	Log_e::Log_e(){
+		initRotatingFileLogger(CONFIG_E.logger_cfg.file_name, CONFIG_E.logger_cfg.size, CONFIG_E.logger_cfg.number_of_files);
+		rotFileLogger->set_level((spdlog::level::level_enum)CONFIG_E.logger_cfg.level);
+		rotFileLogger->info("========================================================================");
 		rotFileLogger->info("Log::rotFileLogger constructed");
 	}
 
-	Log & Log::Instance(){
-		static Log instance;
+	Log_e & Log_e::Instance(){
+		static Log_e instance;
 		return instance;
 	}
 	
-	void Log::initRotatingFileLogger(const std::string& filename, int max_size, int number){
+	void Log_e::initRotatingFileLogger(const std::string& filename, int max_size, int number){
 		std::fstream file;
 		file.exceptions(std::ofstream::badbit);
 		try{

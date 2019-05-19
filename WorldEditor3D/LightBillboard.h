@@ -18,6 +18,8 @@ public:
 			   glm::quat& rot = glm::quat(),
 			   glm::vec3& scale = glm::vec3(1.0f)
 	);
+	LightBillboard(const LightBillboard& other) = delete;
+	LightBillboard(const LightBillboard& other, renderer::Light* light);
 	
 	virtual ~LightBillboard();
 

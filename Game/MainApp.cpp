@@ -1,5 +1,6 @@
 #include "MainApp.h"
 #include "Config.h"
+#include "Logger.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
@@ -9,10 +10,13 @@
 #include <cmath>
 #include <Engine/CollisionBody.h>
 
+
 MainApp::MainApp() :
 	m_appState(AppState::EDIT),
-	m_eventListener(physics::PhysicsEventListener(std::bind(&MainApp::beginContact, this, std::placeholders::_1)))
+	m_eventListener(physics::PhysicsEventListener(std::bind(&MainApp::beginContact, this, std::placeholders::_1))),
+	m_resetLevel(false)
 {
+	LOG_INFO("Game is starting!");
 	initSystems();
 }
 
@@ -55,10 +59,12 @@ void MainApp::beginContact(const rp3d::ContactPointInfo& contact) {
 				if(m_player.hasKey){
 					std::cout << "finish" << std::endl;
 					m_appState = AppState::EXIT;
-					break;
 				} else {
 					std::cout << "find the key first" << std::endl;
 				}
+			} else if(colVol->m_type == CollisionVolume::VolumeType::TRIGGER){
+				std::cout << "you died" << std::endl;
+				m_resetLevel = true;
 			}
 		}
 	}
@@ -84,6 +90,7 @@ void MainApp::initSystems(){
 	renderer::Renderer::Init();
 	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
 	utilities::ResourceManager::Init();
+	m_audioManager.init();
 }
 
 void MainApp::initLevel(){
@@ -93,6 +100,9 @@ void MainApp::initLevel(){
 
 	Utilities::OpenMap("res/maps/" + CONFIG.map, m_objectsInScene, m_collisionVolumes, m_lights, &m_dynamicWorld, &m_player);
 	m_dynamicWorld.setEventListener(&m_eventListener);
+
+	audio::Music music = m_audioManager.loadMusic("res/sounds/atmosphere.mp3");
+	music.play(-1);
 }
 
 void MainApp::loop(){
@@ -150,6 +160,7 @@ void MainApp::loop(){
 		}
 	
 		m_fpsLimiter.end();
+		if(m_resetLevel) resetLevel();
 	}
 }
 
@@ -226,12 +237,24 @@ void MainApp::drawGame(float interpolation){
 void MainApp::resetData(){
 	m_objects_ToDraw.clear();
 
-	for(auto obj : m_objectsInScene)
+	for(auto obj : m_objectsInScene){
+		m_dynamicWorld.destroyBody(obj->getPhysicsBody());
 		delete obj;
+	}
 	m_objectsInScene.clear();
 	for(auto light : m_lights)
 		delete light;
 	m_lights.clear();
+	for(auto colVol : m_collisionVolumes)
+		delete colVol;
+	m_collisionVolumes.clear();
+}
+
+void MainApp::resetLevel(){
+	resetData();
+	m_player.reset();
+	initLevel();
+	m_resetLevel = false;
 }
 
 void MainApp::updateToDrawVector(){
@@ -271,7 +294,7 @@ void MainApp::drawGameObjects(){
 		}
 	}
 	m_gameObjectsShader.unuse();
-
+	
 	///now draw the billboards
 	//prepare shader
 	m_billboardShader.use();

@@ -25,10 +25,10 @@ namespace renderer{
 
 		//initialize SDL VIDEO system
 		if(SDL_Init(SDL_INIT_VIDEO) < 0){
-			LOG_ERROR_TRACEABLE("SDL_Init::SDL_INIT_VIDEO failed with error: '{}'!", SDL_GetError());
+			LOG_E_ERROR_TRACEABLE("SDL_Init::SDL_INIT_VIDEO failed with error: '{}'!", SDL_GetError());
 			exit(EXIT_FAILURE);
 		} else{
-			LOG_INFO("SDL_Init::SDL_INIT_VIDEO succeeded");
+			LOG_E_INFO("SDL_Init::SDL_INIT_VIDEO succeeded");
 		}
  
 		//creates "at least" 2^8 shades of the chosen color 
@@ -74,20 +74,20 @@ namespace renderer{
 			flags
 		);
 		if(m_sdlWindow == nullptr){
-			LOG_ERROR_TRACEABLE("SDL_CreateWindow failed with error: '{}'!", SDL_GetError());
+			LOG_E_ERROR_TRACEABLE("SDL_CreateWindow failed with error: '{}'!", SDL_GetError());
 			exit(EXIT_FAILURE);
 		} else{
-			LOG_INFO("SDL_CreateWindow succeeded");
+			LOG_E_INFO("SDL_CreateWindow succeeded");
 		}
 
 		//tells SDL to create a context from the window
 		//now we can use openGL and the GPU to draw on the window
 		m_glContext = SDL_GL_CreateContext(m_sdlWindow);
 		if(m_glContext == nullptr){
-			LOG_ERROR_TRACEABLE("SDL_GL_CreateContext from window failed with error: '{}'!", SDL_GetError());
+			LOG_E_ERROR_TRACEABLE("SDL_GL_CreateContext from window failed with error: '{}'!", SDL_GetError());
 			exit(EXIT_FAILURE);
 		} else{
-			LOG_INFO("SDL_GL_CreateContext succeeded");
+			LOG_E_INFO("SDL_GL_CreateContext succeeded");
 		}
 
 		//initialize glew
@@ -95,21 +95,21 @@ namespace renderer{
 		//searches operating system for every OpenGL function that is supported :-??
 		GLenum status = glewInit();
 		if(status != GLEW_OK){
-			LOG_ERROR_TRACEABLE("glewInit failed with error: {} '{}'!", status, glewGetErrorString(status));
+			LOG_E_ERROR_TRACEABLE("glewInit failed with error: {} '{}'!", status, glewGetErrorString(status));
 			exit(EXIT_FAILURE);
 		} else{
-			LOG_INFO("glewInit succeeded");
+			LOG_E_INFO("glewInit succeeded");
 		}
 
 		glEnable(GL_DEPTH_TEST);
 
 		//Check the OpenGL version
-		LOG_INFO("OpenGL version: {}", glGetString(GL_VERSION));
+		LOG_E_INFO("OpenGL version: {}", glGetString(GL_VERSION));
 
 		setVSync(true);
 		setMouseTrapping(SDL_FALSE);
 		
-		LOG_INFO("window creation succeeded");
+		LOG_E_INFO("window creation succeeded");
 	}
 
 	void Window::swapBuffer(){

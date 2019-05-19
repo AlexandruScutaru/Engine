@@ -130,35 +130,35 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\selection.vs">
-      <Filter>Resource Files\shaders</Filter>
-    </None>
-    <None Include="shaders\basic.fs">
-      <Filter>Resource Files\shaders</Filter>
-    </None>
-    <None Include="shaders\basic.vs">
-      <Filter>Resource Files\shaders</Filter>
-    </None>
-    <None Include="shaders\billboard.fs">
-      <Filter>Resource Files\shaders</Filter>
-    </None>
-    <None Include="shaders\billboard.vs">
-      <Filter>Resource Files\shaders</Filter>
-    </None>
-    <None Include="shaders\entity.fs">
-      <Filter>Resource Files\shaders</Filter>
-    </None>
-    <None Include="shaders\entity.vs">
-      <Filter>Resource Files\shaders</Filter>
-    </None>
-    <None Include="shaders\selection.fs">
-      <Filter>Resource Files\shaders</Filter>
-    </None>
     <None Include="config_editor.json">
       <Filter>Resource Files\configs</Filter>
     </None>
     <None Include="config_engine.json">
       <Filter>Resource Files\configs</Filter>
+    </None>
+    <None Include="res\shaders\basic.fs">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="res\shaders\basic.vs">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="res\shaders\billboard.fs">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="res\shaders\billboard.vs">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="res\shaders\entity.fs">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="res\shaders\entity.vs">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="res\shaders\selection.fs">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="res\shaders\selection.vs">
+      <Filter>Resource Files\shaders</Filter>
     </None>
   </ItemGroup>
 </Project>

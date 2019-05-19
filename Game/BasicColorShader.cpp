@@ -10,6 +10,7 @@ BasicColorShader::~BasicColorShader(){}
 
 
 void BasicColorShader::initShader(const std::string & shader){
+	if(m_inited) return;
 	init(shader);
 }
 

@@ -21,6 +21,8 @@ public:
 	Player(glm::vec3& pos, glm::vec3& rot, glm::vec3& scale);
 	~Player();
 
+	Player& operator=(const Player& t) = delete;
+
 	void setPosition(glm::vec3& pos);
 	void setRotation(glm::vec3& rot);
 	void setScale(glm::vec3& scale);
@@ -39,6 +41,8 @@ public:
 	void update(utilities::InputManager& inputManager, float deltaTime);
 	void backup();
 	void restore();
+
+	void reset();
 
 	void setPhysicsBody(std::shared_ptr<physics::PhysicsBody> body){ m_rigidBody = body; }
 	std::shared_ptr<physics::PhysicsBody> getPhysicsBody(){ return m_rigidBody; }

@@ -22,6 +22,7 @@ namespace physics{
 		void enableSleeping(bool val);
 		void update(float timeStep);
 		void setEventListener(PhysicsEventListener* listener);
+		void destroyBody(std::shared_ptr<physics::PhysicsBody>& body);
 
 		std::shared_ptr<physics::PhysicsBody> createPhysicsBody(glm::vec3& pos, glm::quat& rot);
 

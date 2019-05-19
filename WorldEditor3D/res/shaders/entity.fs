@@ -78,6 +78,8 @@ void main(){
 	FragColor = vec4(result, 1.0);
 	if(selected)
 		FragColor = FragColor + vec4(0.2, 0.35, 0.35, 1.0);
+
+	//FragColor = (FragColor * 0.0001) + texture(material.diffuse, TexCoords);
 }
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir){

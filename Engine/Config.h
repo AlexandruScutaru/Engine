@@ -5,12 +5,12 @@
 
 namespace utilities{
 
-	class Config{
+	class Config_e{
 	public:
-		static Config& Instance();
+		static Config_e& Instance();
 
-		Config(Config const&) = delete;
-		void operator=(Config const&) = delete;
+		Config_e(Config_e const&) = delete;
+		void operator=(Config_e const&) = delete;
 
 		struct logger_cfg_t{
 			std::string file_name;
@@ -23,11 +23,11 @@ namespace utilities{
 
 	private:
 		void SetDefaults();
-		Config();
+		Config_e();
 	};
 
 }
 
-#define CONFIG utilities::Config::Instance()
+#define CONFIG_E utilities::Config_e::Instance()
 
 #endif // !CONFIG_H

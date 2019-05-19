@@ -61,7 +61,7 @@ void Utilities::OpenMap(const std::string & file, std::vector<GameObject*>& obje
 			player->setRotation(glm::vec3(0.0f, rotEuler.y, 0.0f));
 			
 			renderer::CollisionBody body(glm::vec3(0.0f), rot, rotEuler, scale, static_cast<int>(renderer::CollisionShapes::SHAPE_CAPSULE), 60.0f);
-			auto physicsBody = world->createPhysicsBody(pos + glm::vec3(0.0f, 4.0f, 0.0f), rot);
+			auto physicsBody = world->createPhysicsBody(pos, rot);
 
 			physicsBody->enableGravity(true);
 			physicsBody->allowSleep(false);
@@ -85,6 +85,7 @@ void Utilities::OpenMap(const std::string & file, std::vector<GameObject*>& obje
 
 			physicsBody->addCollisionShapes(glm::vec3(1.0f), std::vector<renderer::CollisionBody>{body}, physics::CollisionCategory::TRIGGER);
 			physicsBody->setBodyType(physics::BodyType::STATIC);
+			physicsBody->setBounciness(0.0f);
 			colVol->setPhysicsBody(physicsBody);
 
 			colVols.push_back(colVol);

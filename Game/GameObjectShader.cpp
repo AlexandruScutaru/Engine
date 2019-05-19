@@ -10,6 +10,7 @@ GameObjectShader::~GameObjectShader(){}
 
 
 void GameObjectShader::initShader(const std::string& shader){
+	if(m_inited) return;
 	init(shader);
 	connectTextureUnits();
 	loadShininess(32.0f);

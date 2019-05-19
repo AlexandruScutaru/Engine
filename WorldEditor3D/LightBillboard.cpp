@@ -11,6 +11,11 @@ LightBillboard::LightBillboard(renderer::TexturedModel * model, renderer::Light 
 	m_light(light)
 {}
 
+LightBillboard::LightBillboard(const LightBillboard& other, renderer::Light* light) :
+	Actor(other),
+	m_light(light)
+{}
+
 LightBillboard::~LightBillboard(){}
 
 

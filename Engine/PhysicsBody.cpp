@@ -18,15 +18,14 @@ namespace physics{
 	{}
 
 	PhysicsBody::~PhysicsBody(){
-		m_body->getLinearVelocity();
-		for(auto proxy : m_proxyhapes)
-			m_body->removeCollisionShape(proxy);
-		for(auto shape : m_boxShapes)
-			delete shape;
-		for(auto shape : m_sphereShapes)
-			delete shape;
-		for(auto shape : m_capsuleShapes)
-			delete shape;
+		//for(auto proxy : m_proxyhapes)
+		//	m_body->removeCollisionShape(proxy);
+		//for(auto shape : m_boxShapes)
+		//	delete shape;
+		//for(auto shape : m_sphereShapes)
+		//	delete shape;
+		//for(auto shape : m_capsuleShapes)
+		//	delete shape;
 	}
 
 
@@ -62,7 +61,7 @@ namespace physics{
 				addCapsuleShape(scaleFactor, body);
 				break;
 			default:
-				LOG_INFO("Trying to add unknown shape index {}, shape not added!", body.shape);
+				LOG_E_INFO("Trying to add unknown shape index {}, shape not added!", body.shape);
 				break;
 			}
 			m_proxyhapes.back()->setCollisionCategoryBits(category);

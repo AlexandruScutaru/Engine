@@ -256,3 +256,4 @@ ModelManifest.xml
 # FAKE - F# Make
 .fake/
 /Game/rp3d_log_world.html
+/Game/res/sounds/atmosphere.mp3

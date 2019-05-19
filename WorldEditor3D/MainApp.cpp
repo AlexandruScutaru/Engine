@@ -2,6 +2,7 @@
 #include "Config.h"
 #include "Utilities.h"
 #include "RenderUtilities.h"
+#include "Logger.h"
 
 #include <dirent/dirent.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -19,6 +20,7 @@ MainApp::MainApp():
 	m_appState(AppState::EDIT),
 	m_gui(this)
 {
+	LOG_INFO("Editor is starting!");
 	initSystems();
 }
 
@@ -358,7 +360,8 @@ void MainApp::duplicateSelectedPointLights(){
 
     LightBillboard* object;
     for(auto& obj : backUp){
-    	object = new LightBillboard(*static_cast<LightBillboard*>(obj));
+		m_lights.push_back(new renderer::PointLight(*static_cast<renderer::PointLight*>(static_cast<LightBillboard*>(obj)->getLight())));
+    	object = new LightBillboard(*static_cast<LightBillboard*>(obj), m_lights.back());
     	m_lightsBillboards.push_back(object);
     	m_lightsBillboardsMap[object->getCode()] = object;
     	obj->setSelected(true);

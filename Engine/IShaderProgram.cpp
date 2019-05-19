@@ -8,7 +8,9 @@
 
 namespace renderer{
 
-	IShaderProgram::IShaderProgram(){}
+	IShaderProgram::IShaderProgram() :
+		m_inited(false)
+	{}
 
 	IShaderProgram::~IShaderProgram(){
 		unuse();
@@ -57,6 +59,7 @@ namespace renderer{
 
 		use();
 		getAllUniformLocations();
+		m_inited = true;
 	}
 
 	void IShaderProgram::use(){
@@ -107,7 +110,7 @@ namespace renderer{
 	GLint IShaderProgram::getUniformLocation(const std::string& name){
 		GLint location = -1;
 		if(-1 == (location = glGetUniformLocation(m_program, name.c_str()))){
-			LOG_ERROR_TRACEABLE("glGetUniformLocation '{}' error!", name);
+			LOG_E_ERROR_TRACEABLE("glGetUniformLocation '{}' error!", name);
 			exit(EXIT_FAILURE);
 		}
 		return location;
@@ -128,7 +131,7 @@ namespace renderer{
 			else
 				glGetShaderInfoLog(shader, sizeof(error), nullptr, error);
 
-			LOG_ERROR_TRACEABLE("{} {}", errorMessage, error);
+			LOG_E_ERROR_TRACEABLE("{} {}", errorMessage, error);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -150,7 +153,7 @@ namespace renderer{
 			// convert stream into string
 			shaderText = shaderStream.str();
 		} catch(std::ifstream::failure e){
-			LOG_ERROR_TRACEABLE("couldn't read file '{}'", fileName);
+			LOG_E_ERROR_TRACEABLE("couldn't read file '{}'", fileName);
 			exit(EXIT_FAILURE);
 		}
 
@@ -175,7 +178,7 @@ namespace renderer{
 					shaderName = "unknown";
 					break;
 			}
-			LOG_ERROR_TRACEABLE("glCreateShader '{}' error", shaderName);
+			LOG_E_ERROR_TRACEABLE("glCreateShader '{}' error", shaderName);
 			exit(EXIT_FAILURE);
 		}
 

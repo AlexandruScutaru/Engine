@@ -809,7 +809,6 @@ void GUI::showLightsTab(){
 				
 				ImGui::Text("Amb :");
 				ImGui::SameLine();
-				std::cout << dl->ambient.x << " " << dl->ambient.y << " " << dl->ambient.z << std::endl;
 				color[0] = dl->ambient.x, color[1] = dl->ambient.y, color[2] = dl->ambient.z;
 				ImGui::ColorEdit3("##dlamb", color);
 				dl->ambient = glm::vec3(color[0], color[1], color[2]);

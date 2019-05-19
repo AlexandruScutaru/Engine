@@ -25,7 +25,7 @@ namespace utilities{
 		unsigned char* imageData = stbi_load(fileName.c_str(), &data.w, &data.h, &numComponents, 4);
 
 		if(imageData == nullptr){
-			LOG_ERROR_TRACEABLE("stbi_load:: failed loading texture '{}'", fileName);
+			LOG_E_ERROR_TRACEABLE("stbi_load:: failed loading texture '{}'", fileName);
 			exit(EXIT_FAILURE);
 		}
 
@@ -95,7 +95,7 @@ namespace utilities{
 
 			unsigned char* imageData = stbi_load(fileNames[i].c_str(), &width, &height, &numComponents, 4);
 			if(imageData == nullptr){
-				LOG_ERROR_TRACEABLE("stbi_load:: failed loading texture '{}'", fileNames[i]);
+				LOG_E_ERROR_TRACEABLE("stbi_load:: failed loading texture '{}'", fileNames[i]);
 				exit(EXIT_FAILURE);
 			}
 

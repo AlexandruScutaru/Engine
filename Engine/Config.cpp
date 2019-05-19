@@ -12,7 +12,7 @@ using json = nlohmann::json;
 
 namespace utilities{
 
-	Config::Config(){
+	Config_e::Config_e(){
 		std::ifstream file(CONFIG_GILE);
 		if(file.fail()){
 			std::cout << "Couldn't open confing file: '" << CONFIG_GILE << "'! Setting default values!" << std::endl;
@@ -51,12 +51,12 @@ namespace utilities{
 		}
 	}
 
-	Config& Config::Instance(){
-		static Config instance;
+	Config_e& Config_e::Instance(){
+		static Config_e instance;
 		return instance;
 	}
 
-	void Config::SetDefaults(){
+	void Config_e::SetDefaults(){
 		logger_cfg.file_name = "logs/engine_log.txt";
 		logger_cfg.size = 1024 * 1024 * 5;
 		logger_cfg.number_of_files = 1;

@@ -13,6 +13,7 @@
 #include <Engine/ResourceManager.h>
 #include <Engine/PhysicsWorld.h>
 #include <Engine/PhysicsEventListener.h>
+#include <Engine/Audio.h>
 
 #include "GameObjectShader.h"
 #include "BasicColorShader.h"
@@ -55,6 +56,7 @@ private:
 	void drawGame(float interpolation); //draws on screen
 	
 	void resetData();
+	void resetLevel();
 
 	void updateToDrawVector();
 	void drawGameObjects();
@@ -62,6 +64,7 @@ private:
 	renderer::Window m_window; //the app window
 	utilities::InputManager m_inputManager;
 	utilities::FpsLimiter m_fpsLimiter;
+	audio::AudioManager m_audioManager;
 
 	std::vector<GameObject*> m_objectsInScene;
 	std::vector<GameObject*> m_objects_ToDraw;
@@ -78,6 +81,8 @@ private:
 	
 	physics::PhysicsWorld m_dynamicWorld;
 	physics::PhysicsEventListener m_eventListener;
+
+	bool m_resetLevel;
 
 };
 

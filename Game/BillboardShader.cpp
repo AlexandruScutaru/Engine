@@ -8,6 +8,7 @@ BillboardShader::~BillboardShader(){}
 
 
 void BillboardShader::initShader(const std::string & shader){
+	if(m_inited) return;
 	init(shader);
 	connectTextureUnits();
 }

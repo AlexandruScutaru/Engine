@@ -7,8 +7,8 @@
 	},
 	"window":{
 		"title" : "game",
-		"width" : 1440,
-		"height" : 900,
+		"width" : 1280,
+		"height" : 720,
 		"trap_mouse" : true,
 		"window_mode" : 0
 	},
@@ -17,6 +17,6 @@
 		"max_graphics_fps" : 60,
 		"max_physics_fps" : 60,
 		"max_frame_time" : 0.25,
-		"map": "test_scripting"
+		"map": "corridor"
 	}
 }

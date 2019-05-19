@@ -49,4 +49,8 @@ namespace physics{
 		m_world.setEventListener(listener);
 	}
 
+	void PhysicsWorld::destroyBody(std::shared_ptr<physics::PhysicsBody>& body){
+		m_world.destroyRigidBody(body->m_body);
+	}
+
 }

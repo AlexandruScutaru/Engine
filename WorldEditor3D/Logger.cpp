@@ -11,6 +11,7 @@ namespace utilities{
 	Log::Log(){
 		initRotatingFileLogger(CONFIG.logger_cfg.file_name, CONFIG.logger_cfg.size, CONFIG.logger_cfg.number_of_files);
 		rotFileLogger->set_level((spdlog::level::level_enum)CONFIG.logger_cfg.level);
+		rotFileLogger->info("========================================================================");
 		rotFileLogger->info("Log::rotFileLogger constructed");
 	}
 
