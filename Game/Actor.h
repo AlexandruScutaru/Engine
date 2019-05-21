@@ -13,9 +13,9 @@ public:
 
 	virtual void update(float deltaTime){}
 
-	void setPosition(glm::vec3& pos){ m_pos = pos; }
-	void setRotation(glm::quat& rot){ m_rot = rot; }
-	void setScale(glm::vec3& scale){ m_scale = scale; }
+	virtual void setPosition(glm::vec3& pos){ m_pos = pos; }
+	virtual void setRotation(glm::quat& rot){ m_rot = rot; }
+	virtual void setScale(glm::vec3& scale){ m_scale = scale; }
 
 	glm::vec3& getPosition(){ return m_pos; }
 	glm::quat& getRotation(){ return m_rot; }

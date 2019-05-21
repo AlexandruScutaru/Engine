@@ -764,6 +764,11 @@ void GUI::showColVolumesTab(){
 			ImGui::PopItemWidth();
 		}
 		ImGui::EndChild();
+		ImGui::Text("Script");
+		memset(m_script, '\0', SCRIPT_LENGTH);
+		strncat_s(m_script, currentCollisionVolume->triggerScript.c_str(), SCRIPT_LENGTH);
+		ImGui::InputTextMultiline("##gameobjectUpdate", m_script, IM_ARRAYSIZE(m_script), ImVec2(-1.0f, ImGui::GetTextLineHeight() * 10), ImGuiInputTextFlags_AllowTabInput | (false ? ImGuiInputTextFlags_ReadOnly : 0));
+		currentCollisionVolume->triggerScript = std::string(m_script);
 	}
 	ImGui::PopItemWidth();
 }

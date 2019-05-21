@@ -37,7 +37,7 @@ void Utilities::OpenMap(const std::string & file, std::vector<GameObject*>& obje
 		object->setScale(scale);
 		object->getPhysicsBody()->setBodyType(type);
 		object->setType(obj["genericType"].get<int>());
-
+		object->updateScript = obj["updateScript"].get<std::string>();
 		objects.push_back(object);
 	}
 
@@ -53,6 +53,7 @@ void Utilities::OpenMap(const std::string & file, std::vector<GameObject*>& obje
 		glm::quat rot(r[3], r[0], r[1], r[2]);
 		std::vector<float> s = obj["scale"].get<std::vector<float>>();
 		glm::vec3 scale = glm::vec3(s[0], s[1], s[2]);
+		std::string script = obj["triggerScript"].get<std::string>();
 
 		if(type == static_cast<int>(CollisionVolume::VolumeType::START)) { 
 			//player start - contains data about player collision capsule too
@@ -76,7 +77,7 @@ void Utilities::OpenMap(const std::string & file, std::vector<GameObject*>& obje
 		} else {
 			colVol = new CollisionVolume(pos);
 			colVol->m_type = static_cast<CollisionVolume::VolumeType>(type);
-
+			colVol->triggerScript = script;
 			auto rotEuler = glm::eulerAngles(rot);
 			rotEuler = glm::vec3(glm::degrees(rotEuler.x), glm::degrees(rotEuler.y), glm::degrees(rotEuler.z));
 

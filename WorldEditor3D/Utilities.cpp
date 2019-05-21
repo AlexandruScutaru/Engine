@@ -121,7 +121,8 @@ void Utilities::openMap(MainApp* app, const std::string& file){
 		colVol = new CollisionVolumeBillboard(utilities::ResourceManager::loadModel(billboard_file), name);
 		colVol->setPosition(pos);
 		colVol->setVolumeType(static_cast<VolumeType>(type));
-		
+		colVol->triggerScript = obj["triggerScript"].get<std::string>();
+
 		renderer::CollisionBody body;
 		body.colRotQuat = rot;
 		body.shape = shape;
@@ -197,7 +198,8 @@ void Utilities::saveMap(MainApp* app, const std::string& file){
 			{"rot", {colBody.colRotQuat.x, colBody.colRotQuat.y, colBody.colRotQuat.z, colBody.colRotQuat.w}},
 			{"scale", {colBody.colScale.x, colBody.colScale.y, colBody.colScale.z}},
 			{"pos", {obj->getPosition().x, obj->getPosition().y, obj->getPosition().z}},
-			{"shape", colBody.shape}
+			{"shape", colBody.shape},
+			{ "triggerScript", obj->triggerScript }
 		};
 		map["collisionVolumes"].push_back(entry);
 	}

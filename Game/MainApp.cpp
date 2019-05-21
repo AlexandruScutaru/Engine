@@ -10,11 +10,11 @@
 #include <cmath>
 #include <Engine/CollisionBody.h>
 
+bool MainApp::m_resetLevel = false;
 
 MainApp::MainApp() :
 	m_appState(AppState::EDIT),
-	m_eventListener(physics::PhysicsEventListener(std::bind(&MainApp::beginContact, this, std::placeholders::_1))),
-	m_resetLevel(false)
+	m_eventListener(physics::PhysicsEventListener(std::bind(&MainApp::beginContact, this, std::placeholders::_1)))
 {
 	LOG_INFO("Game is starting!");
 	initSystems();
@@ -30,6 +30,8 @@ MainApp::~MainApp(){
 	m_lights.clear();
 
 	utilities::ResourceManager::ClearData();
+
+	lua_close(L);
 }
 
 
@@ -64,7 +66,10 @@ void MainApp::beginContact(const rp3d::ContactPointInfo& contact) {
 				}
 			} else if(colVol->m_type == CollisionVolume::VolumeType::TRIGGER){
 				std::cout << "you died" << std::endl;
-				m_resetLevel = true;
+				if(!colVol->triggerScript.empty()){
+					luaL_dostring(L, colVol->triggerScript.c_str());
+					lua_pcall(L, 0, 0, 0);
+				}
 			}
 		}
 	}
@@ -91,6 +96,28 @@ void MainApp::initSystems(){
 	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
 	utilities::ResourceManager::Init();
 	m_audioManager.init();
+
+	L = luaL_newstate();
+	luaL_openlibs(L);
+
+	// Register classes
+	luabridge::getGlobalNamespace(L)
+		.beginClass<glm::vec3>("vec3")
+			.addData<float>("x", &glm::vec3::x)
+			.addData<float>("y", &glm::vec3::y)
+			.addData<float>("z", &glm::vec3::z)
+		.endClass();
+	
+	luabridge::getGlobalNamespace(L)
+		.beginClass<GameObject>("GameObject")
+			.addFunction("getPos", &GameObject::getPosition)
+			.addFunction("setPos", &GameObject::setPosition)
+		.endClass();
+
+	luabridge::getGlobalNamespace(L)
+		.beginClass<MainApp>("MainApp")
+			.addStaticFunction("resetLevel", &MainApp::setResetLevel)
+		.endClass();
 }
 
 void MainApp::initLevel(){
@@ -211,6 +238,25 @@ void MainApp::update(float deltaTime){
 	
 	static_cast<renderer::SpotLight*>(m_lights[1])->position = m_player.getCamera()->getPos();
 	static_cast<renderer::SpotLight*>(m_lights[1])->direction = m_player.getCamera()->getFront();
+
+
+	for(auto& obj : m_objectsInScene){
+		if(!obj->updateScript.empty()){
+			luaL_dostring(L, obj->updateScript.c_str());
+			lua_pcall(L, 0, 0, 0);
+
+			// lookup script function in global table
+			luabridge::LuaRef updateFunc = luabridge::getGlobal(L, "update");
+
+			if(updateFunc.isFunction()){
+				try{
+					updateFunc(&obj, SDL_GetTicks() / 1000.0f);
+				} catch(luabridge::LuaException& ex){
+					std::cout << ex.what() << std::endl;
+				}
+			}
+		}
+	}
 }
 
 void MainApp::drawGame(float interpolation){

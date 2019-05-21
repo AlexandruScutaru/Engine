@@ -24,6 +24,8 @@ public:
 	std::shared_ptr<physics::PhysicsBody> getPhysicsBody(){ return m_rigidBody; }
 	VolumeType m_type;
 
+	std::string triggerScript;
+
 private:
 	std::shared_ptr<physics::PhysicsBody> m_rigidBody;
 

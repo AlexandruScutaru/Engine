@@ -14,6 +14,14 @@
 #include <Engine/PhysicsWorld.h>
 #include <Engine/PhysicsEventListener.h>
 #include <Engine/Audio.h>
+//#include <Engine/LuaVM.h>
+
+extern "C" {
+	#include <lua/lua.h>
+	#include <lua/lauxlib.h>
+	#include <lua/lualib.h>
+}
+#include <LuaBridge/LuaBridge.h>
 
 #include "GameObjectShader.h"
 #include "BasicColorShader.h"
@@ -46,6 +54,10 @@ public:
 	void run(); // runs the app
 
 	void beginContact(const rp3d::ContactPointInfo& contact);
+
+	static void setResetLevel() { 
+		m_resetLevel = true;
+	}
 
 private:
 	void initSystems(); //initializes the core systems
@@ -82,7 +94,9 @@ private:
 	physics::PhysicsWorld m_dynamicWorld;
 	physics::PhysicsEventListener m_eventListener;
 
-	bool m_resetLevel;
+	static bool m_resetLevel;
+
+	lua_State* L;
 
 };
 

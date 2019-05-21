@@ -36,6 +36,8 @@ public:
 	int getVolumeType(){ return static_cast<int>(m_type); }
 	renderer::CollisionBody& getColBodyRef(){ return m_colBody; }
 	renderer::CollisionBody* getColBodyPtr(){ return &m_colBody; }
+	
+	std::string triggerScript;
 
 private:
 	std::string m_inEditorName;
