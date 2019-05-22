@@ -136,28 +136,34 @@
     <None Include="config_engine.json">
       <Filter>Resource Files\configs</Filter>
     </None>
-    <None Include="res\shaders\basic.fs">
+    <None Include="res\shaders\skyboxShader.vs">
       <Filter>Resource Files\shaders</Filter>
     </None>
-    <None Include="res\shaders\basic.vs">
+    <None Include="res\shaders\skyboxShader.fs">
       <Filter>Resource Files\shaders</Filter>
     </None>
-    <None Include="res\shaders\billboard.fs">
+    <None Include="res\shaders\ed_basic.fs">
       <Filter>Resource Files\shaders</Filter>
     </None>
-    <None Include="res\shaders\billboard.vs">
+    <None Include="res\shaders\ed_basic.vs">
       <Filter>Resource Files\shaders</Filter>
     </None>
-    <None Include="res\shaders\entity.fs">
+    <None Include="res\shaders\ed_billboard.fs">
       <Filter>Resource Files\shaders</Filter>
     </None>
-    <None Include="res\shaders\entity.vs">
+    <None Include="res\shaders\ed_billboard.vs">
       <Filter>Resource Files\shaders</Filter>
     </None>
-    <None Include="res\shaders\selection.fs">
+    <None Include="res\shaders\ed_entity.fs">
       <Filter>Resource Files\shaders</Filter>
     </None>
-    <None Include="res\shaders\selection.vs">
+    <None Include="res\shaders\ed_entity.vs">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="res\shaders\ed_selection.fs">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="res\shaders\ed_selection.vs">
       <Filter>Resource Files\shaders</Filter>
     </None>
   </ItemGroup>

@@ -12,6 +12,7 @@
 #include <Engine/Timing.h>
 #include <Engine/InputManager.h>
 #include <Engine/ResourceManager.h>
+#include <Engine/Skybox.h>
 
 #include "GameObjectShader.h"
 #include "BasicColorShader.h"
@@ -84,6 +85,8 @@ private:
 	
 	std::vector<Actor*> m_selectedObjsVect;
 	
+	renderer::Skybox m_skybox;
+
 	//gameobjects
 	std::vector<GameObject*> m_objectsInScene;
 	std::map<unsigned int, GameObject*> m_gameObjectsMap;

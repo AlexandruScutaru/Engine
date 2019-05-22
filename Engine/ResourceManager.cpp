@@ -46,6 +46,10 @@ namespace utilities{
 		return &(it->second);
 	}
 
+	GLuint ResourceManager::getCubemapTexture(std::vector<std::string>& paths){
+		return TextureLoader::loadCubeMapTexture(paths);
+	}
+
 	renderer::TexturedModel* ResourceManager::loadModel(const std::string& file){
 		std::string path = "res/gameobjects/" + file;
 		auto it = m_modelsMap.find(path);

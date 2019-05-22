@@ -12,6 +12,7 @@ namespace utilities{
 	public:
 		static renderer::MeshData* getMesh(const std::string& path);
 		static renderer::TextureData* getTexture(const std::string& path);
+		static GLuint getCubemapTexture(std::vector<std::string>& paths);
 		static renderer::TexturedModel* loadModel(const std::string& file);
 		static renderer::TexturedModel* loadModel(int shape);
 		static const char* IndexToShape(int index);

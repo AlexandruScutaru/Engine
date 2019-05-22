@@ -189,14 +189,16 @@
   <ItemGroup>
     <None Include="config_editor.json" />
     <None Include="config_engine.json" />
-    <None Include="res\shaders\basic.fs" />
-    <None Include="res\shaders\basic.vs" />
-    <None Include="res\shaders\billboard.fs" />
-    <None Include="res\shaders\billboard.vs" />
-    <None Include="res\shaders\entity.fs" />
-    <None Include="res\shaders\entity.vs" />
-    <None Include="res\shaders\selection.fs" />
-    <None Include="res\shaders\selection.vs" />
+    <None Include="res\shaders\ed_basic.fs" />
+    <None Include="res\shaders\ed_basic.vs" />
+    <None Include="res\shaders\ed_billboard.fs" />
+    <None Include="res\shaders\ed_billboard.vs" />
+    <None Include="res\shaders\ed_entity.fs" />
+    <None Include="res\shaders\ed_entity.vs" />
+    <None Include="res\shaders\ed_selection.fs" />
+    <None Include="res\shaders\ed_selection.vs" />
+    <None Include="res\shaders\skyboxShader.fs" />
+    <None Include="res\shaders\skyboxShader.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

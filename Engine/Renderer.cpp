@@ -46,7 +46,7 @@ namespace renderer{
 	}
 
 	void Renderer::updateProjectionMatrix(float fov, int width, int height){
-		m_projection = glm::perspective(glm::radians(fov), (float)width / (float)height, 0.1f, 100.0f);
+		m_projection = glm::perspective(glm::radians(fov), (float)width / (float)height, 0.1f, 200.0f);
 	}
 
 	void Renderer::enableBackFaceCulling(){

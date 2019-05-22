@@ -128,8 +128,9 @@ void MainApp::initLevel(){
 	m_gameObjectsShader.initShader("res/shaders/entity");
 	m_basicColorShader.initShader("res/shaders/basic");
 	m_billboardShader.initShader("res/shaders/billboard");
+	m_skybox.init(100.0f);
 
-	Utilities::OpenMap("res/maps/" + CONFIG.map, m_objectsInScene, m_collisionVolumes, m_lights, &m_dynamicWorld, &m_player);
+	Utilities::OpenMap("res/maps/" + CONFIG.map, m_objectsInScene, m_collisionVolumes, m_lights, &m_dynamicWorld, &m_player, m_skybox);
 	m_dynamicWorld.setEventListener(&m_eventListener);
 
 	audio::Music music = m_audioManager.loadMusic("res/sounds/atmosphere.mp3");
@@ -290,6 +291,9 @@ void MainApp::drawGame(float interpolation){
 	glViewport(0, 0, renderer::Window::getW(), renderer::Window::getH());
 	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	if(m_skybox.enabled())
+		m_skybox.render(m_player.getCamera()->getViewMatrix(), renderer::Renderer::GetProjectionMatrix());
 	
 	drawGameObjects();
 }

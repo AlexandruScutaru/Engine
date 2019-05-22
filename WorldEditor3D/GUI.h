@@ -28,7 +28,13 @@ enum class FD_Mode{
 	OBJECT_OPEN,
 	ADD_GAMEOBJECT,
 	MAP_OPEN,
-	MAP_SAVE
+	MAP_SAVE,
+	SkB_TOP,
+	SkB_BOTTOM,
+	SkB_LEFT,
+	SkB_RIGHT,
+	SkB_BACK,
+	SkB_FRONT
 };
 
 enum Scene_Tabs{
@@ -51,6 +57,7 @@ public:
 	void showEditorWindow();
 	void showCreationTab();
 	void showPlacementTab();
+	void showSkyboxTab();
 	void showOpenFileDialog();
 	void showSaveFileDialog();
 	void showWarningPopup();
@@ -64,6 +71,7 @@ public:
 
 	bool b_creationTab;
 	bool b_placementTab;
+	bool b_skyboxTab;
 	bool b_showOpenFileDialog;
 	bool b_showSaveFileDialog;
 	bool b_showGridWindow;
@@ -90,6 +98,9 @@ public:
 	friend class MainApp;
 
 private:
+
+	void skyboxButtonPressed(FD_Mode mode);
+
 	bool m_rotationEditJustShown;
 	bool m_rotateGameobject;
 	glm::vec3 m_rot;

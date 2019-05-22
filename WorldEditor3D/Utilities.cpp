@@ -133,6 +133,17 @@ void Utilities::openMap(MainApp* app, const std::string& file){
 		app->m_colVolumeBillboards.push_back(colVol);
 		app->m_colVolumeBillboardsMap[colVol->getCode()] = colVol;
 	}
+
+	auto& skybox = mapFile["skybox"];
+	app->m_skybox.setEnabled(skybox["enabled"].get<bool>());
+	app->m_skybox.setSkyboxTexturePath(renderer::Skybox::RIGHT,	 skybox["textures"]["right"].get<std::string>());
+	app->m_skybox.setSkyboxTexturePath(renderer::Skybox::LEFT,	 skybox["textures"]["left"].get<std::string>());
+	app->m_skybox.setSkyboxTexturePath(renderer::Skybox::BOTTOM, skybox["textures"]["bottom"].get<std::string>());
+	app->m_skybox.setSkyboxTexturePath(renderer::Skybox::TOP,	 skybox["textures"]["top"].get<std::string>());
+	app->m_skybox.setSkyboxTexturePath(renderer::Skybox::BACK,	 skybox["textures"]["back"].get<std::string>());
+	app->m_skybox.setSkyboxTexturePath(renderer::Skybox::FRONT,	 skybox["textures"]["front"].get<std::string>());
+	app->m_skybox.set();
+
 }
 
 void Utilities::saveMap(MainApp* app, const std::string& file){
@@ -203,6 +214,20 @@ void Utilities::saveMap(MainApp* app, const std::string& file){
 		};
 		map["collisionVolumes"].push_back(entry);
 	}
+
+	map["skybox"] = {
+		{"enabled", app->m_skybox.enabled()}, 
+		{"textures", 
+			{
+				{"top", app->m_skybox.getSkyboxTexturePath(renderer::Skybox::TOP)},
+				{"bottom", app->m_skybox.getSkyboxTexturePath(renderer::Skybox::BOTTOM)},
+				{"left", app->m_skybox.getSkyboxTexturePath(renderer::Skybox::LEFT)},
+				{"right", app->m_skybox.getSkyboxTexturePath(renderer::Skybox::RIGHT)},
+				{"back", app->m_skybox.getSkyboxTexturePath(renderer::Skybox::BACK)},
+				{"front", app->m_skybox.getSkyboxTexturePath(renderer::Skybox::FRONT)}
+			}
+		}
+	};
 
 	std::ofstream out(path);
 	out << std::setw(4) << map << std::endl;

@@ -23,6 +23,7 @@ GUI::GUI(MainApp* app) :
 	app(app),
 	b_creationTab(false),
 	b_placementTab(true),
+	b_skyboxTab(false),
 	b_showOpenFileDialog(false),
 	b_showSaveFileDialog(false),
 	b_showGridWindow(false),
@@ -259,9 +260,21 @@ void GUI::showEditorWindow(){
 		//restore camera 
 		app->m_player.restore();
 	}
+	ImGui::SameLine();
+	//gameobject placement
+	if(ImGui::Button("Skybox") && !b_skyboxTab){
+		b_skyboxTab = true;
+
+		//restore camera if needed
+		if(b_creationTab)
+			app->m_player.restore();
+		b_creationTab = false;
+		b_placementTab = false;
+	}
 
 	if(b_creationTab) showCreationTab();
 	if(b_placementTab) showPlacementTab();
+	if(b_skyboxTab) showSkyboxTab();
 
 	ImGui::End();
 }
@@ -435,6 +448,56 @@ void GUI::showPlacementTab(){
 	ImGui::EndChild();
 }
 
+void GUI::showSkyboxTab(){
+	ImGui::BeginChild("skybox", ImVec2(-1.0f, -1.0f), true/*, ImGuiWindowFlags_NoScrollWithMouse*/);
+	{
+		ImGui::PushItemWidth(-1);
+
+		ImGui::Checkbox("Enable Skybox", &(app->m_skybox.getEnabledRef()));
+		ImGui::Separator();
+		
+		if(!app->m_skybox.enabled()){
+			ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+		}
+
+		if(ImGui::Button("Back  ")) skyboxButtonPressed(FD_Mode::SkB_BACK);
+		ImGui::SameLine();
+		ImGui::Text(app->m_skybox.getSkyboxTexturePath(renderer::Skybox::BACK).c_str());
+
+		if(ImGui::Button("Bottom")) skyboxButtonPressed(FD_Mode::SkB_BOTTOM);
+		ImGui::SameLine();
+		ImGui::Text(app->m_skybox.getSkyboxTexturePath(renderer::Skybox::BOTTOM).c_str());
+
+		if(ImGui::Button("Front ")) skyboxButtonPressed(FD_Mode::SkB_FRONT);
+		ImGui::SameLine();
+		ImGui::Text(app->m_skybox.getSkyboxTexturePath(renderer::Skybox::FRONT).c_str());
+
+		if(ImGui::Button("Left  ")) skyboxButtonPressed(FD_Mode::SkB_LEFT);
+		ImGui::SameLine();
+		ImGui::Text(app->m_skybox.getSkyboxTexturePath(renderer::Skybox::LEFT).c_str());
+
+		if(ImGui::Button("Right ")) skyboxButtonPressed(FD_Mode::SkB_RIGHT);
+		ImGui::SameLine();
+		ImGui::Text(app->m_skybox.getSkyboxTexturePath(renderer::Skybox::RIGHT).c_str());
+
+		if(ImGui::Button("Top   ")) skyboxButtonPressed(FD_Mode::SkB_TOP);
+		ImGui::SameLine();
+		ImGui::Text(app->m_skybox.getSkyboxTexturePath(renderer::Skybox::TOP).c_str());
+
+		if(!app->m_skybox.enabled()){
+			ImGui::PopStyleVar();
+			ImGui::PopItemFlag();
+		}
+
+		ImGui::Separator();
+		if(ImGui::Button("Refresh")){
+			app->m_skybox.set();
+		}
+	}
+	ImGui::EndChild();
+}
+
 void GUI::showOpenFileDialog(){
 	ImGui::SetNextWindowSize(ImVec2(300, 11.2f * ImGui::GetFrameHeightWithSpacing()), ImGuiSetCond_Always);
 	ImGui::SetNextWindowFocus();
@@ -550,6 +613,25 @@ void GUI::openButtonPressed(){
 		app->addNewObject(dirContents[fdEntryItem]);
 		placedGameobjectEntryItem = app->m_objectsInScene.size() - 1;
 		break;
+	case FD_Mode::SkB_TOP:
+		app->m_skybox.setSkyboxTexturePath(renderer::Skybox::TOP, "res/textures/skyboxes/" + dirContents[fdEntryItem]);
+		break;
+	case FD_Mode::SkB_BOTTOM:
+		app->m_skybox.setSkyboxTexturePath(renderer::Skybox::BOTTOM, "res/textures/skyboxes/" + dirContents[fdEntryItem]);
+		break;
+	case FD_Mode::SkB_LEFT:
+		app->m_skybox.setSkyboxTexturePath(renderer::Skybox::LEFT, "res/textures/skyboxes/" + dirContents[fdEntryItem]);
+		break;
+	case FD_Mode::SkB_RIGHT:
+		app->m_skybox.setSkyboxTexturePath(renderer::Skybox::RIGHT, "res/textures/skyboxes/" + dirContents[fdEntryItem]);
+		break;
+	case FD_Mode::SkB_BACK:
+		app->m_skybox.setSkyboxTexturePath(renderer::Skybox::BACK, "res/textures/skyboxes/" + dirContents[fdEntryItem]);
+		break;
+	case FD_Mode::SkB_FRONT:
+		app->m_skybox.setSkyboxTexturePath(renderer::Skybox::FRONT, "res/textures/skyboxes/" + dirContents[fdEntryItem]);
+		break;
+
 	default:
 		break;
 	}
@@ -1018,6 +1100,13 @@ void GUI::showRotationEditWindow(){
 		b_showEditRotWindow = false;
 	ImGui::PopItemWidth();
 	ImGui::End();	
+}
+
+void GUI::skyboxButtonPressed(FD_Mode mode){
+	b_showOpenFileDialog = true;
+	currentPath = "res/textures/skyboxes/";
+	fdMode = mode;
+	updateDirContents(dirContents);
 }
 
 

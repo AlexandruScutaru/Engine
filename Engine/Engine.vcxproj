@@ -155,6 +155,8 @@
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="IShaderProgram.cpp" />
+    <ClCompile Include="Skybox.cpp" />
+    <ClCompile Include="SkyboxShader.cpp" />
     <ClCompile Include="TexturedModel.cpp" />
     <ClCompile Include="TextureLoader.cpp" />
     <ClCompile Include="Timing.cpp" />
@@ -180,6 +182,8 @@
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="IShaderProgram.h" />
+    <ClInclude Include="Skybox.h" />
+    <ClInclude Include="SkyboxShader.h" />
     <ClInclude Include="TexturedModel.h" />
     <ClInclude Include="TextureLoader.h" />
     <ClInclude Include="Timing.h" />

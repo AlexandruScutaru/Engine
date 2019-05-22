@@ -11,6 +11,7 @@ class GameObject;
 class CollisionVolume;
 namespace renderer{
 	struct Light;
+	class Skybox;
 }
 namespace physics{
 	class PhysicsWorld;
@@ -18,7 +19,14 @@ namespace physics{
 
 class Utilities{
 public:
-	static void OpenMap(const std::string& file, std::vector<GameObject*>& objects, std::vector<CollisionVolume*>& colVols, std::vector<renderer::Light*>& lights, physics::PhysicsWorld* world, Player* player);
+	static void OpenMap(const std::string& file, 
+						std::vector<GameObject*>& objects, 
+						std::vector<CollisionVolume*>& colVols, 
+						std::vector<renderer::Light*>& lights, 
+						physics::PhysicsWorld* world, 
+						Player* player, 
+						renderer::Skybox& skybox);
+
 	static GameObject* OpenGameObject(const std::string& file, glm::vec3& pos, glm::quat& rot, glm::vec3& scale, physics::PhysicsWorld* world);
 
 	template <typename T> 

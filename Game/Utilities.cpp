@@ -5,6 +5,7 @@
 #include <Engine/Lights.h>
 #include <Engine/ResourceManager.h>
 #include <Engine/PhysicsWorld.h>
+#include <Engine/Skybox.h>
 
 #include <fstream>
 #include <algorithm>
@@ -12,7 +13,7 @@
 using json = nlohmann::json;
 
 
-void Utilities::OpenMap(const std::string & file, std::vector<GameObject*>& objects, std::vector<CollisionVolume*>& colVols, std::vector<renderer::Light*>& lights, physics::PhysicsWorld* world, Player* player){
+void Utilities::OpenMap(const std::string & file, std::vector<GameObject*>& objects, std::vector<CollisionVolume*>& colVols, std::vector<renderer::Light*>& lights, physics::PhysicsWorld* world, Player* player, renderer::Skybox& skybox){
 	std::ifstream in(file);
 	json mapFile;
 	in >> mapFile;
@@ -138,6 +139,16 @@ void Utilities::OpenMap(const std::string & file, std::vector<GameObject*>& obje
 		att = glm::vec3(v[0], v[1], v[2]);
 		lights.push_back(new renderer::PointLight(amb, diff, spec, pos, att));
 	}
+
+	auto& skBox = mapFile["skybox"];
+	skybox.setEnabled(skBox["enabled"].get<bool>());
+	skybox.setSkyboxTexturePath(renderer::Skybox::RIGHT, skBox["textures"]["right"].get<std::string>());
+	skybox.setSkyboxTexturePath(renderer::Skybox::LEFT, skBox["textures"]["left"].get<std::string>());
+	skybox.setSkyboxTexturePath(renderer::Skybox::BOTTOM, skBox["textures"]["bottom"].get<std::string>());
+	skybox.setSkyboxTexturePath(renderer::Skybox::TOP, skBox["textures"]["top"].get<std::string>());
+	skybox.setSkyboxTexturePath(renderer::Skybox::BACK, skBox["textures"]["back"].get<std::string>());
+	skybox.setSkyboxTexturePath(renderer::Skybox::FRONT, skBox["textures"]["front"].get<std::string>());
+	skybox.set();
 }
 
 GameObject* Utilities::OpenGameObject(const std::string& file, glm::vec3& pos, glm::quat& rot, glm::vec3& scale, physics::PhysicsWorld* world){
