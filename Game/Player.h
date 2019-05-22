@@ -48,6 +48,7 @@ public:
 	std::shared_ptr<physics::PhysicsBody> getPhysicsBody(){ return m_rigidBody; }
 
 	bool hasKey = false;
+	float LOOK_SENSITIVITY;
 
 private:
 	void updateCamera();

@@ -4,8 +4,6 @@
 #include <Engine/InputManager.h>
 #include <iostream>
 
-#define LOOK_SENSITIVITY 0.6f
-
 const glm::vec3 Player::m_cameraOffset = glm::vec3(0.0f, 0.8f, 0.0f);
 
 
@@ -14,7 +12,8 @@ Player::Player() :
 	m_pos(glm::vec3(0.0f)),
 	m_rot(glm::vec3(0.0f)),
 	m_scale(glm::vec3(1.0f)),
-	movementSpeed(3.5f)
+	movementSpeed(3.5f),
+	LOOK_SENSITIVITY(0.6f)
 {
 	backup();
 	m_camera = new renderer::Camera();
@@ -26,7 +25,8 @@ Player::Player(glm::vec3 & pos, glm::vec3 & rot, glm::vec3 & scale):
 	m_pos(pos),
 	m_rot(rot),
 	m_scale(scale),
-	movementSpeed(3.5f)
+	movementSpeed(3.5f),
+	LOOK_SENSITIVITY(0.6f)
 {
 	backup();
 	m_camera = new renderer::Camera();

@@ -13,8 +13,9 @@
 ///TODO:
 	//investigate object rename issue
 	//lights in creation mode shouldn't appear
-	//add utilities for loading/saving maps/objects
-	//add thumbnail for model selected to be added
+
+float getDistance(const glm::vec3& e1, const glm::vec3& e2);
+
 
 MainApp::MainApp():
 	m_appState(AppState::EDIT),
@@ -185,6 +186,15 @@ void MainApp::update(float deltaTime){
 	for(auto colVolume : m_colVolumeBillboards)
 		colVolume->update(deltaTime);
 
+	std::sort(m_lights.begin() + 2, m_lights.end(), [this](const auto& lhs, const auto& rhs) -> bool{
+		glm::vec3 playerPos = m_player.getPosition();
+		glm::vec3 plLPos = static_cast<renderer::PointLight*>(lhs)->position;
+		glm::vec3 plRPos = static_cast<renderer::PointLight*>(rhs)->position;
+
+		return getDistance(playerPos, static_cast<renderer::PointLight*>(lhs)->position) <
+			getDistance(playerPos, static_cast<renderer::PointLight*>(rhs)->position);
+
+	});
 
 	updateToDrawVector();
 }
@@ -447,4 +457,9 @@ void MainApp::updateToDrawVector(){
 		for(const auto& gameObject : m_objectsInScene)
 			m_objects_ToDraw.push_back(gameObject);
 	}
+}
+
+
+float getDistance(const glm::vec3 & e1, const glm::vec3 & e2){
+	return std::pow(e1.x - e2.x, 2) + std::pow(e1.y - e2.y, 2) + std::pow(e1.z - e2.z, 2);
 }

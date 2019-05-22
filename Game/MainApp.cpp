@@ -10,6 +10,8 @@
 #include <cmath>
 #include <Engine/CollisionBody.h>
 
+float getDistance(const glm::vec3& e1, const glm::vec3& e2);
+
 bool MainApp::m_resetLevel = false;
 
 MainApp::MainApp() :
@@ -118,6 +120,8 @@ void MainApp::initSystems(){
 		.beginClass<MainApp>("MainApp")
 			.addStaticFunction("resetLevel", &MainApp::setResetLevel)
 		.endClass();
+
+	m_player.LOOK_SENSITIVITY = CONFIG.look_sensitivity;
 }
 
 void MainApp::initLevel(){
@@ -257,6 +261,16 @@ void MainApp::update(float deltaTime){
 			}
 		}
 	}
+
+	std::sort(m_lights.begin() + 2, m_lights.end(), [this](const auto& lhs, const auto& rhs) -> bool{
+		glm::vec3 playerPos = m_player.getPosition();
+		glm::vec3 plLPos = static_cast<renderer::PointLight*>(lhs)->position;
+		glm::vec3 plRPos = static_cast<renderer::PointLight*>(rhs)->position;
+
+		return getDistance(playerPos, static_cast<renderer::PointLight*>(lhs)->position) <
+			   getDistance(playerPos, static_cast<renderer::PointLight*>(rhs)->position);
+
+	});
 }
 
 void MainApp::drawGame(float interpolation){
@@ -371,4 +385,8 @@ void MainApp::drawGameObjects(){
 		}
 	}
 	m_billboardShader.unuse();
+}
+
+float getDistance(const glm::vec3 & e1, const glm::vec3 & e2){
+	return std::pow(e1.x - e2.x, 2) + std::pow(e1.y - e2.y, 2) + std::pow(e1.z - e2.z, 2);
 }

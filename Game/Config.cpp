@@ -108,6 +108,12 @@ namespace utilities{
 				max_frame_time = 0.25f;
 			}
 			try{
+				look_sensitivity = cfg["game"]["look_sensitivity"].get<float>();
+			} catch(...){
+				std::cout << "game.look_sensitivity not found" << std::endl;
+				look_sensitivity = 0.6f;
+			}
+			try{
 				map = cfg["game"]["map"].get<std::string>();
 			} catch(...){
 				std::cout << "game.map not found" << std::endl;
