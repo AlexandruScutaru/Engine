@@ -74,6 +74,7 @@ void MainApp::initLevel(){
 	m_gameObjectsShader.initShader("res/shaders/ed_entity");
 	m_basicColorShader.initShader("res/shaders/ed_basic");
 	m_billboardShader.initShader("res/shaders/ed_billboard");
+	m_terrainShader.initShader("res/shaders/terrain");
 
 	m_gizmos.init(&m_selectedObjsVect);
 
@@ -106,15 +107,8 @@ void MainApp::initLevel(){
 	glEnableVertexAttribArray(0);
 	glBindVertexArray(0);
 
-	//init default skybox
-	m_skybox.init(100.0f);	
-	//m_skybox.setSkyboxTexturePath(renderer::Skybox::RIGHT, "res/textures/skyboxes/day_right.png");
-	//m_skybox.setSkyboxTexturePath(renderer::Skybox::LEFT, "res/textures/skyboxes/day_left.png");
-	//m_skybox.setSkyboxTexturePath(renderer::Skybox::BOTTOM, "res/textures/skyboxes/day_bottom.png");
-	//m_skybox.setSkyboxTexturePath(renderer::Skybox::TOP, "res/textures/skyboxes/day_top.png");
-	//m_skybox.setSkyboxTexturePath(renderer::Skybox::BACK, "res/textures/skyboxes/day_back.png");
-	//m_skybox.setSkyboxTexturePath(renderer::Skybox::FRONT, "res/textures/skyboxes/day_front.png");
-
+	m_skybox.init(399.0f);
+	m_terrain.init(&m_terrainShader);
 }
 
 void MainApp::loop(){
@@ -219,6 +213,15 @@ void MainApp::drawGame(){
 	} else {
 		if(m_skybox.enabled()) 
 			m_skybox.render(m_player.getCamera()->getViewMatrix(), renderer::Renderer::GetProjectionMatrix());
+		if(m_terrain.enabled())
+			m_terrain.render(5, 
+							  m_player.isFlashLightOn(), 
+							  &m_player.getCamera()->getPos(),
+							  &m_player.getCamera()->getViewMatrix(), 
+							  &renderer::Renderer::GetProjectionMatrix(),
+							  &m_lights
+			);
+
 		RenderUtilities::DrawGameObjects(this, false);
 		RenderUtilities::DrawLightBillboards(this);
 		RenderUtilities::DrawColVolumesBillboards(this);

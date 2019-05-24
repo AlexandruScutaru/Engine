@@ -24,6 +24,7 @@ GUI::GUI(MainApp* app) :
 	b_creationTab(false),
 	b_placementTab(true),
 	b_skyboxTab(false),
+	b_terrainTab(false),
 	b_showOpenFileDialog(false),
 	b_showSaveFileDialog(false),
 	b_showGridWindow(false),
@@ -241,9 +242,11 @@ void GUI::showEditorWindow(){
 
 	///main tabs for the editor
 	//gameobject creation
-	if(ImGui::Button("Object Creation") && !b_creationTab){
+	if(ImGui::Button("Creation") && !b_creationTab){
 		b_creationTab = true;
 		b_placementTab = false;
+		b_skyboxTab = false;
+		b_terrainTab = false;
 
 		//backup and set new camera transforms
 		app->m_player.backup();
@@ -253,15 +256,18 @@ void GUI::showEditorWindow(){
 	}
 	ImGui::SameLine();
 	//gameobject placement
-	if(ImGui::Button("Object Placement") && !b_placementTab){
+	if(ImGui::Button("Placement") && !b_placementTab){
 		b_placementTab = true;
-		b_creationTab = false;
 
-		//restore camera 
-		app->m_player.restore();
+		//restore camera if needed
+		if(b_creationTab)
+			app->m_player.restore();
+		b_creationTab = false;
+		b_skyboxTab = false;
+		b_terrainTab = false;
 	}
 	ImGui::SameLine();
-	//gameobject placement
+	//skybox
 	if(ImGui::Button("Skybox") && !b_skyboxTab){
 		b_skyboxTab = true;
 
@@ -270,11 +276,25 @@ void GUI::showEditorWindow(){
 			app->m_player.restore();
 		b_creationTab = false;
 		b_placementTab = false;
+		b_terrainTab = false;
+	}
+	ImGui::SameLine();
+	//terrain
+	if(ImGui::Button("Terrain") && !b_terrainTab){
+		b_terrainTab = true;
+
+		//restore camera if needed
+		if(b_creationTab)
+			app->m_player.restore();
+		b_creationTab = false;
+		b_placementTab = false;
+		b_skyboxTab = false;
 	}
 
 	if(b_creationTab) showCreationTab();
 	if(b_placementTab) showPlacementTab();
 	if(b_skyboxTab) showSkyboxTab();
+	if(b_terrainTab) showTerrainTab();
 
 	ImGui::End();
 }
@@ -498,6 +518,77 @@ void GUI::showSkyboxTab(){
 	ImGui::EndChild();
 }
 
+void GUI::showTerrainTab(){
+	ImGui::BeginChild("terrain", ImVec2(-1.0f, -1.0f), true/*, ImGuiWindowFlags_NoScrollWithMouse*/);
+	{
+		ImGui::PushItemWidth(-1);
+
+		if(ImGui::Button("Add")){
+			app->m_terrain.set();
+			app->m_terrain.setEnabled(true);
+		}
+		ImGui::Separator();
+		if(!app->m_terrain.enabled()){
+			ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+		}
+		ImGui::Text("Textures");
+
+		if(ImGui::Button("Height Map")) terrainButtonPressed(FD_Mode::T_HEIGHT);
+		ImGui::SameLine();
+		ImGui::Text(app->m_terrain.getTerrainTexturePath(renderer::Terrain::HEIGHT).c_str());
+
+		if(ImGui::Button("Base      ")) terrainButtonPressed(FD_Mode::T_BASE);
+		ImGui::SameLine();
+		ImGui::Text(app->m_terrain.getTerrainTexturePath(renderer::Terrain::BASE).c_str());
+
+		if(ImGui::Button("Red       ")) terrainButtonPressed(FD_Mode::T_RED);
+		ImGui::SameLine();
+		ImGui::Text(app->m_terrain.getTerrainTexturePath(renderer::Terrain::RED).c_str());
+
+		if(ImGui::Button("Green     ")) terrainButtonPressed(FD_Mode::T_GREEN);
+		ImGui::SameLine();
+		ImGui::Text(app->m_terrain.getTerrainTexturePath(renderer::Terrain::GREEN).c_str());
+
+		if(ImGui::Button("Blue      ")) terrainButtonPressed(FD_Mode::T_BLUE);
+		ImGui::SameLine();
+		ImGui::Text(app->m_terrain.getTerrainTexturePath(renderer::Terrain::BLUE).c_str());
+
+		if(ImGui::Button("Blend Map ")) terrainButtonPressed(FD_Mode::T_BLEND);
+		ImGui::SameLine();
+		ImGui::Text(app->m_terrain.getTerrainTexturePath(renderer::Terrain::BLEND).c_str());
+
+		ImGui::Separator();
+		ImGui::Text("Sizing");
+		ImGui::PushItemWidth(150);
+	
+		ImGui::InputFloat("Height multiplier##terrain", &app->m_terrain.getHeightMultiplierRef(), 0.0f, 0.0f, 2);
+		ImGui::InputFloat("Side length##terrain", &app->m_terrain.getSizeRef(), 0.0f, 0.0f, 2);
+	
+		ImGui::DragFloat("Tiling factor##terrain", &app->m_terrainShader.getTilingFactorRef(), 0.1f, -FLT_MAX, FLT_MAX, "%.2f");
+
+		ImGui::Separator();
+		ImGui::Text("Fog");
+		float color[3] = {0.0f};
+		color[0] = app->m_terrainShader.getFogColor().x;
+		color[1] = app->m_terrainShader.getFogColor().y;
+		color[2] = app->m_terrainShader.getFogColor().z;
+		ImGui::PushItemWidth(-1);
+		ImGui::ColorEdit3("##terrain_fog", color);
+		ImGui::PopItemWidth();
+		app->m_terrainShader.setFogColor(glm::vec3(color[0], color[1], color[2]));
+		ImGui::DragFloat("Density##terrain", &app->m_terrainShader.getFogDensityRef(), 0.00001f, -FLT_MAX, FLT_MAX, "%.5f");
+		ImGui::DragFloat("Gradient##terrain", &app->m_terrainShader.getFogGradientRef(), 0.001f, -FLT_MAX, FLT_MAX, "%.3f");
+
+		if(!app->m_terrain.enabled()){
+			ImGui::PopStyleVar();
+			ImGui::PopItemFlag();
+		}
+		ImGui::PopItemWidth();
+	}
+	ImGui::EndChild();
+}
+
 void GUI::showOpenFileDialog(){
 	ImGui::SetNextWindowSize(ImVec2(300, 11.2f * ImGui::GetFrameHeightWithSpacing()), ImGuiSetCond_Always);
 	ImGui::SetNextWindowFocus();
@@ -630,6 +721,24 @@ void GUI::openButtonPressed(){
 		break;
 	case FD_Mode::SkB_FRONT:
 		app->m_skybox.setSkyboxTexturePath(renderer::Skybox::FRONT, "res/textures/skyboxes/" + dirContents[fdEntryItem]);
+		break;
+	case FD_Mode::T_HEIGHT:
+		app->m_terrain.setTerrainTexturePath(renderer::Terrain::HEIGHT, "res/textures/terrain/" + dirContents[fdEntryItem]);
+		break;
+	case FD_Mode::T_BASE:
+		app->m_terrain.setTerrainTexturePath(renderer::Terrain::BASE, "res/textures/terrain/" + dirContents[fdEntryItem]);
+		break;
+	case FD_Mode::T_RED:
+		app->m_terrain.setTerrainTexturePath(renderer::Terrain::RED, "res/textures/terrain/" + dirContents[fdEntryItem]);
+		break;
+	case FD_Mode::T_GREEN:
+		app->m_terrain.setTerrainTexturePath(renderer::Terrain::GREEN, "res/textures/terrain/" + dirContents[fdEntryItem]);
+		break;
+	case FD_Mode::T_BLUE:
+		app->m_terrain.setTerrainTexturePath(renderer::Terrain::BLUE, "res/textures/terrain/" + dirContents[fdEntryItem]);
+		break;
+	case FD_Mode::T_BLEND:
+		app->m_terrain.setTerrainTexturePath(renderer::Terrain::BLEND, "res/textures/terrain/" + dirContents[fdEntryItem]);
 		break;
 
 	default:
@@ -1105,6 +1214,13 @@ void GUI::showRotationEditWindow(){
 void GUI::skyboxButtonPressed(FD_Mode mode){
 	b_showOpenFileDialog = true;
 	currentPath = "res/textures/skyboxes/";
+	fdMode = mode;
+	updateDirContents(dirContents);
+}
+
+void GUI::terrainButtonPressed(FD_Mode mode){
+	b_showOpenFileDialog = true;
+	currentPath = "res/textures/terrain/";
 	fdMode = mode;
 	updateDirContents(dirContents);
 }

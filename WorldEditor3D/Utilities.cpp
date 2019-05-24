@@ -134,6 +134,7 @@ void Utilities::openMap(MainApp* app, const std::string& file){
 		app->m_colVolumeBillboardsMap[colVol->getCode()] = colVol;
 	}
 
+	//skybox
 	auto& skybox = mapFile["skybox"];
 	app->m_skybox.setEnabled(skybox["enabled"].get<bool>());
 	app->m_skybox.setSkyboxTexturePath(renderer::Skybox::RIGHT,	 skybox["textures"]["right"].get<std::string>());
@@ -143,6 +144,31 @@ void Utilities::openMap(MainApp* app, const std::string& file){
 	app->m_skybox.setSkyboxTexturePath(renderer::Skybox::BACK,	 skybox["textures"]["back"].get<std::string>());
 	app->m_skybox.setSkyboxTexturePath(renderer::Skybox::FRONT,	 skybox["textures"]["front"].get<std::string>());
 	app->m_skybox.set();
+
+	//terrain
+	auto& terrain = mapFile["terrain"];
+	if(terrain["enabled"].get<bool>()){
+		app->m_terrain.setEnabled(true);
+		//textures
+		app->m_terrain.setTerrainTexturePath(renderer::Terrain::HEIGHT, terrain["textures"]["height"].get<std::string>());
+		app->m_terrain.setTerrainTexturePath(renderer::Terrain::BLEND,  terrain["textures"]["blend"].get<std::string>());
+		app->m_terrain.setTerrainTexturePath(renderer::Terrain::BASE,   terrain["textures"]["base"].get<std::string>());
+		app->m_terrain.setTerrainTexturePath(renderer::Terrain::RED,    terrain["textures"]["red"].get<std::string>());
+		app->m_terrain.setTerrainTexturePath(renderer::Terrain::GREEN,  terrain["textures"]["green"].get<std::string>());
+		app->m_terrain.setTerrainTexturePath(renderer::Terrain::BLUE,   terrain["textures"]["blue"].get<std::string>());
+		//sizing
+		app->m_terrain.setHeightMultiplier(terrain["sizing"]["multiplier"].get<float>());
+		app->m_terrain.setSize(terrain["sizing"]["length"].get<float>());
+		app->m_terrainShader.getTilingFactorRef() = terrain["sizing"]["tiling"].get<float>();
+		//fog
+		std::vector<float> color = terrain["fog"]["fog_color"].get<std::vector<float>>();
+		app->m_terrainShader.setFogColor(glm::vec3(color[0], color[1], color[2]));
+		app->m_terrainShader.getFogDensityRef() = terrain["fog"]["density"].get<float>();
+		app->m_terrainShader.getFogGradientRef() = terrain["fog"]["gradient"].get<float>();
+		app->m_terrain.set();
+	} else{
+		//terrain not defined, continue without it
+	}
 
 }
 
@@ -228,6 +254,41 @@ void Utilities::saveMap(MainApp* app, const std::string& file){
 			}
 		}
 	};
+
+	if(app->m_terrain.enabled()){
+		map["terrain"] = {
+			{"enabled", true},
+			{"textures",
+				{
+					{"height", app->m_terrain.getTerrainTexturePath(renderer::Terrain::HEIGHT)},
+					{"blend",  app->m_terrain.getTerrainTexturePath(renderer::Terrain::BLEND)},
+					{"base",   app->m_terrain.getTerrainTexturePath(renderer::Terrain::BASE)},
+					{"red",    app->m_terrain.getTerrainTexturePath(renderer::Terrain::RED)},
+					{"green",  app->m_terrain.getTerrainTexturePath(renderer::Terrain::GREEN)},
+					{"blue",   app->m_terrain.getTerrainTexturePath(renderer::Terrain::BLUE)}
+				}
+			},
+			{"sizing",
+				{	
+					{"multiplier", app->m_terrain.getHeightMultiplierRef()},
+					{"length", app->m_terrain.getSizeRef()},
+					{"tiling", app->m_terrainShader.getTilingFactorRef()}
+
+				}
+			},
+			{"fog",
+				{
+					{"fog_color", {app->m_terrainShader.getFogColor().x, app->m_terrainShader.getFogColor().y, app->m_terrainShader.getFogColor().z}},
+					{"density", app->m_terrainShader.getFogDensityRef()},
+					{"gradient", app->m_terrainShader.getFogGradientRef()}
+				}
+			}
+		};
+	} else{
+		map["terrain"] = {
+			{"enabled", false}
+		};
+	}
 
 	std::ofstream out(path);
 	out << std::setw(4) << map << std::endl;

@@ -164,6 +164,7 @@
     <ClCompile Include="MainApp.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="RenderUtilities.cpp" />
+    <ClCompile Include="TerrainShader.cpp" />
     <ClCompile Include="TranformGizmos.cpp" />
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>
@@ -183,6 +184,7 @@
     <ClInclude Include="MainApp.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="RenderUtilities.h" />
+    <ClInclude Include="TerrainShader.h" />
     <ClInclude Include="TranformGizmos.h" />
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
@@ -197,8 +199,10 @@
     <None Include="res\shaders\ed_entity.vs" />
     <None Include="res\shaders\ed_selection.fs" />
     <None Include="res\shaders\ed_selection.vs" />
-    <None Include="res\shaders\skyboxShader.fs" />
-    <None Include="res\shaders\skyboxShader.vs" />
+    <None Include="res\shaders\skybox.fs" />
+    <None Include="res\shaders\skybox.vs" />
+    <None Include="res\shaders\terrain.fs" />
+    <None Include="res\shaders\terrain.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

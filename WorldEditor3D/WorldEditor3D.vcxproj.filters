@@ -75,6 +75,9 @@
     <ClCompile Include="CollisionVolumeBillboard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TerrainShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainApp.h">
@@ -128,6 +131,9 @@
     <ClInclude Include="CollisionVolumeBillboard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TerrainShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="config_editor.json">
@@ -135,12 +141,6 @@
     </None>
     <None Include="config_engine.json">
       <Filter>Resource Files\configs</Filter>
-    </None>
-    <None Include="res\shaders\skyboxShader.vs">
-      <Filter>Resource Files\shaders</Filter>
-    </None>
-    <None Include="res\shaders\skyboxShader.fs">
-      <Filter>Resource Files\shaders</Filter>
     </None>
     <None Include="res\shaders\ed_basic.fs">
       <Filter>Resource Files\shaders</Filter>
@@ -164,6 +164,18 @@
       <Filter>Resource Files\shaders</Filter>
     </None>
     <None Include="res\shaders\ed_selection.vs">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="res\shaders\skybox.fs">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="res\shaders\skybox.vs">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="res\shaders\terrain.fs">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="res\shaders\terrain.vs">
       <Filter>Resource Files\shaders</Filter>
     </None>
   </ItemGroup>

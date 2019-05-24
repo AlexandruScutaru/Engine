@@ -22,7 +22,7 @@ namespace renderer {
 		m_cube = utilities::ResourceManager::getMesh("res/models/cube.obj");
 		m_textureID = utilities::ResourceManager::getCubemapTexture(m_skyboxTextures);
 		setScale(size);
-		m_shader.initShader("res/shaders/skyboxShader");
+		m_shader.initShader("res/shaders/skybox");
 	}
 
 	void Skybox::render(glm::mat4& view, glm::mat4& projection){

@@ -13,10 +13,12 @@
 #include <Engine/InputManager.h>
 #include <Engine/ResourceManager.h>
 #include <Engine/Skybox.h>
+#include <Engine/Terrain.h>
 
 #include "GameObjectShader.h"
 #include "BasicColorShader.h"
 #include "BillboardShader.h"
+#include "TerrainShader.h"
 #include "Grid.h"
 #include "Actor.h" 
 #include "GameObject.h"
@@ -115,6 +117,9 @@ private:
 	GameObjectShader m_gameObjectsShader;
 	BasicColorShader m_basicColorShader;
 	BillboardShader  m_billboardShader;
+	TerrainShader	 m_terrainShader;
+
+	renderer::Terrain m_terrain;
 
 	GLuint m_lineVAO;
 

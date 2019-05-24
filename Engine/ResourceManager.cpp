@@ -31,13 +31,26 @@ namespace utilities{
 		return &(it->second);
 	}
 
-	renderer::TextureData* ResourceManager::getTexture(const std::string& path){
+	renderer::MeshData* ResourceManager::genTerrainHightField(const std::string & heightFieldPath, float side_size, float height_mult){
+		auto it = m_meshesMap.find(heightFieldPath);
+		if(it != m_meshesMap.end()){
+			glDeleteVertexArrays(1, &(it->second.vertexArrayObject));
+			for(int i = 0; i < renderer::NUM_BUFFERS; i++){
+				glDeleteBuffers(1, &(it->second.vertexArrayBuffers[i]));
+			}
+		}
+		renderer::MeshData mesh = utilities::ObjectLoader::loadTerrainHeightField(heightFieldPath, side_size, height_mult);
+		auto ret = m_meshesMap.insert(make_pair(heightFieldPath, mesh));
+		return &(ret.first->second);
+	}
+
+	renderer::TextureData* ResourceManager::getTexture(const std::string& path, bool flip){
 		//lookup the texture and see if its in the map
 		auto it = m_texturesMap.find(path); //auto looks for the return type and automatically assigns it
 											//here auto is std::map<std::string, GLTexture>::iterator
 		if(it == m_texturesMap.end()){
 			//Load the texture
-			renderer::TextureData newTexture = TextureLoader::loadTexture(path);
+			renderer::TextureData newTexture = TextureLoader::loadTexture(path, flip);
 
 			auto ret = m_texturesMap.insert(make_pair(path, newTexture));
 

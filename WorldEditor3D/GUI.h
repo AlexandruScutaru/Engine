@@ -34,7 +34,13 @@ enum class FD_Mode{
 	SkB_LEFT,
 	SkB_RIGHT,
 	SkB_BACK,
-	SkB_FRONT
+	SkB_FRONT,
+	T_HEIGHT,
+	T_BASE,
+	T_RED,
+	T_GREEN,
+	T_BLUE,
+	T_BLEND
 };
 
 enum Scene_Tabs{
@@ -58,6 +64,7 @@ public:
 	void showCreationTab();
 	void showPlacementTab();
 	void showSkyboxTab();
+	void showTerrainTab();
 	void showOpenFileDialog();
 	void showSaveFileDialog();
 	void showWarningPopup();
@@ -72,6 +79,7 @@ public:
 	bool b_creationTab;
 	bool b_placementTab;
 	bool b_skyboxTab;
+	bool b_terrainTab;
 	bool b_showOpenFileDialog;
 	bool b_showSaveFileDialog;
 	bool b_showGridWindow;
@@ -80,7 +88,6 @@ public:
 	bool b_showPopup;
 	std::string popupTitle;
 	std::string popupInfo;
-
 
 	char m_name[OBJECT_NAME_SIZE];
 	char m_script[SCRIPT_LENGTH];
@@ -98,8 +105,8 @@ public:
 	friend class MainApp;
 
 private:
-
 	void skyboxButtonPressed(FD_Mode mode);
+	void terrainButtonPressed(FD_Mode mode);
 
 	bool m_rotationEditJustShown;
 	bool m_rotateGameobject;

@@ -6,6 +6,8 @@
 
 const glm::vec3 Player::m_cameraOffset = glm::vec3(0.0f, 0.5f, 0.0f);
 
+#define MAX_SPEED 15.0f
+#define MIN_SPEED 1.0f
 
 Player::Player() :
 	m_flashLightOn(false),
@@ -68,13 +70,13 @@ void Player::update(utilities::InputManager& inputManager, float deltaTime){
 
 	if(inputManager.getMouseWheel() == 1){
 		movementSpeed += 0.2f;
-		if(movementSpeed > 6.0f)
-			movementSpeed = 6.0f;
+		if(movementSpeed > MAX_SPEED)
+			movementSpeed = MAX_SPEED;
 	}
 	else if(inputManager.getMouseWheel() == -1){
 		movementSpeed -= 0.2f;
-		if(movementSpeed < 1.0f)
-			movementSpeed = 1.0f;
+		if(movementSpeed < MIN_SPEED)
+			movementSpeed = MIN_SPEED;
 	}
 
 	updateCamera();

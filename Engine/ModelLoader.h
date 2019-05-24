@@ -1,7 +1,6 @@
 #ifndef MODEL_LOADER_H
 #define MODEL_LOADER_H
 
-//#include <SDL/SDL.h>
 #include <GLM/glm.hpp>
 
 #include "ModelDataStructs.h"
@@ -9,6 +8,7 @@
 #include <string>
 #include <vector>
 
+struct SDL_Surface;
 
 namespace utilities{
 
@@ -59,8 +59,15 @@ namespace utilities{
 	public:
 		//parses a wavefront file(.obj) and reads data about the mesh (positions, uv coords, normals, indices)
 		static renderer::MeshData loadObject(const std::string& fileName);
+
+		//parses a grayscale map containing info about a heightfield
+		static renderer::MeshData loadTerrainHeightField(const std::string& fileName, float side_size, float height_mult);
 		
 	private:
+		//helper methods
+		static float getHeight(int row, int col, float height_mult, SDL_Surface* heightMap);
+		static glm::vec3 getNormal(int x, int z, float height_mult, SDL_Surface* heightMap);
+
 		//methods for buffering 3d mesh data
 		static renderer::MeshData loadToVAO(const IndexedModel& model);
 

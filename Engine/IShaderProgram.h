@@ -17,6 +17,7 @@ namespace renderer{
 		void init(const std::string& fileName, bool hasGeometry = false);
 		void use();
 		void unuse();
+		virtual void loadAdditionalData(int n, va_list args) {};
 
 	protected:
 		GLint getUniformLocation(const std::string& uniformName);

@@ -12,7 +12,7 @@ namespace utilities{
 
 	class TextureLoader{
 	public:
-		static renderer::TextureData loadTexture(const std::string& fileName);
+		static renderer::TextureData loadTexture(const std::string& fileName, bool flip);
 		static GLuint loadCubeMapTexture(std::vector<std::string>& fileNames);
 
 	private:

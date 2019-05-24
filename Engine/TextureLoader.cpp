@@ -9,8 +9,8 @@
 
 namespace utilities{
 
-	renderer::TextureData TextureLoader::loadTexture(const std::string& fileName){
-		stbi_set_flip_vertically_on_load(true); //due to how opengl reads and maps texels
+	renderer::TextureData TextureLoader::loadTexture(const std::string& fileName, bool flip){
+		stbi_set_flip_vertically_on_load(flip); //due to how opengl reads and maps texels
 
 		renderer::TextureData data;
 		int numComponents;
