@@ -57,6 +57,9 @@
     <ClCompile Include="CollisionVolume.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TerrainShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor.h">
@@ -92,6 +95,9 @@
     <ClInclude Include="CollisionVolume.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TerrainShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\basic.fs">
@@ -117,6 +123,12 @@
     </None>
     <None Include="config_game.json">
       <Filter>Resource Files\configs</Filter>
+    </None>
+    <None Include="res\shaders\terrain.fs">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="res\shaders\terrain.vs">
+      <Filter>Resource Files\shaders</Filter>
     </None>
   </ItemGroup>
 </Project>

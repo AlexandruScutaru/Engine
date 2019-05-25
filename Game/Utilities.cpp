@@ -1,11 +1,13 @@
 #include "Utilities.h"
 #include "GameObject.h"
 #include "CollisionVolume.h"
+#include "TerrainShader.h"
 
 #include <Engine/Lights.h>
 #include <Engine/ResourceManager.h>
 #include <Engine/PhysicsWorld.h>
 #include <Engine/Skybox.h>
+#include <Engine/Terrain.h>
 
 #include <fstream>
 #include <algorithm>
@@ -13,7 +15,11 @@
 using json = nlohmann::json;
 
 
-void Utilities::OpenMap(const std::string & file, std::vector<GameObject*>& objects, std::vector<CollisionVolume*>& colVols, std::vector<renderer::Light*>& lights, physics::PhysicsWorld* world, Player* player, renderer::Skybox& skybox){
+void Utilities::OpenMap(const std::string & file, std::vector<GameObject*>& objects, 
+						std::vector<CollisionVolume*>& colVols, std::vector<renderer::Light*>& lights, 
+						physics::PhysicsWorld* world, Player* player, renderer::Skybox& skybox, 
+						renderer::Terrain& terrain, TerrainShader& terrainShader)
+{
 	std::ifstream in(file);
 	json mapFile;
 	in >> mapFile;
@@ -149,6 +155,31 @@ void Utilities::OpenMap(const std::string & file, std::vector<GameObject*>& obje
 	skybox.setSkyboxTexturePath(renderer::Skybox::BACK, skBox["textures"]["back"].get<std::string>());
 	skybox.setSkyboxTexturePath(renderer::Skybox::FRONT, skBox["textures"]["front"].get<std::string>());
 	skybox.set();
+
+	
+	auto& terrainData = mapFile["terrain"];
+	if(terrainData["enabled"].get<bool>()){
+		terrain.setEnabled(true);
+		//textures
+		terrain.setTerrainTexturePath(renderer::Terrain::HEIGHT, terrainData["textures"]["height"].get<std::string>());
+		terrain.setTerrainTexturePath(renderer::Terrain::BLEND, terrainData["textures"]["blend"].get<std::string>());
+		terrain.setTerrainTexturePath(renderer::Terrain::BASE, terrainData["textures"]["base"].get<std::string>());
+		terrain.setTerrainTexturePath(renderer::Terrain::RED, terrainData["textures"]["red"].get<std::string>());
+		terrain.setTerrainTexturePath(renderer::Terrain::GREEN, terrainData["textures"]["green"].get<std::string>());
+		terrain.setTerrainTexturePath(renderer::Terrain::BLUE, terrainData["textures"]["blue"].get<std::string>());
+		//sizing
+		terrain.setHeightMultiplier(terrainData["sizing"]["multiplier"].get<float>());
+		terrain.setSize(terrainData["sizing"]["length"].get<float>());
+		terrainShader.getTilingFactorRef() = terrainData["sizing"]["tiling"].get<float>();
+		//fog
+		std::vector<float> color = terrainData["fog"]["fog_color"].get<std::vector<float>>();
+		terrainShader.setFogColor(glm::vec3(color[0], color[1], color[2]));
+		terrainShader.getFogDensityRef() = terrainData["fog"]["density"].get<float>();
+		terrainShader.getFogGradientRef() = terrainData["fog"]["gradient"].get<float>();
+		terrain.set();
+	} else{
+		//terrain not defined, continue without it
+	}
 }
 
 GameObject* Utilities::OpenGameObject(const std::string& file, glm::vec3& pos, glm::quat& rot, glm::vec3& scale, physics::PhysicsWorld* world){

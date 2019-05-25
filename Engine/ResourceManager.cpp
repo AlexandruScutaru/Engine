@@ -31,7 +31,7 @@ namespace utilities{
 		return &(it->second);
 	}
 
-	renderer::MeshData* ResourceManager::genTerrainHightField(const std::string & heightFieldPath, float side_size, float height_mult){
+	renderer::MeshData* ResourceManager::genTerrainHightField(const std::string & heightFieldPath, float side_size, float height_mult, int& num_rows, std::vector<float>& heights, float& min, float& max){
 		auto it = m_meshesMap.find(heightFieldPath);
 		if(it != m_meshesMap.end()){
 			glDeleteVertexArrays(1, &(it->second.vertexArrayObject));
@@ -39,7 +39,7 @@ namespace utilities{
 				glDeleteBuffers(1, &(it->second.vertexArrayBuffers[i]));
 			}
 		}
-		renderer::MeshData mesh = utilities::ObjectLoader::loadTerrainHeightField(heightFieldPath, side_size, height_mult);
+		renderer::MeshData mesh = utilities::ObjectLoader::loadTerrainHeightField(heightFieldPath, side_size, height_mult, num_rows, heights, min, max);
 		auto ret = m_meshesMap.insert(make_pair(heightFieldPath, mesh));
 		return &(ret.first->second);
 	}

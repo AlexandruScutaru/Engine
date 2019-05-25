@@ -18,6 +18,6 @@
 		"max_physics_fps" : 60,
 		"max_frame_time" : 0.25,
 		"look_sensitivity" : 0.3,
-		"map": "test"
+		"map": "terrain"
 	}
 }

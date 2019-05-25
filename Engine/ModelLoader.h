@@ -61,7 +61,7 @@ namespace utilities{
 		static renderer::MeshData loadObject(const std::string& fileName);
 
 		//parses a grayscale map containing info about a heightfield
-		static renderer::MeshData loadTerrainHeightField(const std::string& fileName, float side_size, float height_mult);
+		static renderer::MeshData loadTerrainHeightField(const std::string& fileName, float side_size, float height_mult, int& num_rows, std::vector<float>& heights, float& min, float& max);
 		
 	private:
 		//helper methods

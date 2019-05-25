@@ -62,7 +62,7 @@ namespace renderer {
 	}
 
 	void Terrain::set(){
-		m_mesh = utilities::ResourceManager::genTerrainHightField(m_terrainTextures[HEIGHT], m_side_size, m_height_mult);
+		m_mesh = utilities::ResourceManager::genTerrainHightField(m_terrainTextures[HEIGHT], m_side_size, m_height_mult, m_numRows, m_heights, m_min, m_max);
 		m_baseTexture = utilities::ResourceManager::getTexture(m_terrainTextures[BASE], false);
 		m_redTexture = utilities::ResourceManager::getTexture(m_terrainTextures[RED], false);
 		m_greenTexture = utilities::ResourceManager::getTexture(m_terrainTextures[GREEN], false);

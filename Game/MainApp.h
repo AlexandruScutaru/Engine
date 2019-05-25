@@ -15,6 +15,7 @@
 #include <Engine/PhysicsEventListener.h>
 #include <Engine/Audio.h>
 #include <Engine/Skybox.h>
+#include <Engine/Terrain.h>
 
 extern "C" {
 	#include <lua/lua.h>
@@ -26,6 +27,7 @@ extern "C" {
 #include "GameObjectShader.h"
 #include "BasicColorShader.h"
 #include "BillboardShader.h"
+#include "TerrainShader.h"
 #include "GameObject.h"
 #include "CollisionVolume.h"
 #include "Player.h"
@@ -92,7 +94,10 @@ private:
 	GameObjectShader m_gameObjectsShader;
 	BasicColorShader m_basicColorShader;
 	BillboardShader  m_billboardShader;
-	
+	TerrainShader	 m_terrainShader;
+
+	renderer::Terrain m_terrain;
+	std::shared_ptr<physics::PhysicsBody> m_terrainRigidBody;
 	physics::PhysicsWorld m_dynamicWorld;
 	physics::PhysicsEventListener m_eventListener;
 

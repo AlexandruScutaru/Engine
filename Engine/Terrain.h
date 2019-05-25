@@ -35,6 +35,13 @@ namespace renderer {
 		void setEnabled(bool val) { m_enabled = val; }
 		void setTerrainTexturePath(unsigned char index, const std::string& path);
 
+		float* getPtrFirstElemOfHeights(){ return &m_heights[0]; }
+		std::vector<float> getHeights(){ return m_heights; }
+
+		float getMinH(){ return m_min; }
+		float getMaxH(){ return m_max; }
+		int getNumRows(){ return m_numRows; }
+
 		std::string getTerrainTexturePath(unsigned char index) { return m_terrainTextures[index]; }
 		float& getSizeRef(){ return m_side_size; }
 		float& getHeightMultiplierRef(){ return m_height_mult; }
@@ -55,6 +62,9 @@ namespace renderer {
 		bool m_enabled;
 		float m_height_mult;
 		float m_side_size;
+		std::vector<float> m_heights;
+		float m_min, m_max;
+		int m_numRows;
 	};
 
 }

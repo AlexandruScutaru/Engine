@@ -159,6 +159,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainApp.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="TerrainShader.cpp" />
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -172,6 +173,7 @@
     <ClInclude Include="Logger.h" />
     <ClInclude Include="MainApp.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="TerrainShader.h" />
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>
@@ -183,6 +185,8 @@
     <None Include="res\shaders\billboard.vs" />
     <None Include="res\shaders\entity.fs" />
     <None Include="res\shaders\entity.vs" />
+    <None Include="res\shaders\terrain.fs" />
+    <None Include="res\shaders\terrain.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

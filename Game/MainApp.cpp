@@ -128,11 +128,20 @@ void MainApp::initLevel(){
 	m_gameObjectsShader.initShader("res/shaders/entity");
 	m_basicColorShader.initShader("res/shaders/basic");
 	m_billboardShader.initShader("res/shaders/billboard");
-	m_skybox.init(100.0f);
+	m_terrainShader.initShader("res/shaders/terrain");
+	m_skybox.init(399.0f);
+	m_terrain.init(&m_terrainShader);
 
-	Utilities::OpenMap("res/maps/" + CONFIG.map, m_objectsInScene, m_collisionVolumes, m_lights, &m_dynamicWorld, &m_player, m_skybox);
+	Utilities::OpenMap("res/maps/" + CONFIG.map, m_objectsInScene, m_collisionVolumes, 
+					   m_lights, &m_dynamicWorld, &m_player, m_skybox, m_terrain,
+					   m_terrainShader);
 	m_dynamicWorld.setEventListener(&m_eventListener);
-
+	
+	m_terrainRigidBody = m_dynamicWorld.createPhysicsBody(glm::vec3(0.0f), glm::quat());
+	int rows = m_terrain.getNumRows();
+	float factor = m_terrain.getSizeRef() / (float)rows;
+	m_terrainRigidBody->addHeightFieldTerrain(rows, rows, m_terrain.getMinH(), m_terrain.getMaxH(), m_terrain.getPtrFirstElemOfHeights(), glm::vec3(factor, 1.0, factor));
+	
 	audio::Music music = m_audioManager.loadMusic("res/sounds/atmosphere.mp3");
 	music.play(-1);
 }
@@ -280,7 +289,7 @@ void MainApp::drawGame(float interpolation){
 		obj->setPosition(obj->getPhysicsBody()->getPosition() * interpolation + obj->getPosition() * (1.0f - interpolation));
 		obj->setRotation(obj->getPhysicsBody()->getRotation() * interpolation + obj->getRotation() * (1.0f - interpolation));
 	}
-
+	
 	m_player.setPosition(m_player.getPhysicsBody()->getPosition() * interpolation + m_player.getPosition() * (1.0f - interpolation));
 	//auto rotEuler = glm::eulerAngles(m_player.getPhysicsBody()->getRotation());
 	//rotEuler = glm::vec3(glm::degrees(rotEuler.x), glm::degrees(rotEuler.y), glm::degrees(rotEuler.z));
@@ -294,6 +303,14 @@ void MainApp::drawGame(float interpolation){
 	
 	if(m_skybox.enabled())
 		m_skybox.render(m_player.getCamera()->getViewMatrix(), renderer::Renderer::GetProjectionMatrix());
+	if(m_terrain.enabled())
+		m_terrain.render(5,
+						 m_player.isFlashLightOn(),
+						 &m_player.getCamera()->getPos(),
+						 &m_player.getCamera()->getViewMatrix(),
+						 &renderer::Renderer::GetProjectionMatrix(),
+						 &m_lights
+		);
 	
 	drawGameObjects();
 }
@@ -305,6 +322,8 @@ void MainApp::resetData(){
 		m_dynamicWorld.destroyBody(obj->getPhysicsBody());
 		delete obj;
 	}
+	m_dynamicWorld.destroyBody(m_terrainRigidBody);
+
 	m_objectsInScene.clear();
 	for(auto light : m_lights)
 		delete light;

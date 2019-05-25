@@ -23,8 +23,9 @@ namespace physics{
 		void update(float timeStep);
 		void setEventListener(PhysicsEventListener* listener);
 		void destroyBody(std::shared_ptr<physics::PhysicsBody>& body);
-
+		void addTerrainHeightField(float* heights, float min, float max, float size);
 		std::shared_ptr<physics::PhysicsBody> createPhysicsBody(glm::vec3& pos, glm::quat& rot);
+
 
 	private:
 		rp3d::DynamicsWorld m_world;

@@ -34,6 +34,7 @@ namespace physics{
 
 		void setBodyType(BodyType type = BodyType::DYNAMIC);
 		void addCollisionShapes(glm::vec3& scaleFactor, std::vector<renderer::CollisionBody>& collisionBodies, CollisionCategory category = CollisionCategory::GENERAL);
+		void addHeightFieldTerrain(int rows, int cols, float min, float max, float* data, glm::vec3& scaling);
 		void enableGravity(bool val);
 		void allowSleep(bool val);
 		void setBounciness(float val);
@@ -58,6 +59,7 @@ namespace physics{
 		std::vector<rp3d::SphereShape*> m_sphereShapes;
 		std::vector<rp3d::CapsuleShape*> m_capsuleShapes;
 		std::vector<rp3d::ProxyShape*> m_proxyhapes;
+		rp3d::HeightFieldShape* m_heightFieldShape;
 
 		rp3d::RigidBody* m_body;
 	};

@@ -9,9 +9,11 @@
 
 class GameObject;
 class CollisionVolume;
+class TerrainShader;
 namespace renderer{
 	struct Light;
 	class Skybox;
+	class Terrain;
 }
 namespace physics{
 	class PhysicsWorld;
@@ -25,7 +27,9 @@ public:
 						std::vector<renderer::Light*>& lights, 
 						physics::PhysicsWorld* world, 
 						Player* player, 
-						renderer::Skybox& skybox);
+						renderer::Skybox& skybox,
+						renderer::Terrain& terrain,
+						TerrainShader& terrainShader);
 
 	static GameObject* OpenGameObject(const std::string& file, glm::vec3& pos, glm::quat& rot, glm::vec3& scale, physics::PhysicsWorld* world);
 

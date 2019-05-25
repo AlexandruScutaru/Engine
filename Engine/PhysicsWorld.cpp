@@ -53,4 +53,9 @@ namespace physics{
 		m_world.destroyRigidBody(body->m_body);
 	}
 
+	void PhysicsWorld::addTerrainHeightField(float* heights, float min, float max, float size){
+		
+
+	}
+
 }

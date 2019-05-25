@@ -8,8 +8,9 @@
 #include <iostream>
 #include <algorithm>
 #include <climits>
+#include <cfloat>
 
-#define HALF_OF_2_TO_24 8388608
+#define _2_TO_24 16'777'216
 
 namespace utilities{
 
@@ -416,16 +417,19 @@ namespace utilities{
 		return loadToVAO(OBJModel(fileName).ToIndexedModel());
 	}
 
-	renderer::MeshData ObjectLoader::loadTerrainHeightField(const std::string& fileName, float side_size, float height_mult){
+	renderer::MeshData ObjectLoader::loadTerrainHeightField(const std::string& fileName, float side_size, float height_mult, int& num_rows, std::vector<float>& heights, float& min, float& max){
 		SDL_Surface* image = SDL_LoadBMP(fileName.c_str());
 		if(image == nullptr){
 			std::cout << "Can't load image: " + fileName;
 			exit(EXIT_FAILURE);
 		}
-
+		if(image->h != image->w){
+			std::cout << fileName +  " is not a square image!";
+			exit(EXIT_FAILURE);
+		}
 		int verticesCount = image->h * image->h;
-		
 		int indicesCount = 6 * (image->h - 1)*(image->h - 1);
+		num_rows = image->h;
 
 		std::vector<glm::vec3> positions;
 		std::vector<glm::vec2> textureCoords;
@@ -437,13 +441,18 @@ namespace utilities{
 		normals.reserve(verticesCount);
 		indices.resize(indicesCount);
 
+		min = FLT_MAX, max = -FLT_MAX;
+		
+		heights.resize(verticesCount);
 		for(int i = 0; i < image->h; i++){
 			for(int j = 0; j < image->h; j++){
 				float posX = j / ((float)image->h - 1) * side_size;
 				float posZ = i / ((float)image->h - 1) * side_size;
 
 				float height = getHeight(i, j, height_mult, image);
-
+				if(height < min) min = height;
+				if(height > max) max = height;
+				heights[i*image->h + j] = height;
 				positions.push_back(glm::vec3(posX, height, posZ));
 				normals.push_back(getNormal(i, j, height_mult, image));
 
@@ -451,8 +460,16 @@ namespace utilities{
 				float v = (float)i / ((float)image->h - 1);
 
 				textureCoords.push_back(glm::vec2(u, v));
-
 			}
+		}
+		
+		float offset = (max + min) / 2.0f;
+		float halfsize = side_size / 2.0f;
+		for(auto& vert : positions){
+			vert.x -= halfsize;
+			vert.y -= offset;
+			vert.z -= halfsize;
+			
 		}
 
 		int currVertex = 0;
@@ -496,7 +513,7 @@ namespace utilities{
 		rgb = (rgb << 8) + g;
 		rgb = (rgb << 8) + b;
 
-		return ((rgb - HALF_OF_2_TO_24) / (float)HALF_OF_2_TO_24) * height_mult;
+		return ( rgb / (float)_2_TO_24 ) * height_mult;
 	}
 
 	glm::vec3 ObjectLoader::getNormal(int x, int z, float height_mult, SDL_Surface * heightMap){

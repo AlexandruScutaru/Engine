@@ -74,6 +74,15 @@ namespace physics{
 		}
 	}
 
+	void PhysicsBody::addHeightFieldTerrain(int rows, int cols, float min, float max, float * data, glm::vec3& scaling){
+		m_heightFieldShape = new rp3d::HeightFieldShape(rows, cols, min, max, data, rp3d::HeightFieldShape::HEIGHT_FLOAT_TYPE);
+		m_heightFieldShape->setLocalScaling(rp3d::Vector3(scaling.x, scaling.y, scaling.z));
+		m_proxyhapes.push_back(m_body->addCollisionShape(m_heightFieldShape, rp3d::Transform::identity(), 1.0));
+		m_proxyhapes.back()->setCollideWithMaskBits(physics::CollisionCategory::PLAYER | physics::CollisionCategory::GENERAL);
+		m_body->setType(rp3d::BodyType::STATIC);
+		setBounciness(0.0f);
+	}
+
 	void PhysicsBody::enableGravity(bool val){
 		m_body->enableGravity(val);
 	}
