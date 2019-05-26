@@ -441,35 +441,47 @@ namespace utilities{
 		normals.reserve(verticesCount);
 		indices.resize(indicesCount);
 
-		min = FLT_MAX, max = -FLT_MAX;
-		
-		heights.resize(verticesCount);
+		std::vector<float> temp_h;
+		min = FLT_MAX, max = FLT_MIN;
+		//step 1: get raw pixel values
+		float height;
+		for(int i = 0; i < image->h; i++){
+			for(int j = 0; j < image->h; j++){
+				height = getHeight(i, j, image);
+				if(height < min) min = height;
+				if(height > max) max = height;
+				temp_h.push_back(height);
+			}
+		}
+		//step 2: normalize heights in range [-height_mult, height_mult]
+		float halfRangeVal = fabs(max - min) / 2.0f;
+		float medianVal = (max + min) / 2.0f;
+		min = FLT_MAX, max = FLT_MIN;
+		heights.clear();
+		for(size_t i = 0; i < temp_h.size(); i++){
+			float height = ((temp_h[i] - medianVal) / halfRangeVal) * height_mult;
+			heights.push_back(height);
+			if(height < min) min = height;
+			if(height > max) max = height;
+		}
+		//step 3: compute positons, normals and UVs
+		float halfsize = side_size / 2.0f;
 		for(int i = 0; i < image->h; i++){
 			for(int j = 0; j < image->h; j++){
 				float posX = j / ((float)image->h - 1) * side_size;
 				float posZ = i / ((float)image->h - 1) * side_size;
 
-				float height = getHeight(i, j, height_mult, image);
+				float height = getHeight(i, j, image->h, heights);
 				if(height < min) min = height;
 				if(height > max) max = height;
-				heights[i*image->h + j] = height;
-				positions.push_back(glm::vec3(posX, height, posZ));
-				normals.push_back(getNormal(i, j, height_mult, image));
+				positions.push_back(glm::vec3(posX-halfsize, height, posZ-halfsize));
+				normals.push_back(getNormal(i, j, image->h, heights));
 
 				float u = (float)j / ((float)image->h - 1);
 				float v = (float)i / ((float)image->h - 1);
 
 				textureCoords.push_back(glm::vec2(u, v));
 			}
-		}
-		
-		float offset = (max + min) / 2.0f;
-		float halfsize = side_size / 2.0f;
-		for(auto& vert : positions){
-			vert.x -= halfsize;
-			vert.y -= offset;
-			vert.z -= halfsize;
-			
 		}
 
 		int currVertex = 0;
@@ -501,26 +513,31 @@ namespace utilities{
 		return loadToVAO(im);
 	}
 
-	float ObjectLoader::getHeight(int row, int col, float height_mult, SDL_Surface * heightMap){
-		if(row < 0 || row > heightMap->h || col < 0 || col > heightMap->w)
+	float ObjectLoader::getHeight(int row, int col, SDL_Surface* image){
+		if(row < 0 || row >= image->h || col < 0 || col >= image->w)
 			return 0.0f;
 
-		Uint32 pixel = ((Uint32*)heightMap->pixels)[row * heightMap->pitch / 4 + col];
+		Uint32 pixel = ((Uint32*)image->pixels)[row * image->pitch / 4 + col];
 		Uint8 r, g, b;
-		SDL_GetRGB(pixel, heightMap->format, &r, &g, &b);
+		SDL_GetRGB(pixel, image->format, &r, &g, &b);
 
-		int rgb = r;
-		rgb = (rgb << 8) + g;
-		rgb = (rgb << 8) + b;
-
-		return ( rgb / (float)_2_TO_24 ) * height_mult;
+		//unsigned int rgb = r;
+		//rgb = (rgb << 8) + g;
+		//rgb = (rgb << 8) + b;
+		return (float)r;
 	}
 
-	glm::vec3 ObjectLoader::getNormal(int x, int z, float height_mult, SDL_Surface * heightMap){
-		float heightL = getHeight(x - 1, z, height_mult, heightMap);
-		float heightR = getHeight(x + 1, z, height_mult, heightMap);
-		float heightD = getHeight(x, z - 1, height_mult, heightMap);
-		float heightU = getHeight(x, z + 1, height_mult, heightMap);
+	float ObjectLoader::getHeight(int row, int col, int num_cols, std::vector<float>& heights){
+		if(row < 0 || row >= num_cols || col < 0 || col >= num_cols)
+			return 0.0f;
+		return heights[row * num_cols + col];
+	}
+
+	glm::vec3 ObjectLoader::getNormal(int x, int z, float num_cols, std::vector<float>& heights){
+		float heightL = getHeight(x - 1, z, num_cols, heights);
+		float heightR = getHeight(x + 1, z, num_cols, heights);
+		float heightD = getHeight(x, z - 1, num_cols, heights);
+		float heightU = getHeight(x, z + 1, num_cols, heights);
 
 		glm::vec3 normal(heightD - heightU, 2.0f, heightL - heightR);
 		normal = glm::normalize(normal);

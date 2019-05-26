@@ -3,7 +3,7 @@
 #include "ResourceManager.h"
 
 #include <stdarg.h>
-
+#include <iostream>
 
 namespace renderer {
 
@@ -68,6 +68,7 @@ namespace renderer {
 		m_greenTexture = utilities::ResourceManager::getTexture(m_terrainTextures[GREEN], false);
 		m_blueTexture = utilities::ResourceManager::getTexture(m_terrainTextures[BLUE], false);
 		m_blendTexture = utilities::ResourceManager::getTexture(m_terrainTextures[BLEND], false);
+		//std::cout << m_min << " " << m_max << std::endl;
 	}
 
 	void Terrain::setTerrainTexturePath(unsigned char index, const std::string & path){

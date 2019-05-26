@@ -50,7 +50,9 @@ void Player::update(utilities::InputManager& inputManager, float deltaTime){
 	
 	if(inputManager.isKeyDown(SDLK_LSHIFT))
 		force = 2300.0f;
-	
+	if(inputManager.isKeyDown(SDLK_LCTRL))
+		force = 5000.0f;
+
 	if(inputManager.isKeyDown(SDLK_w)){
 		dir = -m_camera->getForward();
 	} else if(inputManager.isKeyDown(SDLK_s)){

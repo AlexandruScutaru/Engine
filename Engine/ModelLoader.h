@@ -65,8 +65,10 @@ namespace utilities{
 		
 	private:
 		//helper methods
-		static float getHeight(int row, int col, float height_mult, SDL_Surface* heightMap);
-		static glm::vec3 getNormal(int x, int z, float height_mult, SDL_Surface* heightMap);
+		static float getHeight(int row, int col, SDL_Surface* image);
+		static float getHeight(int row, int col, int num_cols, std::vector<float>& heights);
+
+		static glm::vec3 getNormal(int x, int z, float height_mult, std::vector<float>& heights);
 
 		//methods for buffering 3d mesh data
 		static renderer::MeshData loadToVAO(const IndexedModel& model);
