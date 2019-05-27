@@ -221,7 +221,7 @@ glm::quat TranformGizmos::getRot(){
 void TranformGizmos::updateGizmo(renderer::Camera* camera, utilities::InputManager& input, float deltaTime){
 	if(m_currentlyActivated && input.isKeyDown(SDL_BUTTON_LEFT)){
 		for(auto& obj: *m_pSelectedVect)
-			m_gizmoFunctionality[m_currentlyActivated](obj, input, camera, deltaTime);
+			m_gizmoFunctionality[m_currentlyActivated](obj, input, camera, deltaTime/2.0f);
 	} else if(m_currentlyActivated && m_gizmoMode == GizmoMode::TRANSLATE && !input.isKeyPressed(SDL_BUTTON_LEFT)){
 		if(Grid::isSnapEnabled()){
 			for(auto& obj : *m_pSelectedVect){

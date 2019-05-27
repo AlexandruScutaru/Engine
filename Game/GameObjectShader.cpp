@@ -34,6 +34,14 @@ void GameObjectShader::loadSelected(bool value){
 	loadBool(m_uniforms[SELECTED_U], value);
 }
 
+void GameObjectShader::loadAtlasSize(int size){
+	loadFloat(m_uniforms[ATLAS_SIZE_U], (float)size);
+}
+
+void GameObjectShader::loadAtlasOffset(glm::vec2 & offset){
+	loadVec2(m_uniforms[ATLAS_OFFSET_U], offset);
+}
+
 void GameObjectShader::loadModelMatrix(glm::mat4 & model){
 	loadMat4(m_uniforms[MODEL_MATRIX_U], model);
 }
@@ -108,9 +116,10 @@ void GameObjectShader::getAllUniformLocations(){
 	m_uniforms[SPOT_LIGHT_OUTER_CUT_OFF_U] = getUniformLocation("spotLight.outerCutOff");
 	
 	m_uniforms[FLASHLIGHT_U] = getUniformLocation("flashlightOn");
-	
 	m_uniforms[SELECTED_U] = getUniformLocation("selected");
-	
+	m_uniforms[ATLAS_SIZE_U] = getUniformLocation("atlasSize");
+	m_uniforms[ATLAS_OFFSET_U] = getUniformLocation("atlasOffset");
+
 	m_uniforms[PROJECTION_MATRIX_U] = getUniformLocation("projection");
 	m_uniforms[VIEW_MATRIX_U] = getUniformLocation("view");
 	m_uniforms[MODEL_MATRIX_U] = getUniformLocation("model");

@@ -11,11 +11,12 @@ out vec2 TexCoords;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-
+uniform float atlasSize;
+uniform vec2 atlasOffset;
 
 void main(){
     gl_Position = projection * view * model * vec4(aPos, 1.0);
 	FragPos = vec3(model * vec4(aPos, 1.0));
 	Normal = mat3(transpose(inverse(model))) * aNormal;
-	TexCoords = aTexCoords;
+	TexCoords = (aTexCoords / atlasSize) + atlasOffset;
 }

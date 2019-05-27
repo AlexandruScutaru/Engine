@@ -4,7 +4,7 @@
 #include <Engine/InputManager.h>
 #include <iostream>
 
-const glm::vec3 Player::m_cameraOffset = glm::vec3(0.0f, 0.8f, 0.0f);
+const glm::vec3 Player::m_cameraOffset = glm::vec3(0.0f, 1.0f, 0.0f);
 
 
 Player::Player() :

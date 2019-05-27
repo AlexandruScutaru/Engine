@@ -39,6 +39,15 @@ void Utilities::openMap(MainApp* app, const std::string& file){
 		object->m_bodyType = type;
 		object->m_type = obj["genericType"].get<int>();
 		object->m_updateScript = obj["updateScript"].get<std::string>();
+		object->setAtlasIndex(obj["atlasIndex"].get<int>());
+
+		std::ifstream gameObj("res/gameobjects/" + obj_name);
+		json data;
+		gameObj >> data;
+		gameObj.close();
+		object->setIsBillboard(data["billboard"].get<bool>());
+		object->setDoubleSided(data["doubleSided"].get<bool>());
+		object->getTexturedModel()->setAtlasSize(data["atlasSize"].get<int>());
 
 		app->m_objectsInScene.push_back(object);
 		app->m_gameObjectsMap[object->getCode()] = object;
@@ -192,6 +201,7 @@ void Utilities::saveMap(MainApp* app, const std::string& file){
 			{"scale", {obj->getScale().x, obj->getScale().y, obj->getScale().z}},
 			{"bodyType", (int)obj->m_bodyType},
 			{"genericType", obj->m_type},
+			{"atlasIndex", obj->getAtlasIndex()},
 			{"updateScript", obj->m_updateScript}
 		};
 		map["gameobjects"].push_back(entry);
@@ -301,6 +311,8 @@ void Utilities::saveCreatedObject(MainApp* app, const std::string& buf){
 		{"spec", app->m_creationTabGameObject.getSpecName()},
 		{"mesh", app->m_creationTabGameObject.getMeshName()},
 		{"billboard", app->m_creationTabGameObject.isBillboard()},
+		{"doubleSided", app->m_creationTabGameObject.isDoubleSided()},
+		{"atlasSize", app->m_creationTabGameObject.getTexturedModel()->getAtlasSize()},
 		{"gravity", app->m_creationTabGameObject.m_gravityEnabled},
 		{"sleep", app->m_creationTabGameObject.m_allowedToSleep},
 		{"bounciness", app->m_creationTabGameObject.m_bounciness},
@@ -340,6 +352,8 @@ void Utilities::openCreatedObject(MainApp* app, const std::string& object){
 	app->m_creationTabGameObject.setSpecName(obj["spec"].get<std::string>());
 	app->m_creationTabGameObject.setMeshName(obj["mesh"].get<std::string>());
 	app->m_creationTabGameObject.setIsBillboard(obj["billboard"].get<bool>());
+	app->m_creationTabGameObject.setDoubleSided(obj["doubleSided"].get<bool>());
+	app->m_creationTabGameObject.getTexturedModel()->setAtlasSize(obj["atlasSize"].get<int>());
 	app->m_creationTabGameObject.m_gravityEnabled = obj["gravity"].get<bool>();
 	app->m_creationTabGameObject.m_allowedToSleep = obj["sleep"].get<bool>();
 	app->m_creationTabGameObject.m_bounciness = obj["bounciness"].get<float>();

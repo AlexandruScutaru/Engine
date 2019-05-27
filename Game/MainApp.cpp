@@ -364,17 +364,20 @@ void MainApp::drawGameObjects(){
 	for(auto const& batch : batches){
 		if(batch.first->isBillboard())
 			continue;
+		if(batch.first->isDoubleSided())
+			renderer::Renderer::disableBackFaceCulling();
+		m_gameObjectsShader.loadAtlasSize(batch.first->getAtlasSize());
 		renderer::Renderer::BindTexturedModel(batch.first);
-
 		for(auto const& gameObject : batch.second){
 			glm::mat4 modelMatrix;
 			modelMatrix = glm::translate(modelMatrix, gameObject->getPosition());
 			modelMatrix = modelMatrix * glm::toMat4(gameObject->getRotation());
 			modelMatrix = glm::scale(modelMatrix, gameObject->getScale());
 			m_gameObjectsShader.loadModelMatrix(modelMatrix);
-			
+			m_gameObjectsShader.loadAtlasOffset(gameObject->getTextureOffset());
 			renderer::Renderer::DrawTexturedModel(batch.first);
 		}
+		renderer::Renderer::enableBackFaceCulling();
 	}
 	m_gameObjectsShader.unuse();
 	

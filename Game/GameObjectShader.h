@@ -20,6 +20,8 @@ public:
 	void loadShininess(float value);
 	void loadFlashlight(bool value);
 	void loadSelected(bool value);
+	void loadAtlasSize(int size);
+	void loadAtlasOffset(glm::vec2& offset);
 	void loadModelMatrix(glm::mat4& model);
 	void loadViewMatrix(glm::mat4& view);
 	void loadProjectionMatrix(glm::mat4& projection);
@@ -34,6 +36,8 @@ private:
 		
 		FLASHLIGHT_U,
 		SELECTED_U,
+		ATLAS_SIZE_U,
+		ATLAS_OFFSET_U,
 
 		DIR_LIGHT_DIR_U,
 		DIR_LIGHT_AMB_U,

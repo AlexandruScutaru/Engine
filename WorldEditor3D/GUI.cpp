@@ -331,9 +331,12 @@ void GUI::showCreationTab(){
 		ImGui::Text(app->m_creationTabGameObject.getMeshName().c_str());
 
 		ImGui::Checkbox("Billboard", &(app->m_creationTabGameObject.isBillboardRef()));
+		ImGui::Checkbox("Double sided", &(app->m_creationTabGameObject.isDoubleSidedRef()));
 		
-		ImGui::Separator();
 		ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.45f);
+		ImGui::DragInt("Atlas size", &(app->m_creationTabGameObject.getTexturedModel()->getAtlasSizeRef()), 0.04f, 1, 4);
+
+		ImGui::Separator();
 		ImGui::Text("\nPhysics info");
 		ImGui::Checkbox  ("Affected by gravity", &app->m_creationTabGameObject.m_gravityEnabled);
 		ImGui::Checkbox  ("Allowed to sleep", &app->m_creationTabGameObject.m_allowedToSleep);
@@ -783,26 +786,33 @@ void GUI::showGameobjectsTab(){
 			if(obj) obj->setSelected(false);
 		app->m_selectedObjsVect.clear();
 		
-		app->m_selectedObjsVect.push_back(app->m_objectsInScene[placedGameobjectEntryItem]);
+		auto& obj = app->m_objectsInScene[placedGameobjectEntryItem];
+
+		app->m_selectedObjsVect.push_back(obj);
 		app->m_selectedObjsVect[0]->setSelected(true);
 		//object info
 		memset(m_name, '\0', OBJECT_NAME_SIZE);
-		strncat_s(m_name, app->m_objectsInScene[placedGameobjectEntryItem]->getInEditorName().c_str(), OBJECT_NAME_SIZE);
+		strncat_s(m_name, obj->getInEditorName().c_str(), OBJECT_NAME_SIZE);
 		ImGui::InputText("##gameobjectName", m_name, OBJECT_NAME_SIZE);
-		app->m_objectsInScene[placedGameobjectEntryItem]->setInEditorName(m_name);
+		obj->setInEditorName(m_name);
 		
 		ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5f);
-		int bodyTypeIndex = (int)app->m_objectsInScene[placedGameobjectEntryItem]->getBodyType();
+		int bodyTypeIndex = (int)obj->getBodyType();
 		ImGui::Combo("Body type", &bodyTypeIndex, "Static\0Kinematic\0Dynamic\0\0");
-		app->m_objectsInScene[placedGameobjectEntryItem]->setBodyType(static_cast<physics::BodyType>(bodyTypeIndex));
+		obj->setBodyType(static_cast<physics::BodyType>(bodyTypeIndex));
+		ImGui::PopItemWidth();
+
+		ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.65f);
+		ImGui::SliderInt("Atlas index", &obj->getAtlasIndexRef(), 0, std::pow(obj->getTexturedModel()->getAtlasSize(), 2) - 1);
 		ImGui::PopItemWidth();
 
 		ImGui::Separator();
 		ImGui::Text("Transforms");
-		GameObject* obj = app->m_objectsInScene[placedGameobjectEntryItem];
+		
 		ImGui::BeginChild("gmaeobjectTransoforms", ImVec2(-1, 65), false);
 		{
 			ImGui::PushItemWidth(70);
+
 			ImGui::Text("P:");
 			ImGui::SameLine();
 			ImGui::InputFloat("##objInputPosX", &obj->getPosition().x, 0.0f, 0.0f, 2);

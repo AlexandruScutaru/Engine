@@ -82,7 +82,7 @@ namespace utilities{
 			bool billboard = obj["billboard"].get<bool>();
 
 			renderer::TexturedModel model = renderer::TexturedModel(mesh, mat, billboard);
-
+			model.setAtlasSize(obj["atlasSize"].get<int>());
 			auto ret = m_modelsMap.insert(make_pair(path, model));
 			return &(ret.first->second);
 		}

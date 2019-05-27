@@ -81,7 +81,12 @@ void MainApp::initLevel(){
 	/// lighting, game objects etc
 	//set default data for the creatingEntiy object during the process of creating a new gameobject
 	m_creationTabGameObject =  GameObject(utilities::ResourceManager::loadModel("default"));
-	m_creationTabLight = renderer::DirLight();
+	m_creationTabLight = renderer::DirLight(
+		glm::vec3(0.5f),
+		glm::vec3(0.5f),
+		glm::vec3(0.5f),
+		glm::vec3(0.0f)
+	);
 	
 	addDefaultLighting();
 

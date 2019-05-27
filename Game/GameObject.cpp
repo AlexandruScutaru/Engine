@@ -24,3 +24,19 @@ GameObject::GameObject(const GameObject& other) :
 }
 
 GameObject::~GameObject(){}
+
+void GameObject::setPosition(glm::vec3 & pos){
+	m_pos = pos;
+	auto body = (*m_rigidBody).m_body;
+	if(body->getType() == rp3d::BodyType::STATIC){
+		rp3d::Transform trs = body->getTransform();
+		trs.setPosition(rp3d::Vector3(pos.x, pos.y, pos.z));
+		body->setTransform(trs);
+	}
+}
+
+glm::vec2 GameObject::getTextureOffset(){
+	float x = m_atlasIndex % m_model->getAtlasSize() / (float)m_model->getAtlasSize();
+	float y = m_atlasIndex / m_model->getAtlasSize() / (float)m_model->getAtlasSize();
+	return glm::vec2(x, y);
+}

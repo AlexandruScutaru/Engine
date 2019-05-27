@@ -27,8 +27,10 @@ void RenderUtilities::DrawGameObjects(MainApp* app, bool drawCollisionBodies){
 	for(auto const& batch : batches){
 		if(batch.first->isBillboard())
 			continue;
+		if(batch.first->isDoubleSided()) 
+			renderer::Renderer::disableBackFaceCulling();
+		app->m_gameObjectsShader.loadAtlasSize(batch.first->getAtlasSize());
 		renderer::Renderer::BindTexturedModel(batch.first);
-
 		for(auto const& gameObject : batch.second){
 			app->m_gameObjectsShader.loadSelected(gameObject->isSelected());
 			glm::mat4 modelMatrix;
@@ -36,9 +38,10 @@ void RenderUtilities::DrawGameObjects(MainApp* app, bool drawCollisionBodies){
 			modelMatrix = modelMatrix * glm::toMat4(gameObject->getRotation());
 			modelMatrix = glm::scale(modelMatrix, gameObject->getScale());
 			app->m_gameObjectsShader.loadModelMatrix(modelMatrix);
-
+			app->m_gameObjectsShader.loadAtlasOffset(gameObject->getTextureOffset());
 			renderer::Renderer::DrawTexturedModel(batch.first);
 		}
+		renderer::Renderer::enableBackFaceCulling();
 		if(drawCollisionBodies){
 			std::vector<renderer::CollisionBody>* cb = &batch.second[0]->getColBodies();
 			for(auto& body : *cb)

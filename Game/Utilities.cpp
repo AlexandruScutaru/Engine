@@ -44,6 +44,7 @@ void Utilities::OpenMap(const std::string & file, std::vector<GameObject*>& obje
 		object->setScale(scale);
 		object->getPhysicsBody()->setBodyType(type);
 		object->setType(obj["genericType"].get<int>());
+		object->setAtlasIndex(obj["atlasIndex"].get<int>());
 		object->updateScript = obj["updateScript"].get<std::string>();
 		objects.push_back(object);
 	}
@@ -209,7 +210,8 @@ GameObject* Utilities::OpenGameObject(const std::string& file, glm::vec3& pos, g
 	GameObject* object;
 	object = new GameObject(utilities::ResourceManager::loadModel(file));
 	object->setIsBillboard(obj["billboard"].get<bool>());
-	
+	object->setIsDoubleSided(obj["doubleSided"].get<bool>());
+	object->getTexturedModel()->setAtlasSize(obj["atlasSize"].get<int>());
 	auto physicsBody = world->createPhysicsBody(pos, rot);
 	
 	physicsBody->enableGravity(obj["gravity"].get<bool>());

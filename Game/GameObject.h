@@ -30,23 +30,19 @@ public:
 		KEY_PICKUP
 	};
 
-	virtual void setPosition(glm::vec3& pos) override { 
-		m_pos = pos;
-		auto body = (*m_rigidBody).m_body;
-		if(body->getType() == rp3d::BodyType::STATIC){
-			rp3d::Transform trs = body->getTransform();
-			trs.setPosition(rp3d::Vector3(pos.x, pos.y, pos.z));
-			body->setTransform(trs);
-		}
-	}
+	virtual void setPosition(glm::vec3& pos) override;
 
 	void setIsBillboard(bool isBillboard){ m_model->setBillboard(isBillboard); }
 	bool isBillboard(){ return m_model->isBillboard(); }
+	void setIsDoubleSided(bool doubleSided){ m_model->setDoubleSided(doubleSided); }
+	bool isDoubleSided(){ return m_model->isDoubleSided(); }
 	void setPhysicsBody(std::shared_ptr<physics::PhysicsBody> body){ m_rigidBody = body; }
 	void setType(int type) { m_type = type; }
 
 	std::shared_ptr<physics::PhysicsBody> getPhysicsBody(){ return m_rigidBody; }
 	int getType() { return m_type; }
+
+	glm::vec2 getTextureOffset();
 
 	std::string updateScript = "";
 
