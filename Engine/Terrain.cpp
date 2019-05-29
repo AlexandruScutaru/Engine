@@ -1,6 +1,7 @@
 #include "Terrain.h"
 #include "ModelDataStructs.h"
 #include "ResourceManager.h"
+#include "PhysicsWorld.h"
 
 #include <stdarg.h>
 #include <iostream>
@@ -29,7 +30,9 @@ namespace renderer {
 
 	}
 
-	Terrain::~Terrain(){}
+	Terrain::~Terrain(){
+		m_pWorld->destroyBody(m_rigidBody);
+	}
 
 	void Terrain::render(int n, ...){
 		m_shader->use();
@@ -74,6 +77,13 @@ namespace renderer {
 	void Terrain::setTerrainTexturePath(unsigned char index, const std::string & path){
 		m_terrainTextures[index] = path;
 		set();
+	}
+
+	void Terrain::setupPhysics(physics::PhysicsWorld* world){
+		m_pWorld = world;
+		m_rigidBody = m_pWorld->createPhysicsBody(glm::vec3(0.0f), glm::quat());
+		float factor = m_side_size / (float)m_numRows;
+		m_rigidBody->addHeightFieldTerrain(m_numRows, m_numRows, m_min, m_max, &m_heights[0], glm::vec3(factor, 1.0, factor));
 	}
 
 }

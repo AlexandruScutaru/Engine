@@ -178,6 +178,8 @@ void Utilities::OpenMap(const std::string & file, std::vector<GameObject*>& obje
 		terrainShader.getFogDensityRef() = terrainData["fog"]["density"].get<float>();
 		terrainShader.getFogGradientRef() = terrainData["fog"]["gradient"].get<float>();
 		terrain.set();
+		terrain.setupPhysics(world);
+
 	} else{
 		//terrain not defined, continue without it
 	}

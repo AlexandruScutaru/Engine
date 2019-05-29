@@ -2,6 +2,14 @@
 #define TERRAIN_H
 
 #include "IShaderProgram.h"
+#include "PhysicsBody.h"
+
+#include <memory>
+
+
+namespace physics{
+	class PhysicsWorld;
+}
 
 namespace renderer {
 
@@ -48,6 +56,8 @@ namespace renderer {
 		bool enabled(){ return m_enabled; }
 		bool& getEnabledRef(){ return m_enabled; }
 
+		void setupPhysics(physics::PhysicsWorld* world);
+
 	private:
 		MeshData* m_mesh;
 		TextureData* m_baseTexture;
@@ -65,6 +75,9 @@ namespace renderer {
 		std::vector<float> m_heights;
 		float m_min, m_max;
 		int m_numRows;
+
+		std::shared_ptr<physics::PhysicsBody> m_rigidBody;
+		physics::PhysicsWorld* m_pWorld;
 	};
 
 }

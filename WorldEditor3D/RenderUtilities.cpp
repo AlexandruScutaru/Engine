@@ -245,8 +245,11 @@ void RenderUtilities::PrePixelPickDraw(MainApp* app){
 			((code & 0x00FF0000) >> 16) / 255.0f
 		);
 		app->m_basicColorShader.loadColor(colorCode);
+		if(actor->isDoubleSided())
+			renderer::Renderer::disableBackFaceCulling();
 		glBindVertexArray(actor->getTexturedModel()->getMesh()->vertexArrayObject);
 		glDrawElements(GL_TRIANGLES, actor->getTexturedModel()->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
+		renderer::Renderer::enableBackFaceCulling();
 	}
 	DrawTransformGizmos(app, true);
 }

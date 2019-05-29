@@ -67,7 +67,6 @@ void MainApp::beginContact(const rp3d::ContactPointInfo& contact) {
 					std::cout << "find the key first" << std::endl;
 				}
 			} else if(colVol->m_type == CollisionVolume::VolumeType::TRIGGER){
-				std::cout << "you died" << std::endl;
 				if(!colVol->triggerScript.empty()){
 					luaL_dostring(L, colVol->triggerScript.c_str());
 					lua_pcall(L, 0, 0, 0);
@@ -136,12 +135,7 @@ void MainApp::initLevel(){
 					   m_lights, &m_dynamicWorld, &m_player, m_skybox, m_terrain,
 					   m_terrainShader);
 	m_dynamicWorld.setEventListener(&m_eventListener);
-	
-	m_terrainRigidBody = m_dynamicWorld.createPhysicsBody(glm::vec3(0.0f), glm::quat());
-	int rows = m_terrain.getNumRows();
-	float factor = m_terrain.getSizeRef() / (float)rows;
-	m_terrainRigidBody->addHeightFieldTerrain(rows, rows, m_terrain.getMinH(), m_terrain.getMaxH(), m_terrain.getPtrFirstElemOfHeights(), glm::vec3(factor, 1.0, factor));
-	
+
 	audio::Music music = m_audioManager.loadMusic("res/sounds/atmosphere.mp3");
 	music.play(-1);
 }
