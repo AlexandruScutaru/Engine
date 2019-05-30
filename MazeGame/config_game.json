@@ -1,0 +1,26 @@
+{
+	"logger":{
+		"log_file" : "logs/game_log.txt",
+		"log_file_size" : 5242880,
+		"no_log_files" : 1,
+		"level" : "trace"
+	},
+	"window":{
+		"title" : "game",
+		"width" : 1280,
+		"height" : 720,
+		"trap_mouse" : true,
+		"window_mode" : 0
+	},
+	"game":{
+		"vsync" : false,
+		"max_graphics_fps" : 60,
+		"max_physics_fps" : 60,
+		"max_frame_time" : 0.25,
+		"look_sensitivity" : 0.3,
+		"maze":{
+			"width" :  15,
+			"height" : 15
+		}
+	}
+}

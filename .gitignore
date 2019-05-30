@@ -258,3 +258,7 @@ ModelManifest.xml
 /Game/rp3d_log_world.html
 /Game/res/sounds/atmosphere.mp3
 /Game/script.lua
+/MazeGame/logs
+/MazeGame/res/gameobjects
+/MazeGame/res/sounds
+/MazeGame/res/textures

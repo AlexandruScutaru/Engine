@@ -1,0 +1,8 @@
+{
+	"logger":{
+		"log_file" : "logs/engine_log.txt",
+		"log_file_size" : 5242880,
+		"no_log_files" : 1,
+		"level" : "trace"
+	}
+}

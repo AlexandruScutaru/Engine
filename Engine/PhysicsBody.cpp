@@ -18,14 +18,14 @@ namespace physics{
 	{}
 
 	PhysicsBody::~PhysicsBody(){
-		//for(auto proxy : m_proxyhapes)
-		//	m_body->removeCollisionShape(proxy);
-		//for(auto shape : m_boxShapes)
-		//	delete shape;
-		//for(auto shape : m_sphereShapes)
-		//	delete shape;
-		//for(auto shape : m_capsuleShapes)
-		//	delete shape;
+		for(auto proxy : m_proxyhapes)
+			m_body->removeCollisionShape(proxy);
+		for(auto shape : m_boxShapes)
+			delete shape;
+		for(auto shape : m_sphereShapes)
+			delete shape;
+		for(auto shape : m_capsuleShapes)
+			delete shape;
 	}
 
 
