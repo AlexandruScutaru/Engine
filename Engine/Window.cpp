@@ -1,5 +1,6 @@
 #include "Window.h"
 #include "Logger.h"
+#include "Renderer.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -43,6 +44,8 @@ namespace renderer{
 
 		//allocate memory for the zBuffer(depth buffer)
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+		//allocate memory for the stencil buffer
+		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
 		//if value is 1 => SDL allocates space for 2 windows
 		//for swapping over 2 contexts for smoothness
@@ -101,7 +104,7 @@ namespace renderer{
 			LOG_E_INFO("glewInit succeeded");
 		}
 
-		glEnable(GL_DEPTH_TEST);
+		Renderer::EnableDepthTest();
 
 		//Check the OpenGL version
 		LOG_E_INFO("OpenGL version: {}", glGetString(GL_VERSION));

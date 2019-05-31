@@ -14,11 +14,13 @@
 #include <Engine/ResourceManager.h>
 #include <Engine/Skybox.h>
 #include <Engine/Terrain.h>
+#include <Engine/FrameBufferObject.h>
 
 #include "GameObjectShader.h"
 #include "BasicColorShader.h"
 #include "BillboardShader.h"
 #include "TerrainShader.h"
+#include "ScreenFboShader.h"
 #include "Grid.h"
 #include "Actor.h" 
 #include "GameObject.h"
@@ -114,10 +116,13 @@ private:
 
 	Player m_player;
 
+	renderer::FrameBufferObject m_screenFBO;
+
 	GameObjectShader m_gameObjectsShader;
 	BasicColorShader m_basicColorShader;
 	BillboardShader  m_billboardShader;
 	TerrainShader	 m_terrainShader;
+	ScreenFboShader	 m_screenFboShader;
 
 	renderer::Terrain m_terrain;
 

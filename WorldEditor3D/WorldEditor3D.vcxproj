@@ -164,6 +164,7 @@
     <ClCompile Include="MainApp.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="RenderUtilities.cpp" />
+    <ClCompile Include="ScreenFboShader.cpp" />
     <ClCompile Include="TerrainShader.cpp" />
     <ClCompile Include="TranformGizmos.cpp" />
     <ClCompile Include="Utilities.cpp" />
@@ -184,6 +185,7 @@
     <ClInclude Include="MainApp.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="RenderUtilities.h" />
+    <ClInclude Include="ScreenFboShader.h" />
     <ClInclude Include="TerrainShader.h" />
     <ClInclude Include="TranformGizmos.h" />
     <ClInclude Include="Utilities.h" />
@@ -199,6 +201,8 @@
     <None Include="res\shaders\ed_entity.vs" />
     <None Include="res\shaders\ed_selection.fs" />
     <None Include="res\shaders\ed_selection.vs" />
+    <None Include="res\shaders\frameBuffer.fs" />
+    <None Include="res\shaders\frameBuffer.vs" />
     <None Include="res\shaders\skybox.fs" />
     <None Include="res\shaders\skybox.vs" />
     <None Include="res\shaders\terrain.fs" />

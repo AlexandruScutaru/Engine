@@ -44,6 +44,36 @@ namespace utilities{
 		return &(ret.first->second);
 	}
 
+	renderer::MeshData * ResourceManager::getNDCquad(){
+		auto it = m_meshesMap.find("NDCquad");
+		if(it == m_meshesMap.end()){
+			float quad[] = { 
+				// positions	// texCoords
+				-1.0f, 1.0f,	0.0f, 1.0f,
+				-1.0f, -1.0f,	0.0f, 0.0f,
+				1.0f, -1.0f,	1.0f, 0.0f,
+
+				-1.0f, 1.0f,	0.0f, 1.0f,
+				1.0f, -1.0f,	1.0f, 0.0f,
+				1.0f, 1.0f,		1.0f, 1.0f
+			};
+			renderer::MeshData mesh;
+			glGenVertexArrays(1, &mesh.vertexArrayObject);
+			glGenBuffers(1, &mesh.vertexArrayBuffers[0]);
+			glBindVertexArray(mesh.vertexArrayObject);
+			glBindBuffer(GL_ARRAY_BUFFER, mesh.vertexArrayBuffers[0]);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(quad), &quad, GL_STATIC_DRAW);
+			glEnableVertexAttribArray(0);
+			glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+			glEnableVertexAttribArray(1);
+			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+			mesh.indexCount = 6;
+			auto ret = m_meshesMap.insert(make_pair(std::string("NDCquad"), mesh));
+			return &(ret.first->second);
+		}
+		return &(it->second);
+	}
+
 	renderer::TextureData* ResourceManager::getTexture(const std::string& path, bool flip){
 		//lookup the texture and see if its in the map
 		auto it = m_texturesMap.find(path); //auto looks for the return type and automatically assigns it

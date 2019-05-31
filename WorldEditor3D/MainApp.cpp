@@ -68,6 +68,8 @@ void MainApp::initSystems(){
 	renderer::Renderer::Init();
 	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
 	utilities::ResourceManager::Init();
+
+	m_screenFBO.init(renderer::Window::getW(), renderer::Window::getH());
 }
 
 void MainApp::initLevel(){
@@ -75,6 +77,7 @@ void MainApp::initLevel(){
 	m_basicColorShader.initShader("res/shaders/ed_basic");
 	m_billboardShader.initShader("res/shaders/ed_billboard");
 	m_terrainShader.initShader("res/shaders/terrain");
+	m_screenFboShader.initShader("res/shaders/frameBuffer");
 
 	m_gizmos.init(&m_selectedObjsVect);
 
@@ -123,7 +126,9 @@ void MainApp::loop(){
 		update(deltaTime);
 
 		drawGame();
+
 		m_gui.updateImGuiWindows();
+		glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
 		ImGui::Render();
 
 		//sdl: swap buffers
@@ -166,6 +171,7 @@ void MainApp::processInput(){
 			case SDL_WINDOWEVENT_RESIZED:
 				renderer::Window::setW(e.window.data1);
 				renderer::Window::setH(e.window.data2);
+				m_screenFBO.reset(e.window.data1, e.window.data2);
 				break;
 			}
 		}
@@ -209,7 +215,10 @@ void MainApp::update(float deltaTime){
 }
 
 void MainApp::drawGame(){
-	glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
+	//set to draw offscreen to the frame buffer
+	m_screenFBO.bind(); //the bind method also sets th viewport to the size it was inited with
+	glViewport(0, 0, renderer::Window::getW(), renderer::Window::getH());
+	renderer::Renderer::EnableDepthTest();
 	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
@@ -234,6 +243,19 @@ void MainApp::drawGame(){
 		if(Grid::isEnabled()) RenderUtilities::DrawGrid(this);
 		RenderUtilities::DrawTransformGizmos(this);
 	}
+
+	//set to draw to the screen again but only a quad with the frame buffer's texture
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, renderer::Window::getW(), renderer::Window::getH());
+	renderer::Renderer::DisableDepthTest();
+	glClear(GL_COLOR_BUFFER_BIT);
+	m_screenFboShader.use();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_screenFBO.getTexture());
+	glBindVertexArray(utilities::ResourceManager::getNDCquad()->vertexArrayObject);
+	glDrawArrays(GL_TRIANGLES, 0, utilities::ResourceManager::getNDCquad()->indexCount);
+	m_screenFboShader.unuse();
+	renderer::Renderer::EnableDepthTest();
 }
 
 void MainApp::addDefaultLighting(){
@@ -322,6 +344,10 @@ void MainApp::pixelPick(glm::vec2& coords){
 					m_selectedObjsVect.push_back(selected);
 					selected->setSelected(true);
 				}
+			} else{
+				for(auto& obj : m_selectedObjsVect)
+					obj->setSelected(false);
+				m_selectedObjsVect.clear();
 			}
 		} else{
 			//clicked on empty space, reset selected list

@@ -8,7 +8,6 @@ void RenderUtilities::DrawGameObjects(MainApp* app, bool drawCollisionBodies){
 	std::vector<renderer::CollisionBody*> colBodies;
 	///first draw the normal gameobjects
 	//prepare shader
-	
 	app->m_gameObjectsShader.use();
 
 	if(app->m_gui.b_creationTab) {
@@ -28,7 +27,7 @@ void RenderUtilities::DrawGameObjects(MainApp* app, bool drawCollisionBodies){
 		if(batch.first->isBillboard())
 			continue;
 		if(batch.first->isDoubleSided()) 
-			renderer::Renderer::disableBackFaceCulling();
+			renderer::Renderer::DisableBackFaceCulling();
 		app->m_gameObjectsShader.loadAtlasSize(batch.first->getAtlasSize());
 		renderer::Renderer::BindTexturedModel(batch.first);
 		for(auto const& gameObject : batch.second){
@@ -39,9 +38,10 @@ void RenderUtilities::DrawGameObjects(MainApp* app, bool drawCollisionBodies){
 			modelMatrix = glm::scale(modelMatrix, gameObject->getScale());
 			app->m_gameObjectsShader.loadModelMatrix(modelMatrix);
 			app->m_gameObjectsShader.loadAtlasOffset(gameObject->getTextureOffset());
+			
 			renderer::Renderer::DrawTexturedModel(batch.first);
 		}
-		renderer::Renderer::enableBackFaceCulling();
+		renderer::Renderer::EnableBackFaceCulling();
 		if(drawCollisionBodies){
 			std::vector<renderer::CollisionBody>* cb = &batch.second[0]->getColBodies();
 			for(auto& body : *cb)
@@ -183,9 +183,9 @@ void RenderUtilities::DrawCollisionBodies(MainApp* app, std::vector<renderer::Co
 	app->m_basicColorShader.loadProjectionMatrix(renderer::Renderer::GetProjectionMatrix());
 	app->m_basicColorShader.loadColor(color);
 	renderer::TexturedModel* td;
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	
-	renderer::Renderer::disableBackFaceCulling();
+
+	renderer::Renderer::EnableWireframeMode();
+	renderer::Renderer::DisableBackFaceCulling();
 
 	for(auto body : colBodies){
 		glm::mat4 model;
@@ -198,14 +198,14 @@ void RenderUtilities::DrawCollisionBodies(MainApp* app, std::vector<renderer::Co
 		glBindVertexArray(td->getMesh()->vertexArrayObject);
 		glDrawElements(GL_TRIANGLES, td->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
 	}
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	app->m_basicColorShader.unuse();
 
-	renderer::Renderer::enableBackFaceCulling();
+	renderer::Renderer::DisableWireframeMode();
+	renderer::Renderer::EnableBackFaceCulling();
 }
 
 void RenderUtilities::PrePixelPickDraw(MainApp* app){
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 	glm::vec3 colorCode;
 
@@ -246,10 +246,10 @@ void RenderUtilities::PrePixelPickDraw(MainApp* app){
 		);
 		app->m_basicColorShader.loadColor(colorCode);
 		if(actor->isDoubleSided())
-			renderer::Renderer::disableBackFaceCulling();
+			renderer::Renderer::DisableBackFaceCulling();
 		glBindVertexArray(actor->getTexturedModel()->getMesh()->vertexArrayObject);
 		glDrawElements(GL_TRIANGLES, actor->getTexturedModel()->getMesh()->indexCount, GL_UNSIGNED_INT, 0);
-		renderer::Renderer::enableBackFaceCulling();
+		renderer::Renderer::EnableBackFaceCulling();
 	}
 	DrawTransformGizmos(app, true);
 }
@@ -305,7 +305,7 @@ void RenderUtilities::DrawLines(MainApp* app){
 	///bind the line VAO
 	glBindVertexArray(app->m_lineVAO);
 	///tell opengl to draw wireframe
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	renderer::Renderer::EnableWireframeMode();
 	///load appropiate uniforms
 	app->m_basicColorShader.use();
 	app->m_basicColorShader.loadViewMatrix(app->m_player.getCamera()->getViewMatrix());
@@ -343,7 +343,7 @@ void RenderUtilities::DrawLines(MainApp* app){
 	glDrawArrays(GL_LINES, 0, 2);
 
 	///tell opengl to draw filled polygons
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	renderer::Renderer::DisableWireframeMode();
 	///unbind line VAO
 	glBindVertexArray(0);
 	///stop using this shader
@@ -354,7 +354,7 @@ void RenderUtilities::DrawGrid(MainApp* app){
 	///bind the line VAO
 	glBindVertexArray(app->m_lineVAO);
 	///tell opengl to draw wireframe
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	renderer::Renderer::EnableWireframeMode();
 	///load appropiate uniforms
 	app->m_basicColorShader.use();
 	app->m_basicColorShader.loadViewMatrix(app->m_player.getCamera()->getViewMatrix());
@@ -413,7 +413,7 @@ void RenderUtilities::DrawGrid(MainApp* app){
 	}
 
 	///tell opengl to draw filled polygons
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	renderer::Renderer::DisableWireframeMode();
 	///unbind line VAO
 	glBindVertexArray(0);
 	///stop using this shader

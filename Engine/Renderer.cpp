@@ -8,16 +8,19 @@
 namespace renderer{
 
 	glm::mat4 Renderer::m_projection = glm::mat4();
-	
+	glm::vec4 Renderer::m_bgColor = glm::vec4();
+
 	void Renderer::Init(){
 		//now the object are rendered the farthest to closest
-		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_CULL_FACE);
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		EnableDepthTest();
+		EnableBackFaceCulling();
+		m_bgColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+		glClearColor(m_bgColor.r, m_bgColor.g, m_bgColor.b, m_bgColor.a);
 	}
 
-	void Renderer::SetBackgroundColor(glm::vec4 & color){
+	void Renderer::SetBackgroundColor(glm::vec4& color){
 		glClearColor(color.r, color.g, color.b, color.a);
+		m_bgColor = color;
 	}
 
 	void renderer::Renderer::BindTexturedModel(TexturedModel* model){
@@ -49,12 +52,28 @@ namespace renderer{
 		m_projection = glm::perspective(glm::radians(fov), (float)width / (float)height, 0.1f, 400.0f);
 	}
 
-	void Renderer::enableBackFaceCulling(){
+	void Renderer::EnableDepthTest(){
+		glEnable(GL_DEPTH_TEST);
+	}
+
+	void Renderer::DisableDepthTest(){
+		glDisable(GL_DEPTH_TEST);
+	}
+
+	void Renderer::EnableWireframeMode(){
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	}
+
+	void Renderer::DisableWireframeMode(){
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
+
+	void Renderer::EnableBackFaceCulling(){
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 	}
 
-	void Renderer::disableBackFaceCulling(){
+	void Renderer::DisableBackFaceCulling(){
 		glDisable(GL_CULL_FACE);
 	}
 
