@@ -313,10 +313,9 @@ void MainApp::resetData(){
 	m_objects_ToDraw.clear();
 
 	for(auto obj : m_objectsInScene){
-		m_dynamicWorld.destroyBody(obj->getPhysicsBody());
+		//m_dynamicWorld.destroyBody(obj->getPhysicsBody());
 		delete obj;
 	}
-	m_dynamicWorld.destroyBody(m_terrainRigidBody);
 
 	m_objectsInScene.clear();
 	for(auto light : m_lights)

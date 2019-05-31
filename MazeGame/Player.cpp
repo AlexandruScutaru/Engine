@@ -4,7 +4,7 @@
 #include <Engine/InputManager.h>
 #include <iostream>
 
-const glm::vec3 Player::m_cameraOffset = glm::vec3(0.0f, 1.0f, 0.0f);
+const glm::vec3 Player::m_cameraOffset = glm::vec3(0.0f, 1.5f, 0.0f);
 
 
 Player::Player() :
@@ -46,10 +46,10 @@ void Player::update(utilities::InputManager& inputManager, float deltaTime){
 	m_camera->getRight();
 	
 	glm::vec3 dir(0.0f);
-	float force = 1000.0f;
+	float force = 2000.0f;
 	
 	if(inputManager.isKeyDown(SDLK_LSHIFT))
-		force = 2300.0f;
+		force = 3300.0f;
 	if(inputManager.isKeyDown(SDLK_LCTRL))
 		force = 5000.0f;
 

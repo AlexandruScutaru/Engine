@@ -114,8 +114,8 @@ void MainApp::initSystems(){
 void MainApp::initLevel(){
 	m_gameObjectsShader.initShader("res/shaders/entity");
 	m_dynamicWorld.setEventListener(&m_eventListener);
-
-	//generate maze here
+	m_skybox.init(399.0f);
+	//generate maze
 	m_maze = new Maze(CONFIG.mazeWidth, CONFIG.mazeHeight);
 	std::cout << *m_maze;
 	auto data = m_maze->getMaze();
@@ -211,9 +211,7 @@ void MainApp::initLevel(){
 		glm::vec3(0.1f),
 		glm::vec3(100.0f, 100.0f, -100.0f)
 	));
-	//spot light
 	m_lights.push_back(new renderer::SpotLight(m_player.getCamera()->getFront(), m_player.getCamera()->getPos()));
-
 	m_lights.push_back(new renderer::PointLight(
 		glm::vec3(0.0f, 0.12f, 0.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f),
@@ -221,7 +219,6 @@ void MainApp::initLevel(){
 		glm::vec3(end.x, end.y + 1.28f, end.z),
 		glm::vec3(2.9f, 3.5f, 2.5f)
 	));
-
 	m_lights.push_back(new renderer::PointLight(
 		glm::vec3(0.12f, 0.12f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 0.0f),
@@ -230,6 +227,17 @@ void MainApp::initLevel(){
 		glm::vec3(2.9f, 3.5f, 2.5f)
 	));
 
+	//set night skybox
+	m_skybox.setSkyboxTexturePath(renderer::Skybox::RIGHT,	"res/textures/skyboxes/night_right.png");
+	m_skybox.setSkyboxTexturePath(renderer::Skybox::LEFT,	"res/textures/skyboxes/night_left.png");
+	m_skybox.setSkyboxTexturePath(renderer::Skybox::BOTTOM, "res/textures/skyboxes/night_bottom.png");
+	m_skybox.setSkyboxTexturePath(renderer::Skybox::TOP,	"res/textures/skyboxes/night_top.png");
+	m_skybox.setSkyboxTexturePath(renderer::Skybox::BACK,	"res/textures/skyboxes/night_back.png");
+	m_skybox.setSkyboxTexturePath(renderer::Skybox::FRONT,	"res/textures/skyboxes/night_front.png");
+	m_skybox.setEnabled(true);
+	m_skybox.set();
+
+	//add background music
 	audio::Music music = m_audioManager.loadMusic("res/sounds/atmosphere.mp3");
 	music.play(-1);
 }
@@ -383,6 +391,9 @@ void MainApp::drawGame(float interpolation){
 	glViewport(0, 0, renderer::Window::getW(), renderer::Window::getH());
 	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	if(m_skybox.enabled())
+		m_skybox.render(m_player.getCamera()->getViewMatrix(), renderer::Renderer::GetProjectionMatrix());
 
 	drawGameObjects();
 }

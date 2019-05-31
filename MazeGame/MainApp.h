@@ -14,6 +14,7 @@
 #include <Engine/PhysicsWorld.h>
 #include <Engine/PhysicsEventListener.h>
 #include <Engine/Audio.h>
+#include <Engine/Skybox.h>
 
 extern "C" {
 	#include <lua/lua.h>
@@ -82,6 +83,7 @@ private:
 
 	Player m_player;
 	AppState m_appState;
+	renderer::Skybox m_skybox;
 
 	GameObjectShader m_gameObjectsShader;
 	
