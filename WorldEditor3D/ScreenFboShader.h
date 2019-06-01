@@ -13,9 +13,18 @@ public:
 	void getAllUniformLocations();
 	void connectTextureUnits();
 
+	void loadStrength(float strength);
+	void loadHeight(float height);
+	void loadAspectRatio(float aspect);
+	void loadCylindricalRatio(float cylRatio);
+
 private:
 	enum{
 		SCREEN_TEXTURE_U,
+		STRENGTH_U,
+		HEIGHT_U,
+		ASPECT_U,
+		CYLINDRIAL_RATIO_U,
 
 		NUM_UNIFORMS
 	};

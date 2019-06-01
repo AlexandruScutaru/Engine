@@ -358,7 +358,7 @@ void MainApp::drawGameObjects(){
 		if(batch.first->isBillboard())
 			continue;
 		if(batch.first->isDoubleSided())
-			renderer::Renderer::disableBackFaceCulling();
+			renderer::Renderer::DisableBackFaceCulling();
 		m_gameObjectsShader.loadAtlasSize(batch.first->getAtlasSize());
 		renderer::Renderer::BindTexturedModel(batch.first);
 		for(auto const& gameObject : batch.second){
@@ -370,7 +370,7 @@ void MainApp::drawGameObjects(){
 			m_gameObjectsShader.loadAtlasOffset(gameObject->getTextureOffset());
 			renderer::Renderer::DrawTexturedModel(batch.first);
 		}
-		renderer::Renderer::enableBackFaceCulling();
+		renderer::Renderer::EnableBackFaceCulling();
 	}
 	m_gameObjectsShader.unuse();
 	

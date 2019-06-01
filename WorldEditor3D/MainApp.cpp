@@ -250,6 +250,11 @@ void MainApp::drawGame(){
 	renderer::Renderer::DisableDepthTest();
 	glClear(GL_COLOR_BUFFER_BIT);
 	m_screenFboShader.use();
+	//correct pincushion distorsion
+	m_screenFboShader.loadHeight(1.0f / renderer::Renderer::GetProjectionMatrix()[1][1]);
+	m_screenFboShader.loadAspectRatio(renderer::Window::getW() / (float)renderer::Window::getH());
+	m_screenFboShader.loadStrength(0.3f);
+	m_screenFboShader.loadCylindricalRatio(1.0f);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_screenFBO.getTexture());
 	glBindVertexArray(utilities::ResourceManager::getNDCquad()->vertexArrayObject);
