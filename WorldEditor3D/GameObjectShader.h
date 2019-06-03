@@ -25,6 +25,7 @@ public:
 	void loadModelMatrix(glm::mat4& model);
 	void loadViewMatrix(glm::mat4& view);
 	void loadProjectionMatrix(glm::mat4& projection);
+	void loadLightSpace(glm::mat4& lightSpace);
 	void loadLights(std::vector<renderer::Light*>& lights);
 	void loadViewPosition(glm::vec3& viewPos);
 	
@@ -34,6 +35,8 @@ private:
 		MAT_TEX_SPEC_U,
 		MAT_SHININESS_U,
 		
+		SHADOW_MAP_U,
+
 		FLASHLIGHT_U,
 		SELECTED_U,
 		ATLAS_SIZE_U,
@@ -60,6 +63,7 @@ private:
 		PROJECTION_MATRIX_U,
 		VIEW_MATRIX_U,
 		MODEL_MATRIX_U,
+		LIGHT_SPACE_U,
 
 		NUM_UNIFORMS
 	};

@@ -4,6 +4,49 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+void RenderUtilities::DrawLightDepthMap(MainApp * app){
+	//set to draw offscreen to the depth frame buffer
+	app->m_dirLightFBO.bind();
+	renderer::Renderer::EnableDepthTest();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glm::mat4 lightSpaceMatrix = renderer::Renderer::GetLightSpaceMatrix();
+	//glm::mat4 lightSpaceMatrix = renderer::Renderer::GetLightSpaceMatrix(glm::vec3(app->m_player.getPosition().x, 50.0f, app->m_player.getPosition().y));
+	//glm::mat4 lightSpaceMatrix = renderer::Renderer::GetLightSpaceMatrix(glm::vec3(15.1f, 50.0f, 15.1f));
+
+	app->m_lightDepthShader.use();
+	app->m_lightDepthShader.loadLightSpace(lightSpaceMatrix);
+
+	if(app->m_terrain.enabled()){ 
+		app->m_lightDepthShader.loadModel(glm::mat4());
+		int indexCount = app->m_terrain.bind();
+		glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+	}
+	
+	//get textured model batches
+	auto batches = Utilities::BatchRenderables<GameObject>(app->m_objects_ToDraw);
+	for(auto const& batch : batches){
+		if(batch.first->isBillboard())
+			continue;
+		if(batch.first->isDoubleSided())
+			renderer::Renderer::DisableBackFaceCulling();
+	
+		renderer::Renderer::BindTexturedModel(batch.first);
+		for(auto const& gameObject : batch.second){
+			glm::mat4 modelMatrix;
+			modelMatrix = glm::translate(modelMatrix, gameObject->getPosition());
+			modelMatrix = modelMatrix * glm::toMat4(gameObject->getRotation());
+			modelMatrix = glm::scale(modelMatrix, gameObject->getScale());
+			app->m_lightDepthShader.loadModel(modelMatrix);
+			renderer::Renderer::DrawTexturedModel(batch.first);
+		}
+		renderer::Renderer::EnableBackFaceCulling();
+	}
+	app->m_lightDepthShader.unuse();
+	//set to draw to screen
+	app->m_dirLightFBO.unbind();
+}
+
 void RenderUtilities::DrawGameObjects(MainApp* app, bool drawCollisionBodies){
 	std::vector<renderer::CollisionBody*> colBodies;
 	///first draw the normal gameobjects
@@ -20,7 +63,7 @@ void RenderUtilities::DrawGameObjects(MainApp* app, bool drawCollisionBodies){
 	app->m_gameObjectsShader.loadViewPosition(app->m_player.getCamera()->getPos());
 	app->m_gameObjectsShader.loadViewMatrix(view);
 	app->m_gameObjectsShader.loadProjectionMatrix(renderer::Renderer::GetProjectionMatrix());
-
+	app->m_gameObjectsShader.loadLightSpace(renderer::Renderer::GetLightSpaceMatrix());
 	//get textured model batches
 	auto batches = Utilities::BatchRenderables<GameObject>(app->m_objects_ToDraw);
 	for(auto const& batch : batches){
@@ -30,6 +73,8 @@ void RenderUtilities::DrawGameObjects(MainApp* app, bool drawCollisionBodies){
 			renderer::Renderer::DisableBackFaceCulling();
 		app->m_gameObjectsShader.loadAtlasSize(batch.first->getAtlasSize());
 		renderer::Renderer::BindTexturedModel(batch.first);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, app->m_dirLightFBO.getDepthTexture());
 		for(auto const& gameObject : batch.second){
 			app->m_gameObjectsShader.loadSelected(gameObject->isSelected());
 			glm::mat4 modelMatrix;

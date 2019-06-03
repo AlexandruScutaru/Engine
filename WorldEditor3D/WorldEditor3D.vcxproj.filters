@@ -81,6 +81,9 @@
     <ClCompile Include="ScreenFboShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LightDepthShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainApp.h">
@@ -140,6 +143,9 @@
     <ClInclude Include="ScreenFboShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LightDepthShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="config_editor.json">
@@ -188,6 +194,12 @@
       <Filter>Resource Files\shaders</Filter>
     </None>
     <None Include="res\shaders\frameBuffer.vs">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="res\shaders\lightDepth.fs">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="res\shaders\lightDepth.vs">
       <Filter>Resource Files\shaders</Filter>
     </None>
   </ItemGroup>

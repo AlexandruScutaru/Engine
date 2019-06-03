@@ -25,12 +25,12 @@ namespace renderer{
 
 		GLuint createFrameBuffer();
 		GLuint createTextureAttachment();
-		GLuint createDepthStencilBufferAttachment();
+		GLuint createDepthBufferAttachment();
 		GLuint createDepthTextureAttachment();
 
 		GLuint m_frameBuffer;
 		GLuint m_texture;
-		GLuint m_depthStencilBuffer;
+		GLuint m_depthBuffer;
 		GLuint m_depthTexture;
 
 		int m_texW;

@@ -15,12 +15,12 @@
 	"game":{
 		"vsync" : false,
 		"max_graphics_fps" : 60,
-		"max_physics_fps" : 60,
+		"max_physics_fps" : 50,
 		"max_frame_time" : 0.25,
 		"look_sensitivity" : 0.3,
 		"maze":{
-			"width" :  15,
-			"height" : 15
+			"width" :  31,
+			"height" : 31
 		}
 	}
 }

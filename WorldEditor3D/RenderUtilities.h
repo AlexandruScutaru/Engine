@@ -13,6 +13,7 @@ namespace renderer{
 
 class RenderUtilities{
 public:
+	static void DrawLightDepthMap(MainApp* app);
 	static void DrawGameObjects(MainApp* app, bool drawCollisionBodies);
 	static void DrawLightBillboards(MainApp* app);
 	static void DrawColVolumesBillboards(MainApp* app);

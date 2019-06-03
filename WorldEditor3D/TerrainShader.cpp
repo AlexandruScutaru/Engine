@@ -27,6 +27,7 @@ void TerrainShader::getAllUniformLocations(){
 	m_uniforms[G_TEXTURE_U] = getUniformLocation("gTexture");
 	m_uniforms[B_TEXTURE_U] = getUniformLocation("bTexture");
 	m_uniforms[BLEND_TEXTURE_U] = getUniformLocation("blendMap");
+	m_uniforms[SHADOW_MAP_U] = getUniformLocation("shadowMap");
 
 	m_uniforms[FOG_COLOR_U] = getUniformLocation("fog_color");
 	m_uniforms[TILING_FACTOR_U] = getUniformLocation("tiling_factor");
@@ -52,6 +53,7 @@ void TerrainShader::getAllUniformLocations(){
 
 	m_uniforms[PROJECTION_MATRIX_U] = getUniformLocation("projection");
 	m_uniforms[VIEW_MATRIX_U] = getUniformLocation("view");
+	m_uniforms[LIGHT_SPACE_U] = getUniformLocation("lightSpace");
 
 	m_uniforms[POINT_LIGHTS_NUM_U] = getUniformLocation("pointLightsNum");
 	PointLightUniforms plUniforms;
@@ -75,6 +77,7 @@ void TerrainShader::loadAdditionalData(int n, va_list args){
 	loadVec3(m_uniforms[VIEW_POSITION_U], *(va_arg(args, glm::vec3*)));
 	loadMat4(m_uniforms[VIEW_MATRIX_U], *(va_arg(args, glm::mat4*)));
 	loadMat4(m_uniforms[PROJECTION_MATRIX_U], *(va_arg(args, glm::mat4*)));
+	loadMat4(m_uniforms[LIGHT_SPACE_U], *(va_arg(args, glm::mat4*)));
 
 	std::vector<renderer::Light*>* lights = va_arg(args, std::vector<renderer::Light*>*);
 	// directional light
@@ -122,5 +125,6 @@ void TerrainShader::connectTextureUnits(){
 	loadInt(m_uniforms[G_TEXTURE_U], 2);
 	loadInt(m_uniforms[B_TEXTURE_U], 3);
 	loadInt(m_uniforms[BLEND_TEXTURE_U], 4);
+	loadInt(m_uniforms[SHADOW_MAP_U], 5);
 
 }

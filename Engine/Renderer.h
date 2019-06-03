@@ -20,6 +20,9 @@ namespace renderer{
 		
 		static void updateProjectionMatrix(float fov, int width, int height);
 		static glm::mat4& GetProjectionMatrix(){ return m_projection; }
+
+		static void UpdateLightSpaceMatrix(glm::vec3& lightPos);
+		static glm::mat4& GetLightSpaceMatrix();
 		
 		static void EnableBackFaceCulling();
 		static void DisableBackFaceCulling();
@@ -34,6 +37,7 @@ namespace renderer{
 		Renderer();
 		static glm::mat4 m_projection;
 		static glm::vec4 m_bgColor;
+		static glm::mat4 m_lightSpace;
 
 	};
 

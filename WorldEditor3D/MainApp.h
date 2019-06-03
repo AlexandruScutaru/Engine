@@ -21,6 +21,7 @@
 #include "BillboardShader.h"
 #include "TerrainShader.h"
 #include "ScreenFboShader.h"
+#include "LightDepthShader.h"
 #include "Grid.h"
 #include "Actor.h" 
 #include "GameObject.h"
@@ -117,12 +118,14 @@ private:
 	Player m_player;
 
 	renderer::FrameBufferObject m_screenFBO;
+	renderer::FrameBufferObject m_dirLightFBO;
 
 	GameObjectShader m_gameObjectsShader;
 	BasicColorShader m_basicColorShader;
 	BillboardShader  m_billboardShader;
 	TerrainShader	 m_terrainShader;
 	ScreenFboShader	 m_screenFboShader;
+	LightDepthShader m_lightDepthShader;
 
 	renderer::Terrain m_terrain;
 

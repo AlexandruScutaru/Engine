@@ -5,9 +5,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 
+#include <iostream>
+
 namespace renderer{
 
 	glm::mat4 Renderer::m_projection = glm::mat4();
+	glm::mat4 Renderer::m_lightSpace = glm::mat4();
 	glm::vec4 Renderer::m_bgColor = glm::vec4();
 
 	void Renderer::Init(){
@@ -52,6 +55,12 @@ namespace renderer{
 		m_projection = glm::perspective(glm::radians(fov), (float)width / (float)height, 0.1f, 400.0f);
 	}
 
+	void Renderer::UpdateLightSpaceMatrix(glm::vec3 & lightPos){
+		glm::mat4 lightProjection = glm::ortho(-400.0f, 400.0f, -400.0f, 400.0f, 0.1f, 400.0f);
+		glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		m_lightSpace = lightProjection * lightView;
+	}
+
 	void Renderer::EnableDepthTest(){
 		glEnable(GL_DEPTH_TEST);
 	}
@@ -66,6 +75,10 @@ namespace renderer{
 
 	void Renderer::DisableWireframeMode(){
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
+
+	glm::mat4& Renderer::GetLightSpaceMatrix(){
+		return m_lightSpace;
 	}
 
 	void Renderer::EnableBackFaceCulling(){

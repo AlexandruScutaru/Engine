@@ -42,18 +42,7 @@ namespace renderer {
 		m_shader->loadAdditionalData(n, args);
 		va_end(args);
 
-		glBindVertexArray(m_mesh->vertexArrayObject);
-		
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, m_baseTexture->id);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, m_redTexture->id);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, m_greenTexture->id);
-		glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_2D, m_blueTexture->id);
-		glActiveTexture(GL_TEXTURE4);
-		glBindTexture(GL_TEXTURE_2D, m_blendTexture->id);
+		bind();
 
 		glDrawElements(GL_TRIANGLES, m_mesh->indexCount, GL_UNSIGNED_INT, 0);
 
@@ -84,6 +73,22 @@ namespace renderer {
 		m_rigidBody = m_pWorld->createPhysicsBody(glm::vec3(0.0f), glm::quat());
 		float factor = m_side_size / (float)m_numRows;
 		m_rigidBody->addHeightFieldTerrain(m_numRows, m_numRows, m_min, m_max, &m_heights[0], glm::vec3(factor, 1.0, factor));
+	}
+
+	int Terrain::bind(){
+		glBindVertexArray(m_mesh->vertexArrayObject);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, m_baseTexture->id);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, m_redTexture->id);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, m_greenTexture->id);
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, m_blueTexture->id);
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, m_blendTexture->id);
+
+		return m_mesh->indexCount;
 	}
 
 }

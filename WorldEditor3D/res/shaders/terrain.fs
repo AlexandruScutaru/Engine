@@ -3,6 +3,7 @@
 in vec2 TexCoords; 
 in vec3 Normal;
 in vec3 FragPos;
+in vec4 FragPosLightSpace;
 in float visibility;
 
 out vec4 FragColor;
@@ -45,6 +46,7 @@ uniform sampler2D rTexture;
 uniform sampler2D gTexture;
 uniform sampler2D bTexture;
 uniform sampler2D blendMap;
+uniform sampler2D shadowMap;
 //data
 uniform vec3 viewPos;
 uniform DirLight dirLight;
@@ -59,7 +61,7 @@ uniform vec3 fog_color;
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 color);
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 color);
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 color);
-
+float CalcShadow(vec3 lightDir, vec3 normal);
 
 void main(){
 	//blend the textures
@@ -85,7 +87,7 @@ void main(){
     // phase 3: Spot light
 	if(flashlightOn)
 		result += CalcSpotLight(spotLight, norm, FragPos, viewDir, finalColor.xyz);    
-    
+
 	FragColor = vec4(result, 1.0);
 
 	FragColor = mix(vec4(fog_color, 1.0), FragColor, visibility);
@@ -103,7 +105,9 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 color){
     vec3 diffuse  = light.diffuse  * diff * color;
     vec3 specular = light.specular * spec * vec3(0.03, 0.03, 0.03);
 
-	return (ambient + diffuse + specular);
+	// calculate shadow
+    float shadow = CalcShadow(lightDir, normal);
+    return ambient + (1.0 - shadow) * (diffuse + specular);// * color;
 }
 
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 color){
@@ -149,4 +153,16 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec
     diffuse  *= attenuation * intensity;
     specular *= attenuation * intensity;
     return (ambient + diffuse + specular);
+}
+
+float CalcShadow(vec3 lightDir, vec3 normal){
+	vec3 projCoords = FragPosLightSpace.xyz / FragPosLightSpace.w;
+	projCoords = projCoords * 0.5 + 0.5;
+	float closestDepth = texture(shadowMap, projCoords.xy).r; 
+    float currentDepth = projCoords.z;
+    
+	float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005); 
+    float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
+
+    return shadow;
 }

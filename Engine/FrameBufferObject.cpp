@@ -1,5 +1,6 @@
 #include "FrameBufferObject.h"
 #include "Logger.h"
+#include "Window.h"
 
 namespace renderer{
 
@@ -27,10 +28,12 @@ namespace renderer{
 		//To make sure the texture isn't bound
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glBindFramebuffer(GL_FRAMEBUFFER, m_frameBuffer);
+		glViewport(0, 0, m_texW, m_texH);
 	}
 
 	void FrameBufferObject::unbind() {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, Window::getW(), Window::getH());
 	}
 
 	void FrameBufferObject::reset(int w, int h){
@@ -41,14 +44,14 @@ namespace renderer{
 	void FrameBufferObject::freeData(){
 		glDeleteFramebuffers(1, &m_frameBuffer);
 		glDeleteTextures(1, &m_texture);
-		glDeleteRenderbuffers(1, &m_depthStencilBuffer);
+		glDeleteRenderbuffers(1, &m_depthBuffer);
 		glDeleteTextures(1, &m_depthTexture);
 	}
 
 	void FrameBufferObject::initFrameBuffer(){
 		m_frameBuffer = createFrameBuffer();
 		m_texture = createTextureAttachment();
-		m_depthStencilBuffer = createDepthStencilBufferAttachment();
+		m_depthBuffer = createDepthBufferAttachment();
 		m_depthTexture = createDepthTextureAttachment();
 		unbind();
 	}
@@ -75,26 +78,23 @@ namespace renderer{
 		return texture;
 	}
 
-	GLuint FrameBufferObject::createDepthStencilBufferAttachment(){
-		GLuint depthStencilBuffer;
-		glGenRenderbuffers(1, &depthStencilBuffer);
-		glBindRenderbuffer(GL_RENDERBUFFER, depthStencilBuffer);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_texW, m_texH); //24 bits for depth and 8 for stencil
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencilBuffer);
-		return depthStencilBuffer;
+	GLuint FrameBufferObject::createDepthBufferAttachment(){
+		GLuint depthBuffer;
+		glGenRenderbuffers(1, &depthBuffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_texW, m_texH);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
+		return depthBuffer;
 	}
 
 	GLuint FrameBufferObject::createDepthTextureAttachment(){
 		GLuint texture;
 		glGenTextures(1, &texture);
 		glBindTexture(GL_TEXTURE_2D, texture);
-		glTexImage2D(
-			GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, m_texW, m_texH, 0,
-			GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL
-		);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_texW, m_texH, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, texture, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture, 0);
 		return texture;
 	}
 

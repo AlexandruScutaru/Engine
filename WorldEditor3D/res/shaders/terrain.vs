@@ -6,11 +6,13 @@ layout (location = 2) in vec3 aNormal;
 
 out vec3 Normal;
 out vec3 FragPos;
+out vec4 FragPosLightSpace;
 out vec2 TexCoords;
 out float visibility;	//e^(-(distance * density)^gradient)
 
 uniform mat4 view;
 uniform mat4 projection;
+uniform mat4 lightSpace;
 uniform float density;
 uniform float gradient;
 
@@ -27,8 +29,9 @@ void main(void){
 
 	gl_Position = projection * eyeSpace;
 	FragPos = vec3(worldSpace);
+	FragPosLightSpace = lightSpace * vec4(FragPos, 1.0);
+
 	Normal = mat3(transpose(inverse(model))) * aNormal;
-	//Normal = (model * vec4(aNormal, 0.0)).xyz;
 	TexCoords = aTexCoords;
 
 	float distance = length(eyeSpace.xyz);

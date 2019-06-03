@@ -57,6 +57,8 @@ namespace renderer {
 		bool& getEnabledRef(){ return m_enabled; }
 
 		void setupPhysics(physics::PhysicsWorld* world);
+		
+		int bind();
 
 	private:
 		MeshData* m_mesh;

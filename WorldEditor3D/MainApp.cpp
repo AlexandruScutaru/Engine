@@ -70,6 +70,7 @@ void MainApp::initSystems(){
 	utilities::ResourceManager::Init();
 
 	m_screenFBO.init(renderer::Window::getW(), renderer::Window::getH());
+	m_dirLightFBO.init(2048, 2048);
 }
 
 void MainApp::initLevel(){
@@ -78,6 +79,7 @@ void MainApp::initLevel(){
 	m_billboardShader.initShader("res/shaders/ed_billboard");
 	m_terrainShader.initShader("res/shaders/terrain");
 	m_screenFboShader.initShader("res/shaders/frameBuffer");
+	m_lightDepthShader.initShader("res/shaders/lightDepth");
 
 	m_gizmos.init(&m_selectedObjsVect);
 
@@ -215,26 +217,35 @@ void MainApp::update(float deltaTime){
 }
 
 void MainApp::drawGame(){
-	//set to draw offscreen to the frame buffer
-	m_screenFBO.bind(); //the bind method also sets th viewport to the size it was inited with
-	glViewport(0, 0, renderer::Window::getW(), renderer::Window::getH());
+	//generate depth map for the light
+	//renderer::Renderer::UpdateLightSpaceMatrix(glm::normalize(static_cast<renderer::DirLight*>(m_lights[0])->direction));
+	renderer::Renderer::UpdateLightSpaceMatrix(static_cast<renderer::DirLight*>(m_lights[0])->direction);
+	RenderUtilities::DrawLightDepthMap(this); //now m_dirLightFBO contiins the depth map
+
+	//set to draw offscreen to the screen frame buffer
+	m_screenFBO.bind(); //the bind method also sets the viewport to the size it was inited with
 	renderer::Renderer::EnableDepthTest();
-	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
+	//glViewport(0, 0, renderer::Window::getW(), renderer::Window::getH());
+	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
+
 	if(m_gui.b_creationTab){
 		RenderUtilities::DrawGameObjects(this, true);
 	} else {
 		if(m_skybox.enabled()) 
 			m_skybox.render(m_player.getCamera()->getViewMatrix(), renderer::Renderer::GetProjectionMatrix());
-		if(m_terrain.enabled())
-			m_terrain.render(5, 
-							  m_player.isFlashLightOn(), 
-							  &m_player.getCamera()->getPos(),
-							  &m_player.getCamera()->getViewMatrix(), 
-							  &renderer::Renderer::GetProjectionMatrix(),
-							  &m_lights
+		if(m_terrain.enabled()){
+			glActiveTexture(GL_TEXTURE5);
+			glBindTexture(GL_TEXTURE_2D, m_dirLightFBO.getDepthTexture());
+			m_terrain.render(6,
+							 m_player.isFlashLightOn(),
+							 &m_player.getCamera()->getPos(),
+							 &m_player.getCamera()->getViewMatrix(),
+							 &renderer::Renderer::GetProjectionMatrix(),
+							 &renderer::Renderer::GetLightSpaceMatrix(),
+							 &m_lights
 			);
+		}
 
 		RenderUtilities::DrawGameObjects(this, false);
 		RenderUtilities::DrawLightBillboards(this);
@@ -245,18 +256,19 @@ void MainApp::drawGame(){
 	}
 
 	//set to draw to the screen again but only a quad with the frame buffer's texture
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, renderer::Window::getW(), renderer::Window::getH());
+	m_screenFBO.unbind(); // this also sets viewport to actual window size, if it's not what is wanted it can be called explicitly
 	renderer::Renderer::DisableDepthTest();
 	glClear(GL_COLOR_BUFFER_BIT);
 	m_screenFboShader.use();
 	//correct pincushion distorsion
 	m_screenFboShader.loadHeight(1.0f / renderer::Renderer::GetProjectionMatrix()[1][1]);
 	m_screenFboShader.loadAspectRatio(renderer::Window::getW() / (float)renderer::Window::getH());
-	m_screenFboShader.loadStrength(0.3f);
+	m_screenFboShader.loadStrength(0.0f); //0.0 = no correction
 	m_screenFboShader.loadCylindricalRatio(1.0f);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_screenFBO.getTexture());
+	//glBindTexture(GL_TEXTURE_2D, m_dirLightFBO.getDepthTexture());
+
 	glBindVertexArray(utilities::ResourceManager::getNDCquad()->vertexArrayObject);
 	glDrawArrays(GL_TRIANGLES, 0, utilities::ResourceManager::getNDCquad()->indexCount);
 	m_screenFboShader.unuse();

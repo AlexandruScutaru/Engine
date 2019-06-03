@@ -4,6 +4,7 @@
 in vec2 TexCoords; 
 in vec3 Normal;
 in vec3 FragPos;
+in vec4 FragPosLightSpace;
 
 out vec4 FragColor;
 
@@ -53,11 +54,13 @@ uniform SpotLight spotLight;
 uniform bool flashlightOn;
 uniform int pointLightsNum;
 uniform bool selected;
+uniform sampler2D shadowMap;
 
 // function prototypes
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
+float CalcShadow(vec3 lightDir, vec3 normal);
 
 
 void main(){
@@ -98,7 +101,8 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir){
     vec3 diffuse  = light.diffuse  * diff * vec3(texture(material.diffuse, TexCoords));
     vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
 
-	return (ambient + diffuse + specular);
+	float shadow = CalcShadow(lightDir, normal);
+    return ambient + (1.0 - shadow) * (diffuse + specular);
 }
 
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir){
@@ -144,4 +148,17 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir){
     diffuse  *= attenuation * intensity;
     specular *= attenuation * intensity;
     return (ambient + diffuse + specular);
+}
+
+float CalcShadow(vec3 lightDir, vec3 normal){
+	vec3 projCoords = FragPosLightSpace.xyz / FragPosLightSpace.w;
+	projCoords = projCoords * 0.5 + 0.5;
+	float closestDepth = texture(shadowMap, projCoords.xy).r; 
+    float currentDepth = projCoords.z;
+
+
+	float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005); 
+    float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
+
+    return shadow;
 }

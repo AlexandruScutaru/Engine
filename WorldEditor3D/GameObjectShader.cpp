@@ -18,6 +18,7 @@ void GameObjectShader::initShader(const std::string& shader){
 void GameObjectShader::connectTextureUnits(){
 	loadInt(m_uniforms[MAT_TEX_DIFF_U], 0);
 	loadInt(m_uniforms[MAT_TEX_SPEC_U], 1);
+	loadInt(m_uniforms[SHADOW_MAP_U], 2);
 }
 
 void GameObjectShader::loadShininess(float value){
@@ -51,6 +52,10 @@ void GameObjectShader::loadViewMatrix(glm::mat4 & view){
 
 void GameObjectShader::loadProjectionMatrix(glm::mat4 & projection){
 	loadMat4(m_uniforms[PROJECTION_MATRIX_U], projection);
+}
+
+void GameObjectShader::loadLightSpace(glm::mat4 & lightSpace){
+	loadMat4(m_uniforms[LIGHT_SPACE_U], lightSpace);
 }
 
 void GameObjectShader::loadLights(std::vector<renderer::Light*>& lights){
@@ -100,6 +105,8 @@ void GameObjectShader::getAllUniformLocations(){
 	m_uniforms[MAT_TEX_SPEC_U] = getUniformLocation("material.specular");
 	m_uniforms[MAT_SHININESS_U] = getUniformLocation("material.shininess");
 	
+	m_uniforms[SHADOW_MAP_U] = getUniformLocation("shadowMap");
+
 	m_uniforms[DIR_LIGHT_DIR_U] = getUniformLocation("dirLight.direction");
 	m_uniforms[DIR_LIGHT_AMB_U] = getUniformLocation("dirLight.ambient");
 	m_uniforms[DIR_LIGHT_DIF_U] = getUniformLocation("dirLight.diffuse");
@@ -122,7 +129,8 @@ void GameObjectShader::getAllUniformLocations(){
 	m_uniforms[PROJECTION_MATRIX_U] = getUniformLocation("projection");
 	m_uniforms[VIEW_MATRIX_U] = getUniformLocation("view");
 	m_uniforms[MODEL_MATRIX_U] = getUniformLocation("model");
-	
+	m_uniforms[LIGHT_SPACE_U] = getUniformLocation("lightSpace");
+
 	m_uniforms[POINT_LIGHTS_NUM_U] = getUniformLocation("pointLightsNum");
 	PointLightUniforms plUniforms;
 	for(unsigned int i = 0; i < MAX_LIGHTS; i++){
