@@ -12,6 +12,11 @@
 
 class GameObject : public Actor, public renderer::RenderableEntity {
 public:
+	struct BoundingSphere{
+		glm::vec3 relativePos;
+		float radius;
+	};
+
 	GameObject();
 	GameObject(renderer::TexturedModel* model,
 			   bool static_obj
@@ -24,6 +29,10 @@ public:
 	);
 	GameObject(const GameObject& other);
 	virtual ~GameObject();
+
+	virtual void setScale(glm::vec3& scale) override;
+
+	void updateBoundingSpere();
 
 	enum TYPE {
 		STANDARD = 0,
@@ -42,6 +51,8 @@ public:
 	int getType() { return m_type; }
 	
 	std::string updateScript = "";
+
+	BoundingSphere boundSphere;
 
 private:
 	std::shared_ptr<physics::PhysicsBody> m_rigidBody;

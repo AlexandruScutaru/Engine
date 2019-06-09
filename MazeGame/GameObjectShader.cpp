@@ -54,6 +54,10 @@ void GameObjectShader::loadProjectionMatrix(glm::mat4 & projection){
 	loadMat4(m_uniforms[PROJECTION_MATRIX_U], projection);
 }
 
+void GameObjectShader::loadMvpMatrix(glm::mat4 & mvp){
+	loadMat4(m_uniforms[MVP_MATRIX_U], mvp);
+}
+
 void GameObjectShader::loadLights(std::vector<renderer::Light*>& lights){
 	// directional light
 	renderer::DirLight* dir = static_cast<renderer::DirLight*>(lights[0]);
@@ -120,8 +124,9 @@ void GameObjectShader::getAllUniformLocations(){
 	m_uniforms[ATLAS_SIZE_U] = getUniformLocation("atlasSize");
 	m_uniforms[ATLAS_OFFSET_U] = getUniformLocation("atlasOffset");
 
-	m_uniforms[PROJECTION_MATRIX_U] = getUniformLocation("projection");
-	m_uniforms[VIEW_MATRIX_U] = getUniformLocation("view");
+	//m_uniforms[PROJECTION_MATRIX_U] = getUniformLocation("projection");
+	//m_uniforms[VIEW_MATRIX_U] = getUniformLocation("view");
+	m_uniforms[MVP_MATRIX_U] = getUniformLocation("mvp");
 	m_uniforms[MODEL_MATRIX_U] = getUniformLocation("model");
 	
 	m_uniforms[POINT_LIGHTS_NUM_U] = getUniformLocation("pointLightsNum");

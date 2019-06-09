@@ -10,12 +10,11 @@
 #include <fstream>
 #include <algorithm>
 
-///TODO:
-	//investigate object rename issue
-	//lights in creation mode shouldn't appear
+#define NEAR_PLANE 0.1f
+#define FAR_PLANE 400.0f
+
 
 float getDistance(const glm::vec3& e1, const glm::vec3& e2);
-
 
 MainApp::MainApp():
 	m_appState(AppState::EDIT),
@@ -66,7 +65,7 @@ void MainApp::initSystems(){
 	ImGui::StyleColorsDark();
 
 	renderer::Renderer::Init();
-	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
+	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH(), NEAR_PLANE, FAR_PLANE);
 	utilities::ResourceManager::Init();
 
 	m_screenFBO.init(renderer::Window::getW(), renderer::Window::getH());
@@ -227,12 +226,12 @@ void MainApp::drawGame(){
 	renderer::Renderer::EnableDepthTest();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//glViewport(0, 0, renderer::Window::getW(), renderer::Window::getH());
-	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
+	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH(), NEAR_PLANE, FAR_PLANE);
 
 	if(m_gui.b_creationTab){
 		RenderUtilities::DrawGameObjects(this, true);
 	} else {
-		if(m_skybox.enabled()) 
+		if(m_skybox.enabled())
 			m_skybox.render(m_player.getCamera()->getViewMatrix(), renderer::Renderer::GetProjectionMatrix());
 		if(m_terrain.enabled()){
 			glActiveTexture(GL_TEXTURE5);

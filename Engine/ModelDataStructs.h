@@ -2,6 +2,9 @@
 #define MODEL_DATA_STRUCTS_H
 
 #include <GL/glew.h>
+#include <GLM/glm.hpp>
+
+#include <vector>
 
 namespace renderer{
 
@@ -19,8 +22,15 @@ namespace renderer{
 	//struct containing handles for the VAO and every VBO in it
 	//aswell as the number of indices (how much of the VAO to draw)
 	struct MeshData{
+		enum {
+			X_COORD = 0,
+			Y_COORD,
+			Z_COORD
+		};
+
 		GLuint vertexArrayObject;
 		GLuint vertexArrayBuffers[NUM_BUFFERS];
+		std::vector<glm::vec2> aabb;
 		int indexCount;
 	};
 

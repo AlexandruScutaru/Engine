@@ -94,7 +94,7 @@ void RenderUtilities::DrawGameObjects(MainApp* app, bool drawCollisionBodies){
 		}
 	}
 	app->m_gameObjectsShader.unuse();
-
+	
 	///now draw the billboards
 	//prepare shader
 	app->m_billboardShader.use();

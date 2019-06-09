@@ -4,7 +4,7 @@
 #include <Engine/InputManager.h>
 #include <iostream>
 
-const glm::vec3 Player::m_cameraOffset = glm::vec3(0.0f, 1.5f, 0.0f);
+const glm::vec3 Player::m_cameraOffset = glm::vec3(0.0f, 0.8f, 0.0f);
 
 
 Player::Player() :
@@ -93,7 +93,7 @@ void Player::update(utilities::InputManager& inputManager, float deltaTime){
 		static float offset = m_scale.y / 2.1f;
 		rp3d::ContactManifold* manifold = listElem->contactManifold;
 		// For each contact point of the manifold 
-		for(int i = 0; i<manifold->getNbContactPoints(); i++) {	
+		for(unsigned int i = 0; i<manifold->getNbContactPoints(); i++) {	
 			// Get the contact point 
 			rp3d::ContactPoint* point = manifold->getContactPoint(i);
 			// Get the world-space contact point on body 1 

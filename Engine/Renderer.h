@@ -2,6 +2,7 @@
 #define RENDERER_H
 
 #include <GLM/glm.hpp>
+#include <vector>
 
 namespace renderer{
 
@@ -18,7 +19,7 @@ namespace renderer{
 		static void DrawTexturedModel(TexturedModel* model);
 		static glm::u8vec4 getColorAt(glm::vec2& coords);
 		
-		static void updateProjectionMatrix(float fov, int width, int height);
+		static void updateProjectionMatrix(float fov, int width, int height, float near, float far);
 		static glm::mat4& GetProjectionMatrix(){ return m_projection; }
 
 		static void UpdateLightSpaceMatrix(glm::vec3& lightPos);
@@ -33,11 +34,25 @@ namespace renderer{
 		static void EnableWireframeMode();
 		static void DisableWireframeMode();
 
+		static void updateFrustumPlanes(glm::mat4& viewProj);
+		static bool intersected(glm::vec3& spherePos, float sphereradius);
+
 	private:
 		Renderer();
+
+		enum Planes{
+			LEFT,
+			RIGHT,
+			TOP,
+			BOTTOM,
+			NEARp,
+			FARp
+		};
+
 		static glm::mat4 m_projection;
 		static glm::vec4 m_bgColor;
 		static glm::mat4 m_lightSpace;
+		static std::vector<glm::vec4> m_frustumPlanes;
 
 	};
 

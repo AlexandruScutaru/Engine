@@ -17,7 +17,7 @@ public:
 	
 	glm::vec3& getPosition(){ return m_pos; }
 	glm::quat& getRotation(){ return m_rot; }
-	glm::vec3& getScale(){    return m_scale; }
+	glm::vec3& getScale(){ return m_scale; }
 	int getCode(){ return m_code; }
 
 protected:

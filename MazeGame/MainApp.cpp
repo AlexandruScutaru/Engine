@@ -9,11 +9,17 @@
 #include <algorithm>
 #include <cmath>
 #include <Engine/CollisionBody.h>
+#include <thread>
 
 float getDistance(const glm::vec3& e1, const glm::vec3& e2);
 glm::vec3 genPos(int maxW, int maxH, float height);
 
 bool MainApp::m_resetLevel = false;
+
+#define MAX_COINS 9
+#define NEAR_PLANE 0.1f
+#define FAR_PLANE 40.0f 
+
 
 MainApp::MainApp() :
 	m_appState(AppState::RUNNING),
@@ -24,7 +30,6 @@ MainApp::MainApp() :
 }
 
 MainApp::~MainApp(){
-	m_objects_ToDraw.clear();
 	for(auto obj : m_objectsInScene)
 		delete obj;
 	m_objectsInScene.clear();
@@ -74,12 +79,17 @@ void MainApp::beginContact(const rp3d::ContactPointInfo& contact) {
 				delete m_objectsInScene[i];
 				m_objectsInScene.erase(m_objectsInScene.begin() + i--);
 				m_player.hasKey = true;
+				m_hudElements[HUD_ELements::KEY].enabled = true;
 				delete m_lights.back();
 				m_lights.pop_back();
+				audio::SoundEffect sound = m_audioManager.loadSountEffect("res/sounds/key_pickup.mp3");
+				sound.play();
 			}else if(m_objectsInScene[i]->getType() == GameObject::TYPE::COIN_PICKUP) {
 				delete m_objectsInScene[i];
 				m_objectsInScene.erase(m_objectsInScene.begin() + i--);
 				m_player.coins++;
+				audio::SoundEffect sound = m_audioManager.loadSountEffect("res/sounds/coin_pickup.mp3");
+				sound.play();
 			}
 		}
 	}
@@ -92,9 +102,10 @@ void MainApp::initSystems(){
 	m_fpsLimiter.setMaxFPS(CONFIG.max_graphics_fps);
 
 	renderer::Renderer::Init();
-	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
+	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH(), NEAR_PLANE, FAR_PLANE);
 	utilities::ResourceManager::Init();
 	m_audioManager.init();
+	m_hud.initHUD();
 
 	m_player.LOOK_SENSITIVITY = CONFIG.look_sensitivity;
 
@@ -112,9 +123,17 @@ void MainApp::initSystems(){
 }
 
 void MainApp::initLevel(){
+	m_hudElements.resize(HUD_ELements::NUM_ELEMENTS);
+	m_hudElements[HUD_ELements::COIN] = renderer::HudElement{
+		utilities::ResourceManager::getTexture("res/textures/coins_icon.png"), 
+		glm::vec3(-0.916f, 0.9f, 0.0f), glm::vec3(0.08f), true};
+	m_hudElements[HUD_ELements::KEY] = renderer::HudElement{
+		utilities::ResourceManager::getTexture("res/textures/key_icon.png"), 
+		glm::vec3(0.916f, 0.9f, 0.0f), glm::vec3(0.07f), false};
+
 	m_gameObjectsShader.initShader("res/shaders/entity");
 	m_dynamicWorld.setEventListener(&m_eventListener);
-	m_skybox.init(399.0f);
+	m_skybox.init(99.0f);
 	//generate maze
 	m_maze = new Maze(CONFIG.mazeWidth, CONFIG.mazeHeight);
 	std::cout << *m_maze;
@@ -161,7 +180,7 @@ void MainApp::initLevel(){
 											"\n\tobj:setRotY(rot_y)"
 											"\nend";
 
-	for(int i = 0; i < 5; i++){
+	for(int i = 0; i < MAX_COINS; i++){
 		glm::vec3 coin = genPos(data[0].size(), data.size(), 1.28f);
 		m_objectsInScene.push_back(Utilities::OpenGameObject("coin", coin, glm::quat(), glm::vec3(1.0f), &m_dynamicWorld));
 		m_objectsInScene.back()->setType(GameObject::TYPE::COIN_PICKUP);
@@ -386,21 +405,25 @@ void MainApp::drawGame(float interpolation){
 
 	m_player.setPosition(m_player.getPhysicsBody()->getPosition() * interpolation + m_player.getPosition() * (1.0f - interpolation));
 	
+	glViewport(0, 0, renderer::Window::getW(), renderer::Window::getH());
+	
+	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH(), NEAR_PLANE, FAR_PLANE);
+	glm::mat4 vp = renderer::Renderer::GetProjectionMatrix() * m_player.getCamera()->getViewMatrix();
+	
+	renderer::Renderer::updateFrustumPlanes(vp);
 	updateToDrawVector();
 
-	glViewport(0, 0, renderer::Window::getW(), renderer::Window::getH());
-	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if(m_skybox.enabled())
 		m_skybox.render(m_player.getCamera()->getViewMatrix(), renderer::Renderer::GetProjectionMatrix());
+	drawGameObjects(vp);
 
-	drawGameObjects();
+	m_hud.render(m_hudElements);
+	m_hud.render(m_player.coins, glm::vec3(-0.75f, 0.9f, 0.0f), glm::vec3(0.07f));
 }
 
 void MainApp::resetData(){
-	m_objects_ToDraw.clear();
-
 	for(auto obj : m_objectsInScene){
 		m_dynamicWorld.destroyBody(obj->getPhysicsBody());
 		delete obj;
@@ -424,13 +447,27 @@ void MainApp::resetLevel(){
 	m_resetLevel = false;
 }
 
+
 void MainApp::updateToDrawVector(){
-	m_objects_ToDraw.clear();
-	for(const auto& gameObject : m_objectsInScene)
-		m_objects_ToDraw.push_back(gameObject);
+	auto cullingJob = [this](size_t start, size_t end){
+		for(size_t i = start; i < end; i++){
+			std::lock_guard<std::mutex>(this->m_objsMutex);
+			if(renderer::Renderer::intersected(this->m_objectsInScene[i]->getPosition(), m_objectsInScene[i]->boundSphere.radius))
+				this->m_objectsToDraw.push_back(this->m_objectsInScene[i]);
+		}
+	};
+
+	m_objectsToDraw.clear();
+	size_t third = m_objectsInScene.size() / 3;
+	std::thread thd(cullingJob, third, 2 * third);
+	std::thread thd2(cullingJob, 2 * third, m_objectsInScene.size());
+	cullingJob(0, third);
+
+	thd.join();
+	thd2.join();
 }
 
-void MainApp::drawGameObjects(){
+void MainApp::drawGameObjects(glm::mat4& vp){
 	std::vector<renderer::CollisionBody*> colBodies;
 	///first draw the normal gameobjects
 	//prepare shader
@@ -438,13 +475,10 @@ void MainApp::drawGameObjects(){
 	m_gameObjectsShader.loadFlashlight(m_player.isFlashLightOn());
 
 	m_gameObjectsShader.loadLights(m_lights);
-	glm::mat4 view = m_player.getCamera()->getViewMatrix();
 	m_gameObjectsShader.loadViewPosition(m_player.getCamera()->getPos());
-	m_gameObjectsShader.loadViewMatrix(view);
-	m_gameObjectsShader.loadProjectionMatrix(renderer::Renderer::GetProjectionMatrix());
 
-	//get textured model batches
-	auto batches = Utilities::BatchRenderables<GameObject>(m_objects_ToDraw);
+	glm::mat4 mvp;
+	auto batches = Utilities::BatchRenderables<GameObject>(m_objectsToDraw);
 	for(auto const& batch : batches){
 		if(batch.first->isBillboard())
 			continue;
@@ -457,8 +491,12 @@ void MainApp::drawGameObjects(){
 			modelMatrix = glm::translate(modelMatrix, gameObject->getPosition());
 			modelMatrix = modelMatrix * glm::toMat4(gameObject->getRotation());
 			modelMatrix = glm::scale(modelMatrix, gameObject->getScale());
+			mvp = vp * modelMatrix;
+			
 			m_gameObjectsShader.loadModelMatrix(modelMatrix);
+			m_gameObjectsShader.loadMvpMatrix(mvp);
 			renderer::Renderer::DrawTexturedModel(batch.first);
+	
 		}
 		renderer::Renderer::EnableBackFaceCulling();
 	}

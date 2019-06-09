@@ -30,7 +30,7 @@ public:
 	void setBodyType(physics::BodyType type){ m_bodyType = type; }
 	void setName(const std::string& name){ m_name = name; }
 	void setInEditorName(const std::string& inEditorName){ m_inEditorName = inEditorName; }
-	
+
 	physics::BodyType getBodyType(){ return m_bodyType; }
 	const std::string& getName(){ return m_name; }
 	const std::string& getInEditorName(){ return m_inEditorName; }

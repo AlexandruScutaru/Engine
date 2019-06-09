@@ -10,6 +10,10 @@
 #include <cmath>
 #include <Engine/CollisionBody.h>
 
+#define NEAR_PLANE 0.1f
+#define FAR_PLANE 400.0f
+
+
 float getDistance(const glm::vec3& e1, const glm::vec3& e2);
 
 bool MainApp::m_resetLevel = false;
@@ -94,7 +98,7 @@ void MainApp::initSystems(){
 	m_fpsLimiter.setMaxFPS(CONFIG.max_graphics_fps);
 
 	renderer::Renderer::Init();
-	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
+	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH(), NEAR_PLANE, FAR_PLANE);
 	utilities::ResourceManager::Init();
 	m_audioManager.init();
 
@@ -292,7 +296,7 @@ void MainApp::drawGame(float interpolation){
 	updateToDrawVector();
 
 	glViewport(0, 0, renderer::Window::getW(), renderer::Window::getH());
-	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH());
+	renderer::Renderer::updateProjectionMatrix(m_player.getCamera()->getFOV(), renderer::Window::getW(), renderer::Window::getH(), NEAR_PLANE, FAR_PLANE);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	if(m_skybox.enabled())

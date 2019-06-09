@@ -1,6 +1,8 @@
 #ifndef MAINAPP_H
 #define MAINAPP_H
 
+#define GLM_SWIZZLE
+
 #include <Engine/Window.h>
 #include <Engine/Camera.h>
 #include <Engine/IShaderProgram.h>
@@ -15,6 +17,9 @@
 #include <Engine/PhysicsEventListener.h>
 #include <Engine/Audio.h>
 #include <Engine/Skybox.h>
+#include <Engine/hud.h>
+
+#include <GLM/glm.hpp>
 
 extern "C" {
 	#include <lua/lua.h>
@@ -29,16 +34,23 @@ extern "C" {
 #include "Player.h"
 #include "Maze.h"
 
-#include <GLM/glm.hpp>
-
 #include <vector>
+#include <mutex>
 
 #include <JSON/json.hpp>
 using json = nlohmann::json;
 
+
 enum class AppState{
 	RUNNING,
 	EXIT
+};
+
+enum HUD_ELements : int{
+	COIN = 0,
+	KEY,
+
+	NUM_ELEMENTS
 };
 
 class MainApp
@@ -55,29 +67,32 @@ public:
 		m_resetLevel = true;
 	}
 
-private:
+public:
 	void initSystems(); //initializes the core systems
 	void initLevel(); //initilizes the current level
 	void loop(); //main app loop
 	void processInput(); //handles input processing
 	void update(float deltaTime); //updates based on deltatime
 	void drawGame(float interpolation); //draws on screen
-
+	void drawGameObjects(glm::mat4& vp);
+	
 	void resetData();
 	void resetLevel();
 
 	void updateToDrawVector();
-	void drawGameObjects();
 
 	renderer::Window m_window; //the app window
 	utilities::InputManager m_inputManager;
 	utilities::FpsLimiter m_fpsLimiter;
 	audio::AudioManager m_audioManager;
+	renderer::HUD m_hud;
+	std::vector<renderer::HudElement> m_hudElements;
 
 	std::vector<GameObject*> m_objectsInScene;
-	std::vector<GameObject*> m_objects_ToDraw;
+	std::vector<GameObject*> m_objectsToDraw;
+
 	std::vector<renderer::Light*> m_lights;
-	
+
 	//at index 0 is the start and at 1 is the end, the rest are just triggers
 	std::vector<CollisionVolume*> m_collisionVolumes;
 
@@ -89,6 +104,8 @@ private:
 	
 	physics::PhysicsWorld m_dynamicWorld;
 	physics::PhysicsEventListener m_eventListener;
+	
+	std::mutex m_objsMutex;
 
 	Maze* m_maze;
 	static bool m_resetLevel;

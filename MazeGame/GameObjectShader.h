@@ -25,6 +25,7 @@ public:
 	void loadModelMatrix(glm::mat4& model);
 	void loadViewMatrix(glm::mat4& view);
 	void loadProjectionMatrix(glm::mat4& projection);
+	void loadMvpMatrix(glm::mat4& mvp);
 	void loadLights(std::vector<renderer::Light*>& lights);
 	void loadViewPosition(glm::vec3& viewPos);
 	
@@ -60,6 +61,7 @@ private:
 		PROJECTION_MATRIX_U,
 		VIEW_MATRIX_U,
 		MODEL_MATRIX_U,
+		MVP_MATRIX_U,
 
 		NUM_UNIFORMS
 	};

@@ -25,6 +25,31 @@ GameObject::GameObject(const GameObject& other) :
 
 GameObject::~GameObject(){}
 
+void GameObject::setScale(glm::vec3 & scale){
+	m_scale = scale;
+	updateBoundingSpere();
+}
+
+void GameObject::updateBoundingSpere(){
+	const auto& aabb = m_model->getMesh()->aabb;
+
+	boundSphere.relativePos = glm::vec3(
+		(aabb[renderer::MeshData::X_COORD].x + aabb[renderer::MeshData::X_COORD].y) * m_scale.x / 2.0f,
+		(aabb[renderer::MeshData::Y_COORD].x + aabb[renderer::MeshData::Y_COORD].y) * m_scale.y / 2.0f,
+		(aabb[renderer::MeshData::Z_COORD].x + aabb[renderer::MeshData::Z_COORD].y) * m_scale.z / 2.0f
+	);
+
+	boundSphere.radius = glm::distance(
+		boundSphere.relativePos,
+		glm::vec3(
+			aabb[renderer::MeshData::X_COORD].x,
+			aabb[renderer::MeshData::Y_COORD].x,
+			aabb[renderer::MeshData::Z_COORD].x
+		)
+	);
+}
+
+
 void GameObject::setRotY(float rot_y){
 	m_rot_y = rot_y;
 	auto rot = glm::quat(glm::vec3(0.0f, glm::radians(rot_y), 0.0f));

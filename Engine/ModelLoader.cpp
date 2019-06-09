@@ -533,7 +533,7 @@ namespace utilities{
 		return heights[row * num_cols + col];
 	}
 
-	glm::vec3 ObjectLoader::getNormal(int x, int z, float num_cols, std::vector<float>& heights){
+	glm::vec3 ObjectLoader::getNormal(int x, int z, int num_cols, std::vector<float>& heights){
 		float heightL = getHeight(x - 1, z, num_cols, heights);
 		float heightR = getHeight(x + 1, z, num_cols, heights);
 		float heightD = getHeight(x, z - 1, num_cols, heights);
@@ -542,6 +542,34 @@ namespace utilities{
 		glm::vec3 normal(heightD - heightU, 2.0f, heightL - heightR);
 		normal = glm::normalize(normal);
 		return normal;
+	}
+
+	void ObjectLoader::computeAABB(const std::vector<glm::vec3>& vertices, std::vector<glm::vec2>& aabb){
+		glm::vec2 x_comp(INT_MAX, INT_MIN);
+		glm::vec2 y_comp(INT_MAX, INT_MIN);
+		glm::vec2 z_comp(INT_MAX, INT_MIN);
+
+		for(auto& v : vertices){
+			if(x_comp.x > v.x)
+				x_comp.x = v.x;
+			if(x_comp.y < v.x)
+				x_comp.y = v.x;
+
+			if(y_comp.x > v.y)
+				y_comp.x = v.y;
+			if(y_comp.y < v.y)
+				y_comp.y = v.y;
+
+			if(z_comp.x > v.z)
+				z_comp.x = v.z;
+			if(z_comp.y < v.z)
+				z_comp.y = v.z;
+		}
+
+		aabb.push_back(x_comp);
+		aabb.push_back(y_comp);
+		aabb.push_back(z_comp);
+
 	}
 
 	renderer::MeshData ObjectLoader::loadToVAO(const IndexedModel& model){
@@ -617,7 +645,7 @@ namespace utilities{
 		glBindVertexArray(0);
 
 		data.indexCount = model.indices.size();
-
+		computeAABB(model.positions, data.aabb);
 		return data;
 	}
 
