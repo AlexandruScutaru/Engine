@@ -1,0 +1,37 @@
+{
+    "angularDamp": 0.0,
+    "atlasSize": 1,
+    "billboard": false,
+    "bounciness": 0.0,
+    "collision": [
+        {
+            "mass": 1.0,
+            "pos": [
+                0.0,
+                2.16000008583069,
+                0.0
+            ],
+            "rot": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "scale": [
+                5.1100001335144,
+                4.45000028610229,
+                5.57000017166138
+            ],
+            "shape": 0
+        }
+    ],
+    "diff": "transformator_DIFF.png",
+    "doubleSided": false,
+    "friction": -1.0,
+    "gravity": true,
+    "linearDamp": 0.0,
+    "mesh": "transformator.obj",
+    "rollingResist": -1.0,
+    "sleep": true,
+    "spec": "transformator_SPEC.png"
+}

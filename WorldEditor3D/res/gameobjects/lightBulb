@@ -1,0 +1,57 @@
+{
+    "angularDamp": 0.0,
+    "atlasSize": 1,
+    "billboard": false,
+    "bounciness": 0.0,
+    "collision": [
+        {
+            "mass": 3.0,
+            "pos": [
+                0.0,
+                -0.0300000011920929,
+                0.0
+            ],
+            "rot": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "scale": [
+                0.190000012516975,
+                0.300000011920929,
+                0.190000012516975
+            ],
+            "shape": 4
+        },
+        {
+            "mass": 1.0,
+            "pos": [
+                0.0,
+                0.100000001490116,
+                0.0
+            ],
+            "rot": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "scale": [
+                0.350000023841858,
+                0.350000023841858,
+                0.350000023841858
+            ],
+            "shape": 1
+        }
+    ],
+    "diff": "light_bulb_DIFF.png",
+    "doubleSided": false,
+    "friction": -1.0,
+    "gravity": true,
+    "linearDamp": 0.0,
+    "mesh": "light_bulb.obj",
+    "rollingResist": -1.0,
+    "sleep": false,
+    "spec": "full_SPEC.png"
+}

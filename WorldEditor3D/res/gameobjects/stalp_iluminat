@@ -1,0 +1,37 @@
+{
+    "angularDamp": 0.0,
+    "atlasSize": 1,
+    "billboard": false,
+    "bounciness": 0.0,
+    "collision": [
+        {
+            "mass": 1.0,
+            "pos": [
+                0.0,
+                4.77000045776367,
+                0.0
+            ],
+            "rot": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "scale": [
+                0.490000009536743,
+                9.51000022888184,
+                0.450000017881393
+            ],
+            "shape": 0
+        }
+    ],
+    "diff": "stalp_iluminat_DIFF.png",
+    "doubleSided": false,
+    "friction": -1.0,
+    "gravity": true,
+    "linearDamp": 0.0,
+    "mesh": "stalp_iluminat.obj",
+    "rollingResist": -1.0,
+    "sleep": true,
+    "spec": "no_SPEC.png"
+}

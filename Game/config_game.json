@@ -17,7 +17,7 @@
 		"max_graphics_fps" : 60,
 		"max_physics_fps" : 60,
 		"max_frame_time" : 0.25,
-		"look_sensitivity" : 0.3,
+		"look_sensitivity" : 0.2,
 		"map": "test"
 	}
 }

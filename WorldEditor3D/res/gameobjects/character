@@ -1,0 +1,37 @@
+{
+    "angularDamp": 0.0,
+    "atlasSize": 1,
+    "billboard": false,
+    "bounciness": 0.0,
+    "collision": [
+        {
+            "mass": 64.0,
+            "pos": [
+                0.0,
+                0.940000057220459,
+                0.160000011324883
+            ],
+            "rot": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "scale": [
+                0.560000002384186,
+                1.14999997615814,
+                0.560000002384186
+            ],
+            "shape": 4
+        }
+    ],
+    "diff": "character_DIFF.png",
+    "doubleSided": false,
+    "friction": -1.0,
+    "gravity": true,
+    "linearDamp": 0.0,
+    "mesh": "character.obj",
+    "rollingResist": -1.0,
+    "sleep": true,
+    "spec": "character_SPEC.png"
+}

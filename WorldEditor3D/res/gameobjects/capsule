@@ -1,0 +1,15 @@
+{
+    "angularDamp": 0.0,
+    "atlasSize": 1,
+    "billboard": false,
+    "bounciness": 0.0,
+    "diff": "default.png",
+    "doubleSided": false,
+    "friction": -1.0,
+    "gravity": true,
+    "linearDamp": 0.0,
+    "mesh": "capsule.obj",
+    "rollingResist": -1.0,
+    "sleep": true,
+    "spec": "no_SPEC.png"
+}

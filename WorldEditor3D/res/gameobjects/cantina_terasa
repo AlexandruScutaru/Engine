@@ -1,0 +1,37 @@
+{
+    "angularDamp": 0.0,
+    "atlasSize": 1,
+    "billboard": false,
+    "bounciness": 0.0,
+    "collision": [
+        {
+            "mass": 1.0,
+            "pos": [
+                0.0,
+                -0.260000020265579,
+                0.0
+            ],
+            "rot": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "scale": [
+                66.5300064086914,
+                0.520000040531158,
+                40.0
+            ],
+            "shape": 0
+        }
+    ],
+    "diff": "terasa1_DIFF.png",
+    "doubleSided": false,
+    "friction": -1.0,
+    "gravity": true,
+    "linearDamp": 0.0,
+    "mesh": "cantina_terasa.obj",
+    "rollingResist": -1.0,
+    "sleep": true,
+    "spec": "terasa1_SPEC.png"
+}

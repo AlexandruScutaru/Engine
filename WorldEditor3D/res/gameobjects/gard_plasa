@@ -1,0 +1,37 @@
+{
+    "angularDamp": 0.0,
+    "atlasSize": 1,
+    "billboard": false,
+    "bounciness": 0.0,
+    "collision": [
+        {
+            "mass": 1.0,
+            "pos": [
+                0.0,
+                1.16000008583069,
+                -1.44000005722046
+            ],
+            "rot": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "scale": [
+                0.100000001490116,
+                2.34000015258789,
+                2.88000011444092
+            ],
+            "shape": 0
+        }
+    ],
+    "diff": "gard_plasa_DIFF.png",
+    "doubleSided": true,
+    "friction": -1.0,
+    "gravity": true,
+    "linearDamp": 0.0,
+    "mesh": "gard_plasa.obj",
+    "rollingResist": -1.0,
+    "sleep": true,
+    "spec": "no_SPEC.png"
+}

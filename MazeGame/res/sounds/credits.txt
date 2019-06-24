@@ -1,0 +1,15 @@
+The "coin_pickup" and "key_pickup" were downloaded from https://opengameart.org/
+from the user "Ogrebane" as "inventory_sound_effects.zip".
+Licenses:
+	https://creativecommons.org/licenses/by/3.0/
+	https://creativecommons.org/licenses/by-sa/3.0/
+	http://www.gnu.org/licenses/gpl-3.0.html
+	http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+
+I converted the effects "sell:buy_item.wav" and "metal-clash.wav" from .wav to .mp3.
+
+====================================================
+
+The "atmoshpere" track was downloaded from https://opengameart.org/ as "Dark _Atmosphere13_Looped_24bit.wav"
+I converted it from .wav to .mp3
+Original creator is Lucas Calvo - mundosound.com

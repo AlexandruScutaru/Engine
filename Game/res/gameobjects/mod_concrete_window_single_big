@@ -1,0 +1,37 @@
+{
+    "angularDamp": 0.0,
+    "atlasSize": 1,
+    "billboard": false,
+    "bounciness": 0.0,
+    "collision": [
+        {
+            "mass": 1.0,
+            "pos": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "rot": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "scale": [
+                2.55999994277954,
+                2.55999994277954,
+                0.320000022649765
+            ],
+            "shape": 0
+        }
+    ],
+    "diff": "modular_building_DIFF.png",
+    "doubleSided": false,
+    "friction": -1.0,
+    "gravity": true,
+    "linearDamp": 0.0,
+    "mesh": "mod_concrete_window_single_big.obj",
+    "rollingResist": -1.0,
+    "sleep": true,
+    "spec": "modular_building_SPEC.png"
+}

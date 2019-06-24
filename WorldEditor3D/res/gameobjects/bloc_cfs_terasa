@@ -1,0 +1,57 @@
+{
+    "angularDamp": 0.0,
+    "atlasSize": 1,
+    "billboard": false,
+    "bounciness": 0.0,
+    "collision": [
+        {
+            "mass": 1.0,
+            "pos": [
+                -5.37000036239624,
+                0.200000002980232,
+                0.0900000035762787
+            ],
+            "rot": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "scale": [
+                46.0,
+                0.570000052452087,
+                33.8900032043457
+            ],
+            "shape": 0
+        },
+        {
+            "mass": 1.0,
+            "pos": [
+                23.0100002288818,
+                -0.0900000035762787,
+                -11.0200004577637
+            ],
+            "rot": [
+                0.0,
+                0.0,
+                -0.0261769499629736,
+                0.999657332897186
+            ],
+            "scale": [
+                10.8000001907349,
+                0.569999992847443,
+                11.6700010299683
+            ],
+            "shape": 0
+        }
+    ],
+    "diff": "terasa1_DIFF.png",
+    "doubleSided": false,
+    "friction": -1.0,
+    "gravity": true,
+    "linearDamp": 0.0,
+    "mesh": "bloc_cfs_terasa.obj",
+    "rollingResist": -1.0,
+    "sleep": true,
+    "spec": "terasa1_SPEC.png"
+}

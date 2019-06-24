@@ -1,0 +1,37 @@
+{
+    "angularDamp": 0.0,
+    "atlasSize": 1,
+    "billboard": false,
+    "bounciness": 0.0,
+    "collision": [
+        {
+            "mass": 1.0,
+            "pos": [
+                -0.180000007152557,
+                0.25,
+                0.0
+            ],
+            "rot": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "scale": [
+                50.8200035095215,
+                0.560000002384186,
+                19.5
+            ],
+            "shape": 0
+        }
+    ],
+    "diff": "terasa1_DIFF.png",
+    "doubleSided": false,
+    "friction": -1.0,
+    "gravity": true,
+    "linearDamp": 0.0,
+    "mesh": "bloc_camine3_terasa.obj",
+    "rollingResist": -1.0,
+    "sleep": true,
+    "spec": "terasa1_SPEC.png"
+}

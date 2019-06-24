@@ -1,0 +1,37 @@
+{
+    "angularDamp": 0.0,
+    "atlasSize": 1,
+    "billboard": false,
+    "bounciness": 0.0,
+    "collision": [
+        {
+            "mass": 1.0,
+            "pos": [
+                0.0,
+                -0.290000021457672,
+                0.570000052452087
+            ],
+            "rot": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "scale": [
+                34.5,
+                0.540000021457672,
+                15.8000011444092
+            ],
+            "shape": 0
+        }
+    ],
+    "diff": "terasa1_DIFF.png",
+    "doubleSided": false,
+    "friction": -1.0,
+    "gravity": true,
+    "linearDamp": 0.0,
+    "mesh": "bloc_C_terasa.obj",
+    "rollingResist": -1.0,
+    "sleep": true,
+    "spec": "terasa1_SPEC.png"
+}
